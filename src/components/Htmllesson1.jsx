@@ -562,7 +562,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen">
 
             <div className="head">
-              <h2 className="title h-title fade-up">Brauzer qanday tillni o'qiydi<span className="italic" style={{ color: T.accent }}></span>?</h2>
+              <h2 className="title h-title fade-up">Har sayt ortida — bitta <span className="italic" style={{ color: T.accent }}>til</span>.</h2>
             </div>
             <div className="split">
               <div className="col">
@@ -651,7 +651,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen">
 
             <div className="head">
-              <h2 className="title h-title fade-up">HTML sahifaning <span className="italic" style={{ color: T.accent }}>skeleti nimalardan tashkill topgan?</span>.</h2>
+              <h2 className="title h-title fade-up">HTML sahifaning <span className="italic" style={{ color: T.accent }}>skeleti</span>.</h2>
               <p className="body lead fade-up delay-1" style={{ color: T.ink2 }}>
                 Har HTML sahifa ikki qismdan iborat: <b style={{ color: T.ink }}>head</b> (brauzer tabchasidagi nom va sozlamalar — ko'rinmaydi) va <b style={{ color: T.ink }}>body</b> (ko'rinadigan kontent). Brauzer yoki kodni bosib, har qismni biling.
               </p>
@@ -807,107 +807,103 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     </Stage>
   );
 };
-// SCREEN 7 — (saqlangan)
-const Screen7 = (props) => (
-  <QuestionScreen {...props} idx={7} scope="practice" eyebrow="Mashq · 2-savol"
-    questionText="Quyidagi tegda <p>Salom</p> — qaysi qismi yopuvchi teg?"
-    question={
-      <>
-        <p className="eyebrow" style={{ color: T.accent }}>Yopuvchi tegni toping</p>
-        <h2 className="title h-sub" style={{ marginTop: 8 }}>
-          <span className="mono" style={{ color: T.ink }}>{'<p>Salom</p>'}</span> — qaysi qismi yopuvchi teg?
-        </h2>
-      </>
+// SCREEN 7 — YOZISH (yopuvchi teg, baholanadi)
+const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
+  const ANSWER = '</h1>';
+  const normTag = (v) => (v || '').toLowerCase().replace(/\s+/g, '');
+  const [val, setVal] = useState(storedAnswer?.studentAnswer ?? '');
+  const correct = normTag(val) === ANSWER;
+  const touched = val.trim().length > 0;
+  useEffect(() => {
+    if (correct && storedAnswer === undefined) {
+      onAnswer(7, { stage: 'practice', screenIdx: 7, picked: val, question: '<h1>Salom! ... yopuvchi tegni yozing', correctAnswer: ANSWER, studentAnswer: val, correct: true });
     }
-    options={['<p>', 'Salom', '</p>', '<p>Salom']} correctIdx={2}
-    explainCorrect="To'g'ri. Yopuvchi teg nom oldidan / belgisi bilan yoziladi: </p>. Element shu yerda tugashini bildiradi."
-    explainWrong={{
-      0: '<p> — bu ochuvchi teg, element shu yerdan boshlanadi. Yopuvchida / belgisi bo\u2019ladi.',
-      1: '"Salom" — bu tegning ichidagi kontent (matn). Teg emas.',
-      3: 'Bu element to\u2019liq tugamagan. Yopuvchi qism — bu </p>.',
-      default: 'Yopuvchi teg / belgisi bilan boshlanadi: </p>.'
-    }} />
-);
-
-// ============================================================
-// SCREEN 8 — SARLAVHALAR (qayta dizayn)
-// ============================================================
-const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const DOC = [
-    { t: 'h', lvl: 1, text: 'Mening blogim' },
-    { t: 'p', text: "Salom! Bu yerda o'zim haqimda yozaman." },
-    { t: 'h', lvl: 2, text: "Sevimli o'yinlarim" },
-    { t: 'p', text: "Ko'pincha futbol va Minecraft o'ynayman." },
-    { t: 'h', lvl: 3, text: "Eng zo'r o'yin" },
-    { t: 'p', text: "Minecraft — soatlab o'ynasam ham zerikmayman." },
-    { t: 'h', lvl: 2, text: 'Orzuyim' },
-    { t: 'p', text: "Kelajakda web-dasturchi bo'lmoqchiman." }
-  ];
-  const LVL = {
-    1: { name: 'Asosiy sarlavha', role: 'Sahifada bitta bo\u2019ladi, eng kattasi. Google ham buni sahifaning nomi deb o\u2019qiydi.' },
-    2: { name: "Bo'lim sarlavhasi", role: 'Sahifani katta bo\u2019limlarga ajratadi (kichikroq).' },
-    3: { name: "Kichik bo'lim", role: 'h2 ichidagi mavzular (yana kichikroq).' }
-  };
-  const HSIZE = { 1: 'clamp(23px,3.4vw,29px)', 2: 'clamp(18px,2.5vw,21px)', 3: 'clamp(15px,2vw,17px)' };
-  const [active, setActive] = useState(null); // {lvl,text}
-  const done = !!active;
-  useEffect(() => { if ((done) && storedAnswer === undefined) onAnswer(8, { correct: true, picked: true }); }, [done]);
+  }, [correct]);
   return (
-    <Stage eyebrow="Sarlavhalar" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!(done)} label={(done) ? "Davom etish" : "Sarlavhani bosing"} onClick={onNext} /></>}>
+    <Stage eyebrow="Yozing" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!correct} label={correct ? 'Davom etish' : 'Yopuvchi tegni yozing'} onClick={onNext} /></>}>
       <div className="screen">
-
-            <div className="head">
-              <h2 className="title h-title fade-up">Sarlavhalar — <span className="italic" style={{ color: T.accent }}>H1 dan H6 gacha</span>.</h2>
-              <p className="body lead fade-up delay-1" style={{ color: T.ink2 }}>
-                Sarlavhalar sahifani bo'limlarga ajratadi: <span className="mono">{'<h1>'}</span> eng kattasi (asosiy), keyin <span className="mono">{'<h2>'}</span>, <span className="mono">{'<h3>'}</span>... Sahifadagi sarlavhani bosib ko'ring.
-              </p>
-            </div>
-
-            <div className="split">
-              {/* CHAP: detal */}
-              <div className="col">
-                {active ? (
-                  <div className="detail fade-step" key={active.lvl + active.text}>
-                    <span className="detail-tag">
-                      <span className="detail-chip">h{active.lvl}</span>
-                      <span className="detail-name">{LVL[active.lvl].name}</span>
-                    </span>
-                    <p className="body" style={{ margin: 0, color: T.ink }}>{LVL[active.lvl].role}</p>
-                    <p className="codeline"><span className="tg">{`<h${active.lvl}>`}</span>{active.text}<span className="tg">{`</h${active.lvl}>`}</span></p>
-                  </div>
+        <div className="head">
+          <h2 className="title h-title fade-up">Endi <span className="italic" style={{ color: T.accent }}>o'zingiz</span> yozing.</h2>
+          <p className="body lead fade-up delay-1" style={{ color: T.ink2 }}>
+            <span className="mono">&lt;h1&gt;</span> ochildi va <b style={{ color: T.ink }}>"Salom!"</b> yozildi. Endi uni yoping — <b style={{ color: T.ink }}>yopuvchi tegni</b> yozing.
+          </p>
+        </div>
+        <div className="split">
+          <div className="col">
+            <div className="yz-card fade-up delay-2">
+              <div className="yz-line">
+                <span className="yz-code"><span className="t-tag">&lt;h1&gt;</span>Salom!</span>
+                {!correct ? (
+                  <input className="yz-input" value={val} onChange={e => setVal(e.target.value)} placeholder="yopuvchi teg…" spellCheck={false} />
                 ) : (
-                  <div className="hint">
-                    <p className="body" style={{ margin: 0, color: T.ink2 }}>
-                      O'ngdagi <b style={{ color: T.ink }}>blog sahifasidan</b> bir sarlavhani bosing — uning darajasi (h1, h2, h3) va kodi shu yerda chiqadi.
-                    </p>
-                  </div>
+                  <span className="yz-code yz-done"><span className="t-tag">&lt;/h1&gt;</span></span>
                 )}
               </div>
-
-              {/* O'NG: chinakam blog */}
-              <div className="col">
-                <div className="flow-label">Chinakam blog sahifasi</div>
-                <div className="bp-window fade-up delay-2">
-                  <div className="bp-bar">
-                    <span className="bb-dots"><i /><i /><i /></span>
-                    <span className="bp-title">mening-blogim.uz</span>
-                  </div>
-                  <div className="bp-body">
-                    {DOC.map((it, i) => it.t === 'h' ? (
-                      <div key={i}
-                        className={`doc-h lvl${it.lvl} ${active && active.lvl === it.lvl && active.text === it.text ? 'on' : ''}`}
-                        style={{ fontSize: HSIZE[it.lvl] }}
-                        onClick={() => setActive({ lvl: it.lvl, text: it.text })}>
-                        <span className="doc-badge">{`<h${it.lvl}>`}</span>
-                        {it.text}
-                      </div>
-                    ) : (
-                      <p key={i} className="doc-p">{it.text}</p>
-                    ))}
-                  </div>
-                </div>
+              {!correct && (
+                <p className="yz-hint">{touched ? "Deyarli! Yopuvchi teg / belgisi bilan boshlanadi: </h1>" : "Maslahat: yopuvchi teg shu shaklda — </...>"}</p>
+              )}
+              {correct && <p className="yz-ok">✓ To'g'ri! Endi element yopildi: &lt;h1&gt;...&lt;/h1&gt;</p>}
+            </div>
+          </div>
+          <div className="col">
+            <div className="flow-label">Natija</div>
+            <div className="bp-window fade-up delay-2">
+              <div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">sahifa.html</span></div>
+              <div className="bp-body" style={{ minHeight: 110, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {correct ? <p className="pv-h1 fade-step">Salom!</p> : <p className="yz-placeholder">Natija shu yerda chiqadi…</p>}
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </Stage>
+  );
+};
+
+// ============================================================
+// SCREEN 8 — SARLAVHALAR (v2 — sodda o'lcham zinapoyasi)
+// ============================================================
+const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
+  const LADDER = [
+    { n: 1, size: 30, tag: 'eng katta', note: 'Asosiy sarlavha — sahifada bittadan. Google ham buni sahifa nomi deb oladi.' },
+    { n: 2, size: 25, tag: '', note: "Bo'lim sarlavhasi — sahifani katta bo'limlarga ajratadi." },
+    { n: 3, size: 21, tag: '', note: 'Kichik bo\u2019lim — h2 ichidagi mavzu.' },
+    { n: 4, size: 18, tag: '', note: 'Yana kichikroq daraja.' },
+    { n: 5, size: 15.5, tag: '', note: 'Juda kichik daraja — kam ishlatiladi.' },
+    { n: 6, size: 13.5, tag: 'eng kichik', note: 'Eng kichik sarlavha.' }
+  ];
+  const [active, setActive] = useState(null);
+  const done = active !== null;
+  useEffect(() => { if (done && storedAnswer === undefined) onAnswer(8, { correct: true, picked: true }); }, [done]);
+  return (
+    <Stage eyebrow="Sarlavhalar" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Sarlavhani bosing'} onClick={onNext} /></>}>
+      <div className="screen">
+        <div className="head">
+          <h2 className="title h-title fade-up">Sarlavhalar — <span className="italic" style={{ color: T.accent }}>H1 dan H6 gacha</span>.</h2>
+          <p className="body lead fade-up delay-1" style={{ color: T.ink2 }}>
+            Qoida oddiy: <b style={{ color: T.ink }}>raqam qancha katta — sarlavha shuncha kichik</b>. Birortasini bosib ko'ring.
+          </p>
+        </div>
+        <div className="ladder fade-up delay-2">
+          {LADDER.map(h => (
+            <div key={h.n} className={`hl-row ${active === h.n ? 'on' : ''}`} onClick={() => setActive(h.n)}>
+              <span className="hl-chip">{`<h${h.n}>`}</span>
+              <span className="hl-text" style={{ fontSize: h.size }}>Sarlavha</span>
+              {h.tag && <span className="hl-tag">{h.tag}</span>}
+            </div>
+          ))}
+        </div>
+        {active !== null ? (
+          <div className="hl-note" key={active}>
+            <p className="body" style={{ margin: 0, color: T.ink }}>
+              <span className="nb">{`<h${active}>`}</span> — {LADDER.find(h => h.n === active).note}
+            </p>
+          </div>
+        ) : (
+          <div className="hl-hint">
+            <p className="body" style={{ margin: 0, color: T.ink2 }}>Yuqoridan bir sarlavhani bosing — qisqa izohi chiqadi.</p>
+          </div>
+        )}
       </div>
     </Stage>
   );
@@ -1105,7 +1101,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen">
 
             <div className="head">
-              <h2 className="title h-title fade-up">Bir bosishda — boshqa sahifaga <span className="italic" style={{ color: T.accent }}>qanday o'tamiz?</span></h2>
+              <h2 className="title h-title fade-up">Bir bosishda — boshqa sahifaga <span className="italic" style={{ color: T.accent }}>o'tish</span>.</h2>
               <p className="body lead fade-up delay-1" style={{ color: T.ink2 }}>
                 Unga bosgan zahoti siz bir sahifadan boshqasiga sayohat qilasiz. <span className="mono">{'<a href="...">'}</span> ana shunday ko'prik yaratadi.
               </p>
@@ -2041,6 +2037,30 @@ export default function HtmlLesson({ onFinished }) {
         .codeblock .tx { color: #E8E5DD; }
         .codecap { font-family: 'Manrope'; font-size: clamp(12px,1.5vw,13px); color: ${T.ink2}; margin: 10px 0 0; }
         .codecap .mn { font-family: 'JetBrains Mono'; color: ${T.accent}; font-weight: 600; }
+        /* ===== 08-ekran: yopuvchi tegni yozish ===== */
+        .yz-card { background: ${T.paper}; border: 1.5px solid ${T.ink}; border-radius: 16px; padding: clamp(18px,3vw,26px); display: flex; flex-direction: column; gap: 14px; }
+        .yz-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: clamp(15px,2.2vw,20px); }
+        .yz-code { color: ${T.ink}; }
+        .yz-done { animation: fade-step 0.3s ease-out; }
+        .yz-input { font-family: 'JetBrains Mono', monospace; font-size: clamp(14px,2vw,18px); font-weight: 500; padding: 7px 12px; border: 1.5px dashed ${T.accent}; border-radius: 9px; background: ${T.accentSoft}55; color: ${T.ink}; outline: none; width: clamp(130px,22vw,170px); transition: all 0.18s; }
+        .yz-input::placeholder { color: ${T.ink3}; }
+        .yz-input:focus { border-style: solid; background: ${T.paper}; }
+        .yz-hint { font-family: 'Manrope'; font-size: clamp(12.5px,1.6vw,14px); color: ${T.ink2}; margin: 0; }
+        .yz-ok { font-family: 'Manrope'; font-weight: 700; font-size: clamp(13px,1.7vw,15px); color: ${T.success}; margin: 0; animation: fade-step 0.3s ease-out; }
+        .yz-placeholder { font-family: 'Georgia', serif; font-style: italic; color: ${T.ink3}; margin: 0; font-size: clamp(14px,1.9vw,16px); }
+        /* ===== 09-ekran: sarlavha o'lcham zinapoyasi ===== */
+        .ladder { background: ${T.paper}; border: 1.5px solid ${T.ink}; border-radius: 18px; padding: clamp(14px,2.4vw,22px) clamp(16px,3vw,26px); display: flex; flex-direction: column; max-width: 620px; width: 100%; margin: 0 auto; }
+        .hl-row { display: flex; align-items: center; gap: 14px; padding: clamp(8px,1.4vw,11px) 12px; border-radius: 12px; cursor: pointer; transition: background 0.16s; border: 1.5px solid transparent; }
+        .hl-row + .hl-row { margin-top: 2px; }
+        .hl-row:hover { background: ${T.accentSoft}55; }
+        .hl-row.on { background: ${T.accentSoft}; border-color: ${T.accent}; }
+        .hl-chip { flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(11px,1.4vw,13px); color: #fff; background: ${T.ink3}; padding: 3px 8px; border-radius: 6px; width: 46px; text-align: center; transition: background 0.16s; }
+        .hl-row.on .hl-chip { background: ${T.accent}; }
+        .hl-text { font-family: 'Georgia', serif; font-weight: 700; color: ${T.ink}; line-height: 1.1; flex: 1; }
+        .hl-tag { flex-shrink: 0; font-family: 'Manrope'; font-weight: 700; font-size: clamp(9.5px,1.2vw,11px); letter-spacing: 0.08em; text-transform: uppercase; color: ${T.accent}; background: ${T.paper}; border: 1px solid ${T.accent}55; padding: 3px 8px; border-radius: 99px; }
+        .hl-note { background: ${T.paper}; border: 1.5px solid ${T.ink3}; border-left: 4px solid ${T.accent}; border-radius: 12px; padding: 12px 16px; max-width: 620px; width: 100%; margin: 0 auto; animation: fade-step 0.28s ease-out; }
+        .hl-note .nb { font-family: 'JetBrains Mono'; font-weight: 700; color: ${T.accent}; }
+        .hl-hint { max-width: 620px; width: 100%; margin: 0 auto; border: 1.5px dashed ${T.ink3}; border-radius: 12px; padding: 12px 16px; text-align: center; }
       `}</style>
       <div className="lesson-root">
         <Current screen={screen} storedAnswer={answers[screen]} answers={answers} onAnswer={recordAnswer} onNext={next} onPrev={prev} onReset={reset} onFinish={finishLesson} />
