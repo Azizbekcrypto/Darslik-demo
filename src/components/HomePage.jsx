@@ -65,6 +65,15 @@ const lessons = [
   //   emoji: '123',
   //   ready: true,
   // },
+  {
+      id: 8,
+      number: '01',
+      title: 'Matematika ',
+      subtitle: '',
+      screens: 17,
+      emoji: '123',
+      ready: true,
+    },
 ]
 
 const INK = '#1a1a1a'

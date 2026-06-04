@@ -16,6 +16,7 @@ const T = {
 const CODE = { bg: '#1A2436', text: '#E8E5DD', tag: '#FF7755', attr: '#FFD380', str: '#7DD181', comment: '#6B7585', punct: '#9FB4D8' };
 
 const LangContext = createContext('uz');
+const MentorCtx = createContext(null); // mobil: yig'iladigan Mentor
 const useLang = () => useContext(LangContext);
 const useT = () => {
   const lang = useLang();
@@ -134,7 +135,7 @@ const AudioIndicator = ({ audioState }) => {
   );
 };
 
-const LESSON_META = { lessonId: 'html-01-v15', lessonTitle: { uz: 'HTML asoslari', ru: 'Основы HTML' } };
+const LESSON_META = { lessonId: 'html-01-v16', lessonTitle: { uz: 'HTML asoslari', ru: 'Основы HTML' } };
 const SCREEN_META = [
   { id: 's0',  type: 'hook',        template: 'custom',   scored: false, scope: 'hook' },
   { id: 's1',  type: 'rule',        template: 'custom',   scored: false, scope: null },
@@ -150,8 +151,8 @@ const SCREEN_META = [
   { id: 's10', type: 'exploration', template: 'custom',   scored: false, scope: null },
   { id: 's11', type: 'test',        template: 'MCScreen', scored: true,  scope: 'module-mikro' },
   { id: 's12', type: 'exploration', template: 'custom',   scored: false, scope: null },
-  { id: 's13', type: 'rule',        template: 'custom',   scored: false, scope: null },
   { id: 's14', type: 'case',        template: 'custom',   scored: false, scope: null },
+  { id: 's13', type: 'rule',        template: 'custom',   scored: false, scope: null },
   { id: 's15', type: 'test',        template: 'MCScreen', scored: true,  scope: 'final' },
   { id: 's16', type: 'summary',     template: 'custom',   scored: false, scope: null }
 ];
@@ -168,24 +169,45 @@ const Preview = ({ children, title = 'preview.html', minH }) => (
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
-const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, audioState, narrow }) => {
+const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, audioState, narrow, mentorStatic }) => {
   const isMobile = useIsMobile();
+  const isNarrow = useIsMobile(768); // mobil: Mentor yig'ilish rejimi
+  const collapseOn = isNarrow && !mentorStatic; // ba'zi sahifalarda Mentor yig'ilmaydi
   const padH = isMobile ? 12 : 100;
+  const [mCollapsed, setMCollapsed] = useState(false);
+  const contentRef = useRef(null);
+  useEffect(() => { setMCollapsed(false); }, [screen]); // har ekranda Mentor ochiq holatdan boshlanadi
+  const setCollapsed = useCallback((v) => {
+    setMCollapsed(v);
+    if (v === false && contentRef.current) { const el = contentRef.current; requestAnimationFrame(() => { if (el) el.scrollTo({ top: 0, behavior: 'auto' }); }); }
+  }, []);
+  const onContentClick = (e) => {
+    if (!collapseOn || mCollapsed) return;
+    if (e.target && e.target.closest && e.target.closest('.mentor')) return; // Mentorning o'ziga tegsa — yig'maymiz
+    setMCollapsed(true);
+  };
+  const onContentScroll = () => {
+    if (!collapseOn || mCollapsed) return;
+    const el = contentRef.current;
+    if (el && el.scrollTop > 6) setMCollapsed(true);
+  };
   return (
-    <div className="stage">
-      <div className="stage-header" style={{ paddingLeft: padH, paddingRight: padH }}>
-        <div className="progress-track"><div className="progress-bar" style={{ width: `${((screen + 1) / totalScreens) * 100}%` }} /></div>
-        <div className="chrome">
-          <div className="chrome-left eyebrow"><span className="dot" /><span>{eyebrow}</span></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            {audioState && <AudioIndicator audioState={audioState} />}
-            <div className="mono small" style={{ color: T.ink3 }}>{String(screen + 1).padStart(2, '0')} / {String(totalScreens).padStart(2, '0')}</div>
+    <MentorCtx.Provider value={{ enabled: collapseOn, collapsed: mCollapsed, setCollapsed }}>
+      <div className="stage">
+        <div className="stage-header" style={{ paddingLeft: padH, paddingRight: padH }}>
+          <div className="progress-track"><div className="progress-bar" style={{ width: `${((screen + 1) / totalScreens) * 100}%` }} /></div>
+          <div className="chrome">
+            <div className="chrome-left eyebrow"><span className="dot" /><span>{eyebrow}</span></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              {audioState && <AudioIndicator audioState={audioState} />}
+              <div className="mono small" style={{ color: T.ink3 }}>{String(screen + 1).padStart(2, '0')} / {String(totalScreens).padStart(2, '0')}</div>
+            </div>
           </div>
         </div>
+        <div ref={contentRef} onClick={onContentClick} className={`stage-content ${narrow ? 'narrow' : ''}`} style={{ paddingLeft: padH, paddingRight: padH }}>{children}</div>
+        {navContent && <div className="stage-nav" style={{ paddingLeft: padH, paddingRight: padH }}>{navContent}</div>}
       </div>
-      <div className={`stage-content ${narrow ? 'narrow' : ''}`} style={{ paddingLeft: padH, paddingRight: padH }}>{children}</div>
-      {navContent && <div className="stage-nav" style={{ paddingLeft: padH, paddingRight: padH }}>{navContent}</div>}
-    </div>
+    </MentorCtx.Provider>
   );
 };
 const NavBack = ({ onPrev }) => <button className="btn-ghost" onClick={onPrev} style={{ padding: 'clamp(11px,1.6vw,13px) clamp(16px,2.2vw,22px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Orqaga</button>;
@@ -205,33 +227,38 @@ const FeedbackBlock = ({ show, isCorrect, children }) => {
 
 const QuestionScreen = ({ screen, idx, scope, eyebrow, question, questionText, options, correctIdx, explainCorrect, explainWrong, audioText, audioOk, audioWrong, storedAnswer, onAnswer, onNext, onPrev }) => {
   const audio = useAudio(audioText ? [{ id: `s${screen}_intro`, text: audioText, trigger: 'on_mount', waits_for: { type: 'option_picked' } }] : null);
-  const [picked, setPicked] = useState(storedAnswer?.picked ?? null);
-  const [revealed, setRevealed] = useState(storedAnswer !== undefined);
+  const [picked, setPicked] = useState(storedAnswer?.lastPicked ?? storedAnswer?.picked ?? null);
+  const [solved, setSolved] = useState(storedAnswer ? (storedAnswer.solved ?? (storedAnswer.picked === correctIdx)) : false);
+  const firstCorrectRef = useRef(storedAnswer ? (storedAnswer.firstAttemptCorrect ?? storedAnswer.correct ?? null) : null);
   const pick = (i) => {
-    if (revealed) return;
-    setPicked(i); setRevealed(true);
-    onAnswer(screen, { stage: scope, screenIdx: screen, picked: i, question: questionText, options, correctIndex: correctIdx, correctAnswer: options[correctIdx], studentAnswerIndex: i, studentAnswer: options[i], correct: i === correctIdx });
-    if (audioText) { audio.triggerEvent('option_picked'); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(i === correctIdx ? (audioOk || "To'g'ri.") : (audioWrong || "Unchalik emas, tushuntirishga qarang.")); }, 300); }
+    if (solved) return;
+    setPicked(i);
+    const isCorrect = i === correctIdx;
+    if (firstCorrectRef.current === null) firstCorrectRef.current = isCorrect; // ball: 1-urinishni qotirib qo'yamiz
+    if (isCorrect) setSolved(true);
+    onAnswer(screen, { stage: scope, screenIdx: screen, question: questionText, options, correctIndex: correctIdx, correctAnswer: options[correctIdx], picked: i, studentAnswerIndex: i, studentAnswer: options[i], correct: firstCorrectRef.current, firstAttemptCorrect: firstCorrectRef.current, solved: isCorrect, lastPicked: i });
+    if (audioText) { audio.triggerEvent('option_picked'); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(isCorrect ? (audioOk || "To'g'ri.") : (audioWrong || "Unchalik emas. Qaytadan urinib ko'ring.")); }, 300); }
   };
   return (
-    <Stage eyebrow={eyebrow} screen={screen} narrow audioState={audioText ? audio : undefined} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!revealed} onClick={onNext} /></>}>
+    <Stage eyebrow={eyebrow} screen={screen} narrow audioState={audioText ? audio : undefined} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!solved} label={solved ? 'Davom etish' : "To'g'ri javobni toping"} onClick={onNext} /></>}>
       <div className="screen" style={{ justifyContent: 'center', gap: 'clamp(16px,2.5vw,24px)' }}>
         <div className="fade-up">{question}</div>
         <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
           {options.map((opt, i) => {
             let cls = 'option';
-            if (revealed) { if (i === correctIdx) cls += ' option-correct'; else if (i === picked) cls += ' option-picked-wrong'; else cls += ' option-wrong'; }
+            if (solved) { if (i === correctIdx) cls += ' option-correct'; else cls += ' option-wrong'; }
+            else if (i === picked) cls += ' option-picked-wrong';
             return (
-              <button key={i} className={cls} disabled={revealed} onClick={() => pick(i)} style={{ padding: 'clamp(12px,1.8vw,16px) clamp(14px,2.2vw,20px)', fontSize: 'clamp(14px,1.7vw,16px)', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span className="mono small" style={{ minWidth: 20, color: revealed && i === correctIdx ? T.success : T.ink3 }}>{String.fromCharCode(65 + i)}</span>
+              <button key={i} className={cls} disabled={solved} onClick={() => pick(i)} style={{ padding: 'clamp(12px,1.8vw,16px) clamp(14px,2.2vw,20px)', fontSize: 'clamp(14px,1.7vw,16px)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span className="mono small" style={{ minWidth: 20, color: solved && i === correctIdx ? T.success : T.ink3 }}>{String.fromCharCode(65 + i)}</span>
                 <span style={{ flex: 1 }}>{opt}</span>
               </button>
             );
           })}
         </div>
-        <FeedbackBlock show={revealed} isCorrect={picked === correctIdx}>
-          <p className="small mono" style={{ margin: '0 0 6px', fontWeight: 600, color: picked === correctIdx ? T.success : T.accent, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{picked === correctIdx ? "To'g'ri" : 'Unchalik emas'}</p>
-          <p className="body" style={{ margin: 0 }}>{picked === correctIdx ? explainCorrect : (explainWrong[picked] || explainWrong.default)}</p>
+        <FeedbackBlock show={picked !== null} isCorrect={solved}>
+          <p className="small mono" style={{ margin: '0 0 6px', fontWeight: 600, color: solved ? T.success : T.accent, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{solved ? "To'g'ri" : "Qaytadan urinib ko'ring"}</p>
+          <p className="body" style={{ margin: 0 }}>{solved ? explainCorrect : (explainWrong[picked] ?? explainWrong.default)}</p>
         </FeedbackBlock>
       </div>
     </Stage>
@@ -256,21 +283,27 @@ function ScoreRing({ correct, total }) {
 }
 
 // ===== MENTOR (nomsiz ustoz ovozi — intro/izoh shu orqali; audio matni = shu matn) =====
-const Mentor = ({ children }) => (
-  <div className="mentor fade-up">
-    <div className="mentor-ava" aria-hidden="true">
-      <svg viewBox="0 0 40 40" width="40" height="40">
-        <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-        <circle cx="20" cy="16" r="6" fill={T.accent} />
-        <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-      </svg>
+const Mentor = ({ children }) => {
+  const ctx = useContext(MentorCtx) || {};
+  const enabled = !!ctx.enabled;
+  const collapsed = enabled && ctx.collapsed;
+  const expand = (e) => { e.stopPropagation(); if (ctx.setCollapsed) ctx.setCollapsed(false); };
+  return (
+    <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
+      <div className="mentor-ava" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="40" height="40">
+          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
+          <circle cx="20" cy="16" r="6" fill={T.accent} />
+          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
+        </svg>
+      </div>
+      <div className="mentor-col">
+        <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
+        <div className="mentor-msg body">{children}</div>
+      </div>
     </div>
-    <div className="mentor-col">
-      <span className="mentor-name">Mentor</span>
-      <div className="mentor-msg body">{children}</div>
-    </div>
-  </div>
-);
+  );
+};
 
 // ===== SCREEN 0 — HOOK =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
@@ -280,8 +313,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const OPTS = [
     { id: 'a', label: 'Oddiy inglizcha matn' },
     { id: 'b', label: 'HTML — maxsus belgili til' },
-    { id: 'c', label: 'Photoshop kabi dastur' },
-    { id: 'd', label: 'Bilmayman, bilib olishni xohlayman' }
+    { id: 'c', label: 'Photoshop kabi dastur' }
   ];
   const pick = (v) => { if (picked !== null) return; setPicked(v); onAnswer(screen, { stage: 'hook', screenIdx: screen, picked: v, correct: true }); audio.triggerEvent('option_picked'); };
   return (
@@ -334,7 +366,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
     </Stage>
   );
 };
-// ===== SCREEN 1 — REJA =====
+// ===== SCREEN 1 — REJA (mobil: preview <-> qadamlar, v16) =====
 const Screen1 = ({ screen, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's1', text: `Va'da beraman: dars oxirida o'zingizning saytingiz tayyor bo'ladi — xuddi mana shunaqa. Unga 7 ta qadamda yetib boramiz.`, trigger: 'on_mount', waits_for: null }]);
   const STEPS = [
@@ -344,78 +376,103 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     { text: 'Havola ulaymiz', tag: 'a href' }
   ];
   const G = "Georgia, serif";
+  const isNarrow = useIsMobile(768);
+  const [showSteps, setShowSteps] = useState(false);
+  const PreviewBlock = (
+    <Col>
+      <p className="flow-label">Manzil — dars oxirida shunday bo'ladi</p>
+      <Preview title="mening-saytim.html" minH={260}>
+        <h1 style={{ fontFamily: G, fontSize: 'clamp(20px,3vw,26px)', margin: '0 0 8px', color: T.ink }}>Salom, men Aziza!</h1>
+        <p style={{ fontFamily: G, margin: '0 0 14px', color: T.ink2, fontSize: 'clamp(13px,1.8vw,15px)', lineHeight: 1.5 }}>Web-dasturlashni endi o'rganyapman. Bu — mening birinchi saytim.</p>
+        <p style={{ fontFamily: G, fontWeight: 700, margin: '0 0 6px', color: T.ink, fontSize: 'clamp(14px,1.9vw,16px)' }}>Sevimli mashg'ulotlarim:</p>
+        <ul style={{ fontFamily: G, color: T.ink, margin: '0 0 14px', paddingLeft: 22, fontSize: 'clamp(13px,1.8vw,15px)', lineHeight: 1.6 }}><li>Minecraft</li><li>Futbol</li><li>Shaxmat</li></ul>
+        <a style={{ fontFamily: G, color: T.link, textDecoration: 'underline', fontSize: 'clamp(13px,1.8vw,15px)' }}>Mening Telegram kanalim</a>
+      </Preview>
+    </Col>
+  );
+  const StepsBlock = (
+    <Col>
+      <p className="flow-label">7 qadam</p>
+      <ol className="roadmap">
+        {STEPS.map((s, i) => (<li key={i} className="step-card fade-up" style={{ animationDelay: `${0.08 + i * 0.05}s` }}><span className="step-num">{String(i + 1).padStart(2, '0')}</span><span className="step-body"><span className="step-text">{s.text}</span>{s.tag && <span className="step-tag">{s.tag}</span>}</span></li>))}
+      </ol>
+    </Col>
+  );
   return (
-    <Stage eyebrow="Reja" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
+    <Stage eyebrow="Reja" screen={screen} audioState={audio} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head">
           <h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Bugun haqiqiy sayt yasaymiz!</span></h2>
         </div>
         <Mentor>Va'da beraman: dars oxirida <b style={{ color: T.ink }}>o'zingizning saytingiz</b> tayyor bo'ladi — xuddi mana shunaqa. Unga <b style={{ color: T.ink }}>7 ta qadamda</b> yetib boramiz.</Mentor>
-        <Split>
-          <Col>
-            <p className="flow-label">Manzil — dars oxirida shunday bo'ladi</p>
-            <Preview title="mening-saytim.html" minH={260}>
-              <h1 style={{ fontFamily: G, fontSize: 'clamp(20px,3vw,26px)', margin: '0 0 8px', color: T.ink }}>Salom, men Aziza!</h1>
-              <p style={{ fontFamily: G, margin: '0 0 14px', color: T.ink2, fontSize: 'clamp(13px,1.8vw,15px)', lineHeight: 1.5 }}>Web-dasturlashni endi o'rganyapman. Bu — mening birinchi saytim.</p>
-              <p style={{ fontFamily: G, fontWeight: 700, margin: '0 0 6px', color: T.ink, fontSize: 'clamp(14px,1.9vw,16px)' }}>Sevimli mashg'ulotlarim:</p>
-              <ul style={{ fontFamily: G, color: T.ink, margin: '0 0 14px', paddingLeft: 22, fontSize: 'clamp(13px,1.8vw,15px)', lineHeight: 1.6 }}><li>Minecraft</li><li>Futbol</li><li>Shaxmat</li></ul>
-              <a style={{ fontFamily: G, color: T.link, textDecoration: 'underline', fontSize: 'clamp(13px,1.8vw,15px)' }}>Mening Telegram kanalim</a>
-            </Preview>
-          </Col>
-          <Col>
-            <p className="flow-label">7 qadam</p>
-            <ol className="roadmap">
-              {STEPS.map((s, i) => (<li key={i} className="step-card fade-up" style={{ animationDelay: `${0.14 + i * 0.06}s` }}><span className="step-num">{String(i + 1).padStart(2, '0')}</span><span className="step-body"><span className="step-text">{s.text}</span>{s.tag && <span className="step-tag">{s.tag}</span>}</span></li>))}
-            </ol>
-          </Col>
-        </Split>
+        {!isNarrow ? (
+          <Split>{PreviewBlock}{StepsBlock}</Split>
+        ) : !showSteps ? (
+          <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
+            {PreviewBlock}
+            <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>📋 Bugungi 7 qadamni ko'rish</button>
+          </div>
+        ) : (
+          <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
+            <button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>
+            {StepsBlock}
+          </div>
+        )}
       </div>
     </Stage>
   );
 };
 
 
-// ===== SCREEN 2 — KOMPYUTER O'ZICHA O'YLAY OLADIMI? (Hayotdan misol) =====
+// ===== SCREEN 2 — HAYOTDAN MISOL (2-bosqichli, v16) =====
 const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's2', text: `Pitsa tayyorlashni o'ylab ko'ring. Retseptsiz bo'lmaydi — qadamlarni tartib bilan bajarasiz. O'ngdagi tugmani bosib, retseptni "ishga tushiring".`, trigger: 'on_mount', waits_for: null }]);
-  const RECIPE = ['Xamirni yoying', 'Sous suring', 'Pishloq seping', "Qo'shimcha mahsulot qo'shing", 'Pechda pishiring'];
-  const [step, setStep] = useState(0);
-  const [done, setDone] = useState(false);
+  const audio = useAudio([{ id: 's2', text: `Kompyuter juda tez ishlaydi, lekin sirni bilasizmi? U o'zicha hech narsa qila olmaydi — unga har bir ishni o'zimiz buyurishimiz kerak. Qanday qilib? Avval o'zingiz o'ylab ko'ring, keyin "Yechimni ko'rsat" tugmasini bosing.`, trigger: 'on_mount', waits_for: { type: 'solution_revealed' } }]);
+  const RECIPE = ['Xamirni yoying', 'Sous suring', 'Pishloq seping', "Qo'shimcha qo'shing", 'Pechda pishiring'];
+  const [revealed, setRevealed] = useState(!!storedAnswer);
+  const [step, setStep] = useState(storedAnswer ? RECIPE.length : 0);
+  const [running, setRunning] = useState(false);
   const timer = useRef(null);
+  const answerRef = useRef(null);
+  const done = revealed;
   useEffect(() => () => clearTimeout(timer.current), []);
-  const run = () => { clearTimeout(timer.current); setStep(0); const tick = (i) => { setStep(i); if (i < RECIPE.length) timer.current = setTimeout(() => tick(i + 1), 520); else setDone(true); }; tick(1); };
-  useEffect(() => {
-    if (done && storedAnswer === undefined) {
-      onAnswer(screen, { correct: true, picked: true });
-      if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Mana shu — dasturlash! Kompyuterga aniq, qadamba-qadam ko'rsatma berasiz. Bu ko'rsatmalar — kod, yozish jarayoni esa dasturlash.`); }, 400);
-    }
-  }, [done]);
+  const runStepper = () => {
+    clearTimeout(timer.current); setStep(0); setRunning(true);
+    const tick = (i) => { setStep(i); if (i < RECIPE.length) timer.current = setTimeout(() => tick(i + 1), 480); else setRunning(false); };
+    timer.current = setTimeout(() => tick(1), 350);
+  };
+  const reveal = () => {
+    setRevealed(true);
+    audio.triggerEvent('solution_revealed');
+    setTimeout(() => { if (answerRef.current) answerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
+    runStepper();
+    if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Javob: kompyuterga aniq, ketma-ket qadamlar yozamiz — bu kod, yozish jarayoni esa dasturlash. Xuddi pitsa retsepti kabi — qadamlar aniq tartibda.`); }, 300);
+  };
+  useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="Hayotdan misol" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Avval bajaring"} onClick={onNext} /></>}>
-      <div className="screen">
+    <Stage eyebrow="Hayotdan misol" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Avval o'ylab ko'ring"} onClick={onNext} /></>}>
+      <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kompyuter <span className="italic" style={{ color: T.accent }}>o'zicha</span> o'ylay oladimi?</h2></div>
-        <Mentor>Pitsa tayyorlashni o'ylab ko'ring. Retseptsiz bo'lmaydi — qadamlarni <b style={{ color: T.ink }}>tartib bilan</b> bajarasiz. O'ngdagi tugmani bosib, retseptni "ishga tushiring".</Mentor>
-        <Split>
-          <Col>
-            <div className="frame fade-up delay-1">
-              <p className="eyebrow" style={{ color: T.accent, margin: '0 0 10px' }}>Savol</p>
-              <p className="body" style={{ margin: 0, color: T.ink }}>Kompyuter juda tez ishlaydi, lekin <b>o'zicha hech narsa qila olmaydi</b>. Unga har bir qadamni aniq aytib berish kerak. Buni qanday qilamiz?</p>
+        <Mentor>Kompyuter juda tez ishlaydi, lekin sirni bilasizmi? U <b style={{ color: T.ink }}>o'zicha hech narsa qila olmaydi</b> — unga har bir ishni o'zimiz buyurishimiz kerak. Qanday qilib? Avval o'zingiz o'ylab ko'ring.</Mentor>
+        {!revealed && (
+          <div className="frame frame-col savo fade-up delay-2">
+            <p className="eyebrow" style={{ color: T.accent, margin: 0 }}>Savol</p>
+            <p className="body" style={{ margin: 0, color: T.ink, fontSize: 'clamp(15px,1.9vw,18px)', lineHeight: 1.5 }}>Kompyuter o'zicha o'ylay olmaydi — unga ishni <b>qanday tushuntiramiz</b>, qanday buyuramiz?</p>
+            <button className="btn" onClick={reveal} style={{ alignSelf: 'flex-start', marginTop: 4 }}>Yechimni ko'rsat →</button>
+          </div>
+        )}
+        {revealed && (
+          <>
+            <div ref={answerRef} className="frame-success fade-step" style={{ scrollMarginTop: 12 }}>
+              <p className="small mono" style={{ margin: '0 0 6px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Javob</p>
+              <p className="body" style={{ margin: 0, color: T.ink }}>Kompyuterga <b>aniq, ketma-ket qadamlar</b> yozib beramiz. Bu qadamlar — <b style={{ color: T.success }}>kod</b>, yozish jarayoni esa <b style={{ color: T.success }}>dasturlash</b>. Kompyuter o'zicha o'ylamaydi — faqat aytganimizni, aytgan tartibimizda bajaradi.</p>
             </div>
-            {done && (
-              <div className="frame-success fade-step">
-                <p className="small mono" style={{ margin: '0 0 6px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Javob</p>
-                <p className="body" style={{ margin: 0, color: T.ink }}>Kompyuterga aniq, qadamba-qadam ko'rsatma beramiz. Bu ko'rsatmalar — <b style={{ color: T.success }}>kod</b>, yozish jarayoni esa <b style={{ color: T.success }}>dasturlash</b>. Kompyuter o'zicha o'ylamaydi — faqat aytganimizni bajaradi.</p>
-              </div>
-            )}
-          </Col>
-          <Col>
-            <div className="frame fade-up delay-2">
-              <p className="eyebrow" style={{ color: T.ink2, margin: '0 0 4px' }}>🍕 Pitsa retsepti</p>
-              <ol className="recipe-list">{RECIPE.map((r, i) => { const active = step > i; return (<li key={i} className={active ? 'on' : ''}><span className="recipe-num">{active ? '✓' : ''}</span><span className="recipe-text">{r}</span></li>); })}</ol>
-              <button className="btn" onClick={run} style={{ marginTop: 14 }}>{step >= RECIPE.length ? '↻ Yana bajaring' : '▶ Retseptni bajarish'}</button>
+            <div className="frame frame-col fade-step">
+              <div className="pz-head"><span className="pz-emoji">🍕</span><div><p className="pz-title">Xuddi pitsa retsepti kabi</p><p className="pz-sub">Pitsa ham retseptsiz bo'lmaydi — qadamlar aniq <b style={{ color: T.ink }}>tartibda</b>. Kod ham shunday.</p></div></div>
+              <div className="pz-flow">{RECIPE.map((r, i) => (<React.Fragment key={i}><div className={`pz-step ${step > i ? 'on' : ''} ${running && step === i + 1 ? 'active' : ''}`}><span className="pz-ic">{step > i ? '✓' : i + 1}</span><span className="pz-lbl">{r}</span></div>{i < RECIPE.length - 1 && <span className={`pz-arrow ${step > i + 1 ? 'on' : ''}`}>→</span>}</React.Fragment>))}</div>
+              <button className="btn-soft" onClick={runStepper} disabled={running} style={{ alignSelf: 'flex-start', marginTop: 2 }}>{running ? 'Bajarilmoqda…' : '↻ Yana ko\u2019rsatish'}</button>
             </div>
-          </Col>
-        </Split>
+          </>
+        )}
       </div>
     </Stage>
   );
@@ -423,11 +480,22 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 
 
-// ===== SCREEN 3 — HTML (savol asosida + Mentor) =====
+// ===== SCREEN 3 — HTML (mobil: natija tugma orqasida, v16) =====
 const Screen3 = ({ screen, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's3', text: `Chrome yoki Safari'ni ochganingizda sayt chiroyli ko'rinadi. Lekin brauzer aslida HTML degan tilni o'qiydi, keyin uni sahifaga aylantiradi. Quyiga ismingizni yozing va kod bilan natija qanday bog'liqligini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
   const FlowArrow = ({ delay = 0 }) => (<div className="flow-arrow"><span className="flow-track"><span className="flow-bead" style={{ animationDelay: `${delay}s` }} /></span><span className="flow-chevron" style={{ animationDelay: `${delay}s` }}>▼</span></div>);
   const [name, setName] = useState('Aziz');
+  const isNarrow = useIsMobile(768);
+  const [showResult, setShowResult] = useState(false);
+  const ResultFlow = (
+    <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+      <FlowArrow delay={0} />
+      <div className="brauzer-step" key={`b-${name}`}><span className="brauzer-icon">🌐</span><div><p className="brauzer-h">Brauzer o'qiydi</p><p className="brauzer-sub">kod → sahifa</p></div></div>
+      <FlowArrow delay={0.4} />
+      <div className="flow-label">Sahifa</div>
+      <Preview title="profil.html" minH={92}><div className="profile-card" key={`p-${name}`}><div className="pf-ava">{(name || '?').trim().charAt(0).toUpperCase() || '?'}</div><h1 className="pf-name">{name || '...'}</h1><p className="pf-bio">HTML o'rganyapman</p><button className="pf-btn">Obuna bo'lish</button></div></Preview>
+    </div>
+  );
   return (
     <Stage eyebrow="HTML" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext label="Davom etish" onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.5vw,14px)' }}>
@@ -436,16 +504,14 @@ const Screen3 = ({ screen, onNext, onPrev }) => {
         <div className="split">
           <div className="col">
             <div className="fade-up delay-1"><p className="eyebrow" style={{ color: T.ink2, margin: '0 0 8px' }}>Ismingizni yozing — kod va sahifa o'zgaradi</p><input className="text-input" value={name} onChange={e => setName(e.target.value)} maxLength={18} placeholder="Ismingiz" /></div>
-            <div className="hint fade-up delay-2"><p className="body" style={{ margin: 0, color: T.ink2 }}>Yozganingiz darhol <b style={{ color: T.ink }}>kodga</b>, kod esa <b style={{ color: T.ink }}>sahifaga</b> aylanadi. O'ngda kuzating.</p></div>
+            <div className="hint fade-up delay-2"><p className="body" style={{ margin: 0, color: T.ink2 }}>Yozganingiz darhol <b style={{ color: T.ink }}>kodga</b>, kod esa <b style={{ color: T.ink }}>sahifaga</b> aylanadi. {isNarrow ? 'Pastda kuzating.' : "O'ngda kuzating."}</p></div>
           </div>
           <div className="col" style={{ gap: 7 }}>
             <div className="flow-label">HTML kod</div>
             <pre className="code-box"><Tg>{'<h1>'}</Tg>{name || '...'}<Tg>{'</h1>'}</Tg>{'\n'}<Tg>{'<p>'}</Tg>HTML o'rganyapman<Tg>{'</p>'}</Tg>{'\n'}<Tg>{'<button>'}</Tg>Obuna bo'lish<Tg>{'</button>'}</Tg></pre>
-            <FlowArrow delay={0} />
-            <div className="brauzer-step" key={`b-${name}`}><span className="brauzer-icon">🌐</span><div><p className="brauzer-h">Brauzer o'qiydi</p><p className="brauzer-sub">kod → sahifa</p></div></div>
-            <FlowArrow delay={0.4} />
-            <div className="flow-label">Sahifa</div>
-            <Preview title="profil.html" minH={92}><div className="profile-card" key={`p-${name}`}><div className="pf-ava">{(name || '?').trim().charAt(0).toUpperCase() || '?'}</div><h1 className="pf-name">{name || '...'}</h1><p className="pf-bio">HTML o'rganyapman</p><button className="pf-btn">Obuna bo'lish</button></div></Preview>
+            {(!isNarrow || showResult)
+              ? ResultFlow
+              : <button className="btn" style={{ alignSelf: 'flex-start', marginTop: 6 }} onClick={() => setShowResult(true)}>🌐 Natijani ko'rish (brauzer → sahifa)</button>}
           </div>
         </div>
       </div>
@@ -476,6 +542,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   };
   const [active, setActive] = useState(null);
   const [clicked, setClicked] = useState(new Set());
+  const isNarrow = useIsMobile(768);
   const done = clicked.size === 4;
   const tap = (k) => { setActive(k); setClicked(prev => { const n = new Set(prev); n.add(k); return n; }); };
   const fc = (k, base) => `${base} ${active === k ? 'active' : ''} ${clicked.has(k) ? 'seen' : ''}`;
@@ -520,7 +587,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             ) : active ? (
               <div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span className="sk-chip">{PARTS[active].tag}</span><span className="sk-wordbadge">{PARTS[active].word}</span></span><p className="body" style={{ color: T.ink, margin: '11px 0 0' }}>{PARTS[active].role}</p></div>
             ) : (
-              <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Figura yoki koddan bir qismni bosing</p></div>
+              !isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Figura yoki koddan bir qismni bosing</p></div> : null
             )}
           </div>
         </div>
@@ -546,33 +613,61 @@ const ScreenSkeletTest = (props) => (
     }} />
 );
 
-// ===== SCREEN 6 — TEG (sovg'a analogiyasi + Mentor) =====
+// ===== SCREEN 6 — TEG (qo'shtirnoq modeli, v16) =====
 const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's6', text: `Sovg'ani qog'ozga o'rab berasiz-ku: ichida — sovg'aning o'zi, ikki tomonida — o'ram. Teg ham xuddi shunaqa: matnni ikki tomondan o'rab oladi. Tugmani bosib, o'ralishini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
-  const PARTS = { open: { role: 'Ochiluvchi teg — element shu yerdan boshlanadi.' }, content: { role: 'Kontent — ekranda ko\u2019rinadigan matn.' }, close: { role: 'Yopiluvchi teg — / bilan yoziladi, element shu yerda tugaydi.' } };
+  const audio = useAudio([{ id: 's6', text: `Brauzer aqlli emas — matn qayerda boshlanib, qayerda tugashini o'zi bilmaydi. Buni unga teglar aytadi: ochuvchi teg boshlanishini, yopuvchi teg tugashini ko'rsatadi. Xuddi yozuvdagi qo'shtirnoq kabi — ochasiz va albatta yopasiz. Tugmani bosib, "Salom!" so'ziga teg qo'shing.`, trigger: 'on_mount', waits_for: null }]);
+  const PARTS = {
+    open:    { role: 'Ochuvchi teg — element shu yerdan boshlanadi.' },
+    content: { role: "Kontent — ekranda ko'rinadigan matn. Teglar uni yashirmaydi, balki nima ekanini aytadi." },
+    close:   { role: 'Yopuvchi teg — / belgili. Element shu yerda tugaydi.' }
+  };
   const [wrapped, setWrapped] = useState(false);
   const [active, setActive] = useState(null);
+  const isNarrow = useIsMobile(768);
   const done = wrapped;
-  const ic = (k) => `hug-item hug-${k === 'content' ? 'content' : 'tag'} ${active === k ? 'active' : ''}`;
+  const tap = (k) => { if (!wrapped) return; setActive(k); };
+  const ic = (k, base) => `${base} ${active === k ? 'active' : ''}`;
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
+
   return (
-    <Stage eyebrow="Teg" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Avval teglar bilan o'rang"} onClick={onNext} /></>}>
+    <Stage eyebrow="Teg" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Avval tegga o'rang"} onClick={onNext} /></>}>
       <div className="screen">
-        <div className="head"><h2 className="title h-title fade-up">Sovg'a bilan HTML'da <span className="italic" style={{ color: T.accent }}>nima</span> umumiy?</h2></div>
-        <Mentor>Sovg'ani qog'ozga o'rab berasiz-ku: ichida — <b style={{ color: T.ink }}>sovg'aning o'zi</b>, ikki tomonida — <b style={{ color: T.ink }}>o'ram</b>. Teg ham xuddi shunaqa: matnni ikki tomondan o'rab oladi. Tugmani bosib, o'ralishini ko'ring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Brauzer matn qayerda <span className="italic" style={{ color: T.accent }}>tugashini</span> qanday biladi?</h2></div>
+        <Mentor>Brauzer aqlli emas — matn qayerda <b style={{ color: T.ink }}>boshlanib</b>, qayerda <b style={{ color: T.ink }}>tugashini</b> o'zi bilmaydi. Buni unga teglar aytadi: ochuvchi teg — boshlanishi, yopuvchi teg — tugashi. Xuddi yozuvdagi <b style={{ color: T.ink }}>qo'shtirnoq</b> kabi — ochasiz va albatta yopasiz. Tugmani bosib, <b style={{ color: T.ink }}>"Salom!"</b> so'ziga teg qo'shing.</Mentor>
+
         <div className="split">
           <div className="col">
-            <div className="hug-wrap fade-up delay-2"><div className={`hug ${wrapped ? 'on' : ''}`}>
-              <div className={ic('open')} onClick={() => setActive('open')}><span className="hug-code">&lt;h1&gt;</span><span className="hug-lbl">ochiluvchi</span></div>
-              <div className={ic('content')} onClick={() => setActive('content')}><span className="hug-code">Salom!</span><span className="hug-lbl">kontent</span></div>
-              <div className={ic('close')} onClick={() => setActive('close')}><span className="hug-code">&lt;<span className="hug-slash">/</span>h1&gt;</span><span className="hug-lbl">yopiluvchi</span></div>
-            </div></div>
-            <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setWrapped(w => !w)}>{wrapped ? '↻ Qaytadan' : '▶ Teglar bilan o\u2019rab olish'}</button>
-            {active && (<div className="role-line fade-step" key={active}><p className="body" style={{ color: T.ink, margin: 0 }}>{PARTS[active].role}</p></div>)}
+            <div className={`tegbuild-wrap ${wrapped ? 'on' : ''} fade-up delay-2`}>
+              <div className={`tegbuild ${wrapped ? 'on' : ''}`}>
+                <div className={ic('open', `tb-chip tb-tag tb-open ${wrapped ? '' : 'hide'}`)} onClick={() => tap('open')}>
+                  <span className="tb-code">&lt;h1&gt;</span><span className="tb-lbl">ochuvchi</span>
+                </div>
+                <div className={ic('content', 'tb-chip tb-content')} onClick={() => tap('content')}>
+                  <span className="tb-code">Salom!</span><span className="tb-lbl">{wrapped ? 'kontent' : 'oddiy matn'}</span>
+                </div>
+                <div className={ic('close', `tb-chip tb-tag tb-close ${wrapped ? '' : 'hide'}`)} onClick={() => tap('close')}>
+                  <span className="tb-code">&lt;<span className="tb-slash">/</span>h1&gt;</span><span className="tb-lbl">yopuvchi</span>
+                </div>
+              </div>
+              <div className="tb-bracket"><div className="tb-brace" /><span className="tb-brace-lbl">= bitta element</span></div>
+            </div>
+
+            <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => { setWrapped(w => !w); setActive(null); }}>
+              {wrapped ? '↻ Qaytadan' : '▶ Tegga o\u2019rash'}
+            </button>
+
+            {wrapped
+              ? (active
+                  ? (<div className="role-line fade-step" key={active}><p className="body" style={{ color: T.ink, margin: 0 }}>{PARTS[active].role}</p></div>)
+                  : (<p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13, fontStyle: 'italic' }}>Yuqoridagi uchta qismdan birini bosib, vazifasini ko'ring.</p>))
+              : (<div className="hint"><p className="body" style={{ color: T.ink2, margin: 0 }}>Hozir "Salom!" — oddiy matn, brauzer u bilan nima qilishni bilmaydi. Tugmani bosing — teglar ikki tomondan kelib uni <b style={{ color: T.ink }}>qamrab oladi</b>.</p></div>)}
           </div>
-          <div className="col">
-            {!wrapped ? (<div className="hint"><p className="body" style={{ color: T.ink2, margin: 0 }}>Tugmani bosing — ochiluvchi va yopiluvchi teg <b style={{ color: T.ink }}>"Salom!"</b>ni o'rab oladi.</p></div>) : (<><div className="flow-label">Sahifa</div><Preview title="sahifa.html" minH={80}><p className="pv-h1 fade-step">Salom!</p></Preview><div className="frame-ok fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Element tayyor. <span className="mono">&lt;h1&gt;</span> ochdi, <span className="mono">&lt;/h1&gt;</span> yopdi — orasidagi <b>"Salom!"</b> sahifada sarlavha bo'lib ko'rinadi.</p></div></>)}
-          </div>
+
+          {(!isNarrow || wrapped) && (<div className="col fade-step">
+            <div className="flow-label">Sahifada qanday ko'rinadi</div>
+            <Preview title="sahifa.html" minH={92}>{wrapped ? <p className="pv-h1 fade-step">Salom!</p> : <p className="pv-plain">Salom!</p>}</Preview>
+            {wrapped && (<div className="frame-ok fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Endi brauzer biladi: <span className="mono">&lt;h1&gt;</span> boshladi, <span className="mono">&lt;/h1&gt;</span> tugatdi — orasidagi <b>"Salom!"</b> katta sarlavhaga aylandi.</p></div>)}
+          </div>)}
         </div>
       </div>
     </Stage>
@@ -604,22 +699,41 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 };
 
 
-// ===== SCREEN 8 — SARLAVHALAR (gazeta kashfiyoti + Mentor) =====
+// ===== SCREEN 8 — SARLAVHALAR (gazeta -> teglar, v16) =====
 const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's8', text: `Mana oddiy gazeta sahifasi. Hatto o'qib chiqmasangiz ham, qaysi yozuv eng muhim ekanini darrov bilib olasiz. Sizningcha, qaysi biri eng muhim?`, trigger: 'on_mount', waits_for: { type: 'option_picked' } }]);
   const LADDER = [
     { n: 1, size: 28, tag: 'eng katta' }, { n: 2, size: 23, tag: '' }, { n: 3, size: 19, tag: '' },
     { n: 4, size: 16.5, tag: '' }, { n: 5, size: 14.5, tag: '' }, { n: 6, size: 13, tag: 'eng kichik' }
   ];
+  const LADDER_COMPACT = [
+    { n: 1, size: 26, tag: 'eng katta' }, { n: 2, size: 21, tag: '' },
+    { ellipsis: true }, { n: 6, size: 13, tag: 'eng kichik' }
+  ];
   const [picked, setPicked] = useState(storedAnswer?.picked ?? null);
   const done = picked !== null;
+  const [revealed, setRevealed] = useState(false);
+  const revealRef = useRef(null);
   const G = "Georgia, serif";
+  const mctx = useContext(MentorCtx) || {};
+  const isNarrow = useIsMobile(768);
   const pick = (v) => {
-    if (done) return; setPicked(v);
+    if (done) return; setPicked(v); setRevealed(true);
     onAnswer(screen, { correct: true, picked: v });
     audio.triggerEvent('option_picked');
+    if (isNarrow && mctx.setCollapsed) mctx.setCollapsed(true);
+    setTimeout(() => { if (revealRef.current) revealRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 420);
     if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Eng katta yozuv eng muhim. HTML'da ham shunday — h1 eng katta va muhim, h6 eng kichik.`); }, 300);
   };
+  const showAnswer = done && (!isNarrow || revealed);
+  const prevCollapsedRef = useRef(mctx.collapsed);
+  useEffect(() => {
+    if (isNarrow && done) {
+      if (prevCollapsedRef.current && !mctx.collapsed) setRevealed(false);        // Mentor ochildi -> savol
+      else if (!prevCollapsedRef.current && mctx.collapsed) setRevealed(true);    // Mentor yopildi -> javob
+    }
+    prevCollapsedRef.current = mctx.collapsed;
+  }, [mctx.collapsed]);
   return (
     <Stage eyebrow="Sarlavhalar" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Avval tanlang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
@@ -627,15 +741,25 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Mentor>Mana oddiy gazeta sahifasi. Hatto o'qib chiqmasangiz ham, qaysi yozuv eng muhim ekanini <b style={{ color: T.ink }}>darrov</b> bilib olasiz. Sizningcha, qaysi biri eng muhim?</Mentor>
         <div className="split">
           <div className="col">
-            <div className="frame fade-up delay-1">
+            <div className={`news-card frame fade-up delay-1 ${showAnswer ? 'tagged' : ''}`}>
               <p className="eyebrow" style={{ color: T.ink3, margin: '0 0 10px' }}>📰 Gazeta sahifasi</p>
-              <h3 style={{ fontFamily: G, fontWeight: 700, fontSize: 'clamp(20px,3vw,26px)', lineHeight: 1.15, color: T.ink, margin: '0 0 10px' }}>Maktabimizda robototexnika to'garagi ochildi</h3>
-              <p style={{ fontFamily: G, fontWeight: 700, fontSize: 'clamp(15px,2vw,17px)', color: T.ink, margin: '0 0 6px' }}>Kim qatnashishi mumkin?</p>
-              <p style={{ fontFamily: G, fontSize: 'clamp(13px,1.7vw,14.5px)', color: T.ink2, margin: 0, lineHeight: 1.5 }}>To'garak har shanba soat 10:00 da. Ro'yxatdan o'tish hammaga ochiq.</p>
+              <div className="news-line news-headline">
+                <h3 style={{ fontFamily: G, fontWeight: 700, fontSize: 'clamp(20px,3vw,26px)', lineHeight: 1.15, color: T.ink, margin: 0 }}>Maktabimizda robototexnika to'garagi ochildi</h3>
+                <span className="tag-badge accent" style={{ transitionDelay: '0.05s' }}>&lt;h1&gt;</span>
+              </div>
+              <div className="news-line">
+                <p style={{ fontFamily: G, fontWeight: 700, fontSize: 'clamp(15px,2vw,17px)', color: T.ink, margin: 0 }}>Kim qatnashishi mumkin?</p>
+                <span className="tag-badge" style={{ transitionDelay: '0.18s' }}>&lt;h2&gt;</span>
+              </div>
+              <div className="news-line">
+                <p style={{ fontFamily: G, fontSize: 'clamp(13px,1.7vw,14.5px)', color: T.ink2, margin: 0, lineHeight: 1.5 }}>To'garak har shanba soat 10:00 da. Ro'yxatdan o'tish hammaga ochiq.</p>
+                <span className="tag-badge soft" style={{ transitionDelay: '0.31s' }}>&lt;p&gt;</span>
+              </div>
+              {showAnswer && <p className="news-hint fade-step">↑ Har bir yozuvning o'z "darajasi" bor — eng kattasi <b style={{ color: T.accent }}>&lt;h1&gt;</b>.</p>}
             </div>
           </div>
-          <div className="col" style={{ gap: 9 }}>
-            {!done ? (
+          <div className="col">
+            {!showAnswer ? (
               <>
                 <p className="eyebrow fade-up delay-2" style={{ color: T.ink2, margin: 0 }}>Sizningcha, qaysi yozuv eng muhim?</p>
                 {[{ id: 'a', label: 'Eng katta sarlavha (tepadagi)' }, { id: 'b', label: '«Kim qatnashishi mumkin?»' }].map(o => (
@@ -643,14 +767,15 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 ))}
               </>
             ) : (
-              <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div className="frame-success"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{picked === 'a' ? "✓ To'g'ri" : 'Mana gap'}</p><p className="body" style={{ margin: 0, color: T.ink }}>Eng <b>katta</b> yozuv darrov ko'zga tashlanadi — demak u eng muhim. HTML sarlavhalari ham shunday: <b>h1</b> eng katta, <b>h6</b> eng kichik.</p></div>
-                <div className="ladder">{LADDER.map(h => (<div key={h.n} className="hl-row" style={{ cursor: 'default' }}><span className="hl-chip">{`<h${h.n}>`}</span><span className="hl-text" style={{ fontSize: h.size }}>Sarlavha</span>{h.tag && <span className="hl-tag">{h.tag}</span>}</div>))}</div>
+              <div ref={revealRef} className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 12, scrollMarginTop: 16 }}>
+                {!isNarrow && <div className="frame-success"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{picked === 'a' ? "✓ To'g'ri" : 'Mana gap'}</p><p className="body" style={{ margin: 0, color: T.ink }}>Eng <b>katta</b> yozuv darrov ko'zga tashlanadi — demak u eng muhim. HTML sarlavhalari ham aynan shunday darajalangan: <b>h1</b> eng katta, <b>h6</b> eng kichik.</p></div>}
+                <p className="flow-label">{isNarrow ? 'h1 → h6 — sarlavha darajalari' : 'h1 dan h6 gacha — darajalar narvoni'}</p>
+                <div className="ladder">{(isNarrow ? LADDER_COMPACT : LADDER).map((h, i) => h.ellipsis ? (<div key="el" className="hl-row" style={{ justifyContent: 'center', padding: '2px 0' }}><span style={{ color: T.ink3, fontSize: 18, letterSpacing: 3 }}>⋮</span></div>) : (<div key={h.n} className="hl-row"><span className="hl-chip">{`<h${h.n}>`}</span><span className="hl-text" style={{ fontSize: h.size }}>Sarlavha</span>{h.tag && <span className="hl-tag">{h.tag}</span>}</div>))}</div>
               </div>
             )}
           </div>
         </div>
-        {done && (<div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>Sizning loyihangiz:</b> saytingizdagi eng katta sarlavha — bu ismingiz. Demak u <span className="mono">&lt;h1&gt;</span>.</p></div>)}
+        {showAnswer && (<div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>Sizning loyihangiz:</b> saytingizdagi eng katta sarlavha — bu ismingiz. Demak u <span className="mono">&lt;h1&gt;</span>.</p></div>)}
       </div>
     </Stage>
   );
@@ -691,7 +816,10 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [type, setType] = useState('ul');
   const [touched, setTouched] = useState(false);
   const done = touched;
-  const pick = (t) => { setType(t); setTouched(true); };
+  const mctx = useContext(MentorCtx) || {};
+  const isNarrow = useIsMobile(768);
+  const showExtras = !isNarrow || mctx.collapsed;
+  const pick = (t) => { setType(t); setTouched(true); if (isNarrow && mctx.setCollapsed) mctx.setCollapsed(true); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
     <Stage eyebrow="Ro'yxatlar" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Turini almashtiring"} onClick={onNext} /></>}>
@@ -701,12 +829,12 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="split">
           <div className="col">
             <div className="fade-up delay-2" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}><button className={`chip ${type === 'ul' ? 'chip-on' : ''}`} onClick={() => pick('ul')}>• Belgili (ul)</button><button className={`chip ${type === 'ol' ? 'chip-on' : ''}`} onClick={() => pick('ol')}>1. Raqamli (ol)</button></div>
+            {showExtras && <div className="when fade-up delay-2"><p className="body" style={{ margin: 0, color: T.ink }}>Tartib muhim bo'lsa (qadamlar, reyting) — <b style={{ color: T.accent }}>raqamli (ol)</b>. Aks holda — <b style={{ color: T.accent }}>belgili (ul)</b>.</p></div>}
             <pre className="code-box fade-up delay-2" key={type}><span className="tg">{`<${type}>`}</span>{'\n'}{ITEMS.map((it, i) => (<React.Fragment key={i}>{'  '}<span className="tg">&lt;li&gt;</span>{it}<span className="tg">&lt;/li&gt;</span>{'\n'}</React.Fragment>))}<span className="tg">{`</${type}>`}</span></pre>
-            <div className="when"><p className="body" style={{ margin: 0, color: T.ink }}>Tartib muhim bo'lsa (qadamlar, reyting) — <b style={{ color: T.accent }}>raqamli (ol)</b>. Aks holda — <b style={{ color: T.accent }}>belgili (ul)</b>.</p></div>
           </div>
           <div className="col"><div className="flow-label">Saytda shunday ko'rinadi</div><div className="bp-window fade-up delay-2"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">mening-saytim.uz</span></div><div className="bp-body"><div className="site-header"><span className="site-brand"><span className="site-logo">M</span><span className="site-name">Mening saytim</span></span><span className="site-nav"><span>Asosiy</span><span>O'yinlar</span></span></div><div className="site-sec"><h3 className="site-h3">Sevimli o'yinlarim</h3><div className="site-list" key={type}>{type === 'ul' ? <ul>{ITEMS.map((it, i) => <li key={i}>{it}</li>)}</ul> : <ol>{ITEMS.map((it, i) => <li key={i}>{it}</li>)}</ol>}</div></div></div></div></div>
         </div>
-        <div className="frame-soft fade-up delay-3"><p className="body" style={{ margin: 0, color: T.ink }}><b>Sizning loyihangiz:</b> sevimli mashg'ulotlaringizni ro'yxat qilib qo'shasiz.</p></div>
+        {showExtras && <div className="frame-soft fade-up delay-3"><p className="body" style={{ margin: 0, color: T.ink }}><b>Sizning loyihangiz:</b> sevimli mashg'ulotlaringizni ro'yxat qilib qo'shasiz.</p></div>}
       </div>
     </Stage>
   );
@@ -738,9 +866,14 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [page, setPage] = useState('bosh');
   const [jumped, setJumped] = useState(false);
   const done = jumped;
-  const go = (to) => { setPage(to); if (!jumped) { setJumped(true); audio.triggerEvent('link_jumped'); } };
+  const [revealed, setRevealed] = useState(false);
+  const mctx = useContext(MentorCtx) || {};
+  const isNarrow = useIsMobile(768);
+  const showResult = !isNarrow || revealed;
+  const go = (to) => { setPage(to); if (!jumped) { setJumped(true); audio.triggerEvent('link_jumped'); } setRevealed(true); if (isNarrow && mctx.setCollapsed) mctx.setCollapsed(true); };
   const cur = PAGES[page];
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
+  useEffect(() => { if (isNarrow && mctx.collapsed === false) setRevealed(false); }, [mctx.collapsed]);
   return (
     <Stage eyebrow="Havolalar" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Havolani bosing"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
@@ -748,37 +881,66 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Mentor>YouTube'da bitta videoni ko'rib bo'lgach, yonidagisiga bosib o'tasiz-ku. O'sha bosish — <b style={{ color: T.ink }}>havola</b>. HTML'da havola <span className="mono">{'<a href="…">'}</span> bilan yasaladi. Menyuni bosib, sahifalar o'rtasida yuring.</Mentor>
         <div className="split">
           <div className="col"><div className="flow-label">Internet — bu "to'r"</div><div className="web fade-up delay-2"><svg className="web-svg" viewBox="0 0 260 150" preserveAspectRatio="none">{EDGES.map(([a, b], i) => { const active = page === a || page === b; return <line key={i} x1={POS[a][0]} y1={POS[a][1]} x2={POS[b][0]} y2={POS[b][1]} stroke={active ? T.accent : T.ink3} strokeWidth={active ? 2 : 1.2} strokeDasharray={active ? '0' : '4 3'} opacity={active ? 1 : 0.6} />; })}</svg>{Object.keys(PAGES).map(k => (<div key={k} className={`web-node ${page === k ? 'on' : ''}`} onClick={() => go(k)} style={{ left: `${POS[k][0] / 260 * 100}%`, top: `${POS[k][1] / 150 * 100}%` }}>{PAGES[k].title}</div>))}</div><p className="web-cap">Har sahifa boshqasiga <b>havola</b> bilan bog'langan. Shu bog'lanishlar <b>"to'r"</b> hosil qiladi — Internet shundan nom olgan.</p></div>
-          <div className="col">
-            <div className="bp-window fade-up delay-2"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-url" key={`u-${page}`}><span className="lock">●</span>{cur.url}</span></div><div className="bp-body pg-in" key={`p-${page}`}><div className="site-top"><span className="site-wordmark">Mening saytim</span><span className="site-tag">o'quvchi · CoddyCamp</span></div><h1 className="pg-h1">{cur.title}</h1><p className="pg-body">{cur.body}</p><div className="pg-divider" /><p className="pg-linklabel">Boshqa sahifalar</p><div className="pg-links">{cur.links.map((l, i) => (<a key={i} className="pg-a" onClick={() => go(l.to)}>{l.label} <span className="arr">→</span></a>))}</div></div></div>
+          {showResult && (<div className="col">
+            {!isNarrow && (<div className="bp-window fade-up delay-2"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-url" key={`u-${page}`}><span className="lock">●</span>{cur.url}</span></div><div className="bp-body pg-in" key={`p-${page}`}><div className="site-top"><span className="site-wordmark">Mening saytim</span><span className="site-tag">o'quvchi · CoddyCamp</span></div><h1 className="pg-h1">{cur.title}</h1><p className="pg-body">{cur.body}</p><div className="pg-divider" /><p className="pg-linklabel">Boshqa sahifalar</p><div className="pg-links">{cur.links.map((l, i) => (<a key={i} className="pg-a" onClick={() => go(l.to)}>{l.label} <span className="arr">→</span></a>))}</div></div></div>)}
             <div className="codecard" key={`c-${page}`}><p className="codecard-top"><span className="dotf" />{cur.file} — havolalar kodi</p><pre className="codeblock">{cur.links.map((l, i) => (<span className="ln" key={i}><span className="tg">&lt;a </span><span className="at">href</span><span className="tx">=</span><span className="st">"{PAGES[l.to].file}"</span><span className="tg">&gt;</span><span className="tx">{l.label}</span><span className="tg">&lt;/a&gt;</span></span>))}</pre><p className="codecap">Har bir havola = bitta <span className="mn">&lt;a&gt;</span> teg.</p></div>
-          </div>
+          </div>)}
         </div>
-        <div className="frame-soft fade-up delay-3" style={{ padding: '9px 15px' }}><p className="body" style={{ margin: 0, color: T.ink }}><b>Sizning loyihangiz:</b> saytingizga sevimli sayt yoki Telegram kanalingizga havola qo'shasiz.</p></div>
+        {showResult && <div className="frame-soft fade-up delay-3" style={{ padding: '9px 15px' }}><p className="body" style={{ margin: 0, color: T.ink }}><b>Sizning loyihangiz:</b> saytingizga sevimli sayt yoki Telegram kanalingizga havola qo'shasiz.</p></div>}
       </div>
     </Stage>
   );
 };
 
 
-// ===== SCREEN 13 — AI ESLATMA (Mentor + xatoni topish) =====
+// ===== SCREEN 13 — DEBUGGING (musbat ramka + tuzatish, v16) =====
 const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's13', text: `Kelajakda AI'dan kod so'rab olishingiz mumkin. Lekin sirni aytaman: AI ham xato qiladi. Pastdagi kodni AI yozgan, bitta qatorida xato bor. Topa olasizmi? O'sha qatorni bosing.`, trigger: 'on_mount', waits_for: { type: 'error_found' } }]);
+  const audio = useAudio([{ id: 's13', text: `AI kod yozishda zo'r yordamchi — hozir buyruq berib sahifa yasadingiz. Lekin odamlar ham, AI ham ba'zan kichik xato qiladi. Shuni topib tuzatish debugging deyiladi. Endi siz teglarni bilasiz: AI yozgan kodda bitta xato bor — qaysi qatorda? Bosing.`, trigger: 'on_mount', waits_for: { type: 'error_found' } }]);
+  const G = "Georgia, serif";
   const [picked, setPicked] = useState(storedAnswer ? 'h1' : null);
+  const [fixed, setFixed] = useState(!!storedAnswer);
   const found = picked === 'h1';
-  const pickH1 = () => { setPicked('h1'); audio.triggerEvent('error_found'); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Topdingiz! h1 ochildi, lekin yopilmadi. Siz buni payqadingiz, chunki teglarni o'zingiz tushunasiz.`); }, 300); };
-  useEffect(() => { if (found && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [found]);
+  const done = fixed;
+  const pickH1 = () => {
+    if (found) return; setPicked('h1'); audio.triggerEvent('error_found');
+    if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Topdingiz! h1 ochildi, lekin yopilmadi. Endi yopuvchi tegni qo'shib tuzatamiz.`); }, 300);
+  };
+  const fix = () => {
+    setFixed(true);
+    if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Tuzatildi! Mana, debugging shunday bo'ladi: xatoni topasiz va to'g'rilaysiz.`); }, 300);
+  };
+  useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="Kichik eslatma" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!found} label={found ? "Tushundim, davom etish" : "Xatoni toping"} onClick={onNext} /></>}>
+    <Stage eyebrow="Debugging" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : (found ? "Endi tuzating" : "Xatoni toping")} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">AI ham yordam beradi — <span className="italic" style={{ color: T.accent }}>lekin...</span></h2></div>
-        <Mentor>Kelajakda AI'dan kod so'rab olishingiz mumkin. Lekin sirni aytaman: <b style={{ color: T.ink }}>AI ham xato qiladi</b>. Pastdagi kodni AI yozgan, bitta qatorida xato bor. Topa olasizmi? O'sha qatorni bosing.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — sen esa <span className="italic" style={{ color: T.accent }}>tekshirasan</span>.</h2></div>
+        <Mentor>AI kod yozishda zo'r yordamchi — hozir buyruq berib sahifa yasadingiz-ku. Lekin <b style={{ color: T.ink }}>odamlar ham, AI ham</b> ba'zan kichik xato qiladi. Shuni topib tuzatish — <b style={{ color: T.ink }}>debugging</b> deyiladi, va bu eng zo'r mahorat. Endi siz teglarni bilasiz: AI yozgan kodda bitta xato bor — toping-chi.</Mentor>
         <div className="split">
           <div className="col">
-            <div className="ai-card fade-up delay-2"><div className="ai-row"><span className="ai-badge">AI</span><span className="ai-bubble">Mana, sahifa kodi tayyor!</span></div><div className="ai-code"><div className={`ai-line ${found ? 'bad' : ''}`} onClick={pickH1}><span className="tg">&lt;h1&gt;</span>Salom!</div><div className={`ai-line ${picked === 'p' ? 'ok' : ''}`} onClick={() => setPicked('p')}><span className="tg">&lt;p&gt;</span>Bu mening saytim.<span className="tg">&lt;/p&gt;</span></div></div><p className="ai-prompt">Xato qaysi qatorda? Bosing.</p></div>
-            {picked === 'p' && !found && (<div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bu qator to'g'ri — <span className="mono">&lt;p&gt;</span> ochildi va <span className="mono">&lt;/p&gt;</span> bilan yopildi. Yana qarang: qaysi teg yopilmagan?</p></div>)}
-            {found && (<div className="frame-warn fade-step"><p className="note-h" style={{ color: T.accent }}>✓ Topdingiz!</p><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">&lt;h1&gt;</span> ochildi, lekin <span className="mono">&lt;/h1&gt;</span> bilan yopilmadi. Siz buni payqadingiz — chunki teglarni <b>o'zingiz</b> tushunasiz.</p></div>)}
+            <div className="ai-card fade-up delay-2">
+              <div className="ai-row"><span className="ai-badge">AI</span><span className="ai-bubble">Mana, buyrug'ingiz bo'yicha sahifa kodi tayyor!</span></div>
+              <div className="ai-code">
+                <div className={`ai-line ${found ? (fixed ? 'ok' : 'bad') : ''}`} onClick={pickH1}><span className="tg">&lt;h1&gt;</span>Salom!{fixed && <span className="tg">&lt;/h1&gt;</span>}</div>
+                <div className={`ai-line ${picked === 'p' ? 'ok' : ''}`} onClick={() => { if (!found) setPicked('p'); }}><span className="tg">&lt;p&gt;</span>Bu mening saytim.<span className="tg">&lt;/p&gt;</span></div>
+              </div>
+              {!found && <p className="ai-prompt">Xato qaysi qatorda? Bosing.</p>}
+              {found && !fixed && (<button className="btn fade-step" style={{ alignSelf: 'flex-start' }} onClick={fix}>🔧 Yopuvchi tegni qo'shib tuzatish</button>)}
+              {fixed && <p className="ai-prompt" style={{ color: T.success, fontStyle: 'normal', fontWeight: 600 }}>✓ Tuzatildi — endi kod to'g'ri!</p>}
+            </div>
           </div>
-          <div className="col">{found ? (<div className="takeaway fade-step"><div className="ta-bulb">💡</div><p className="ta-h">Avval o'zingiz, keyin AI</p><p className="ta-sub">Bu — eng to'g'ri yo'l</p></div>) : (<div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Endi siz teglarni bilasiz. AI yozgan kodni <b style={{ color: T.ink }}>tekshira olasiz</b> — xatoni toping-chi.</p></div>)}</div>
+          <div className="col">
+            {!found && (
+              picked === 'p'
+                ? (<div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bu qator to'g'ri — <span className="mono">&lt;p&gt;</span> ochildi va <span className="mono">&lt;/p&gt;</span> bilan yopildi. Yana qarang: qaysi teg yopilmagan?</p></div>)
+                : (<div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Endi siz teglarni bilasiz — AI yozgan kodni <b style={{ color: T.ink }}>tekshira olasiz</b>. Qaysi teg ochilib, yopilmagan?</p></div>)
+            )}
+            {found && !fixed && (<div className="frame-warn fade-step"><p className="note-h" style={{ color: T.accent }}>✓ Topdingiz!</p><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">&lt;h1&gt;</span> ochildi, lekin <span className="mono">&lt;/h1&gt;</span> bilan yopilmagan. Chap tomondagi tugmani bosib tuzating →</p></div>)}
+            {fixed && (<>
+              <div className="flow-label">Endi sahifa to'g'ri ishlaydi</div>
+              <div className="bp-window fade-step"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">sahifa.html</span></div><div className="bp-body" style={{ display: 'block' }}><h1 style={{ fontFamily: G, fontSize: 'clamp(20px,2.8vw,26px)', color: T.ink, margin: '0 0 6px' }}>Salom!</h1><p style={{ fontFamily: G, color: T.ink2, margin: 0, fontSize: 'clamp(13px,1.8vw,15px)' }}>Bu mening saytim.</p></div></div>
+              <div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Topding va tuzatding — bu debugging!</p><p className="ta-sub">AI tez yozadi, sen tekshirib tuzatasan — zo'r jamoa</p></div>
+            </>)}
+          </div>
         </div>
       </div>
     </Stage>
@@ -935,7 +1097,7 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
     if (typeof onFinished === 'function') onFinished(payload);
   };
 
-  const screens = [Screen0, Screen1, Screen2, Screen3, Screen4, Screen5, ScreenSkeletTest, Screen6, Screen7, Screen8, Screen9, Screen10, Screen11, Screen12, Screen13, Screen14, Screen15, Screen16];
+  const screens = [Screen0, Screen1, Screen2, Screen3, Screen4, Screen5, ScreenSkeletTest, Screen6, Screen7, Screen8, Screen9, Screen10, Screen11, Screen12, Screen14, Screen13, Screen15, Screen16];
   const Current = screens[screen];
   return (
     <LangContext.Provider value={lang}>
@@ -1252,6 +1414,72 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .gloss { background: ${T.paper}; border-radius: 12px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.12); overflow: hidden; }
         .gloss-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 17px; cursor: pointer; } .gloss-head .lbl { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.ink}; } .gloss-toggle { font-size: 18px; color: ${T.ink2}; }
         .gloss-body { padding: 0 17px 15px; font-size: clamp(12.5px,1.5vw,14px); color: ${T.ink2}; line-height: 1.7; animation: fade-step 0.3s; } .gloss-body b { color: ${T.ink}; }
+        /* ============ v16 QO'SHIMCHA CSS ============ */
+        /* SCREEN 2 — Hayotdan misol (2-bosqich) */
+        .frame-col { display: flex; flex-direction: column; gap: 14px; }
+        .savo { gap: 12px; }
+        .btn-soft { font-family: 'Manrope'; font-weight: 600; cursor: pointer; transition: all 0.2s; background: ${T.bg}; color: ${T.ink}; border: none; border-radius: 10px; padding: 9px 15px; font-size: 13px; }
+        .btn-soft:hover:not(:disabled) { box-shadow: 0 6px 14px -5px rgba(${T.shadowBase},0.2); }
+        .btn-soft:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pz-head { display: flex; align-items: flex-start; gap: 12px; }
+        .pz-emoji { font-size: 26px; line-height: 1; flex-shrink: 0; }
+        .pz-title { font-family: 'Manrope'; font-weight: 700; font-size: 14px; color: ${T.accent}; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 3px; }
+        .pz-sub { font-size: clamp(13px,1.6vw,15px); color: ${T.ink2}; line-height: 1.45; margin: 0; }
+        .pz-flow { display: flex; align-items: flex-start; gap: 4px; overflow-x: auto; padding: 4px 2px 2px; }
+        .pz-step { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 88px; flex: 0 0 auto; padding: 10px 6px; border-radius: 12px; transition: background 0.3s; }
+        .pz-step.on { background: ${T.successSoft}; }
+        .pz-step.active { background: ${T.accentSoft}; }
+        .pz-ic { width: 34px; height: 34px; border-radius: 50%; box-shadow: inset 0 0 0 2px ${T.ink3}; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14px; color: ${T.ink2}; background: transparent; transition: all 0.3s; }
+        .pz-step.on .pz-ic { box-shadow: inset 0 0 0 2px ${T.success}; background: ${T.success}; color: #fff; }
+        .pz-step.active .pz-ic { box-shadow: inset 0 0 0 2px ${T.accent}; color: ${T.accent}; }
+        .pz-lbl { font-size: 11.5px; text-align: center; color: ${T.ink2}; line-height: 1.25; font-weight: 500; }
+        .pz-step.on .pz-lbl { color: ${T.ink}; }
+        .pz-arrow { align-self: center; margin-top: 16px; color: ${T.ink3}; font-size: 15px; flex: 0 0 auto; transition: color 0.3s; }
+        .pz-arrow.on { color: ${T.success}; }
+        /* SCREEN 6 — Teg (qo'shtirnoq modeli) */
+        .pv-plain { font-family: 'Georgia, serif'; font-size: 14px; color: ${T.ink3}; margin: 0; }
+        .tegbuild-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 0 14px; }
+        .tegbuild { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 78px; }
+        .tegbuild.on { gap: 4px; }
+        .tb-chip { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 13px 16px; border-radius: 11px; transition: transform 0.55s cubic-bezier(.34,1.25,.4,1), opacity 0.4s; cursor: default; }
+        .tegbuild.on .tb-chip { cursor: pointer; }
+        .tb-tag { background: ${CODE.bg}; } .tb-content { background: ${T.accentSoft}; }
+        .tb-code { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(16px,2.4vw,20px); }
+        .tb-tag .tb-code { color: ${CODE.tag}; } .tb-content .tb-code { color: ${T.accent}; }
+        .tb-slash { color: ${CODE.attr}; display: inline-block; }
+        .tegbuild.on .tb-slash { animation: slashpulse 1.3s ease-in-out 0.55s 2; }
+        @keyframes slashpulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.45); } }
+        .tb-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: ${T.ink3}; transition: opacity 0.3s 0.35s; }
+        .tb-open.hide { transform: translateX(-64px) scale(0.82); opacity: 0; }
+        .tb-close.hide { transform: translateX(64px) scale(0.82); opacity: 0; }
+        .tegbuild:not(.on) .tb-tag .tb-lbl { opacity: 0; }
+        .tb-chip.active { box-shadow: 0 0 0 2px ${T.accent}; }
+        .tb-bracket { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0; transition: opacity 0.3s 0.5s; }
+        .tegbuild-wrap.on .tb-bracket { opacity: 1; }
+        .tb-brace { width: 150px; max-width: 70%; height: 9px; border: 1.5px solid ${T.ink3}; border-top: none; border-radius: 0 0 9px 9px; }
+        .tb-brace-lbl { font-family: 'Manrope'; font-weight: 600; font-size: 12px; color: ${T.ink2}; }
+        .slash-callout { display: flex; align-items: center; gap: 13px; background: ${T.accentSoft}; border-left: 4px solid ${T.accent}; border-radius: 12px; padding: 12px 15px; }
+        .slash-big { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 30px; color: ${T.accent}; line-height: 1; flex-shrink: 0; }
+        /* SCREEN 8 — Sarlavhalar (gazeta -> teglar qo'nadi) */
+        .news-card { display: flex; flex-direction: column; }
+        .news-line { display: flex; align-items: center; gap: 12px; padding: 9px 10px; margin: 0 -10px; border-radius: 10px; transition: background 0.4s ease; }
+        .news-card.tagged .news-line { background: ${T.bg}; }
+        .news-card.tagged .news-headline { background: ${T.accentSoft}; }
+        .news-line > h3, .news-line > p { flex: 1; min-width: 0; }
+        .tag-badge { flex-shrink: 0; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: ${CODE.tag}; background: ${CODE.bg}; padding: 4px 9px; border-radius: 6px; opacity: 0; transform: translateX(10px) scale(0.9); transition: opacity 0.4s ease, transform 0.45s cubic-bezier(.34,1.25,.4,1); }
+        .news-card.tagged .tag-badge { opacity: 1; transform: none; }
+        .tag-badge.accent { color: #fff; background: ${T.accent}; box-shadow: 0 4px 12px -4px rgba(255,79,40,0.5); }
+        .tag-badge.soft { color: ${T.ink2}; background: ${T.bg}; box-shadow: inset 0 0 0 1px ${T.ink3}55; }
+        .news-hint { font-family: 'Manrope'; font-size: 12.5px; color: ${T.ink2}; margin: 12px 0 0; }
+        /* Avtoscroll */
+        .stage-content { scroll-behavior: smooth; }
+        /* MOBIL: yig'iladigan Mentor (skrollni kamaytirish) */
+        .mentor-mob .mentor-msg { overflow: hidden; max-height: 360px; transition: max-height 0.38s cubic-bezier(.4,0,.2,1), opacity 0.25s ease, padding 0.38s ease, box-shadow 0.3s ease; }
+        .mentor-mob.is-collapsed { align-items: center; cursor: pointer; }
+        .mentor-mob.is-collapsed .mentor-col { gap: 0; }
+        .mentor-mob.is-collapsed .mentor-msg { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; box-shadow: none; }
+        .mentor-cue { font-family: 'Manrope'; font-weight: 600; font-size: 11px; color: ${T.accent}; letter-spacing: 0.01em; }
+
       `}</style>
       <div className="lesson-root">
         <Current screen={screen} storedAnswer={answers[screen]} answers={answers} onAnswer={recordAnswer} onNext={next} onPrev={prev} onReset={reset} onFinish={finishLesson} />
