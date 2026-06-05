@@ -8,7 +8,7 @@ import CssLesson from './components/Csslesson1';
 import CssLesson2 from './components/Csslesson2';
 import PortfolioStruktura from './components/PractisHTML';
 import PortfolioCss from './components/PractisCSS';
-import NaturalNumbersLesson from './components/MathLesson1';
+import DivisionLesson from './components/DivisionLesson';
 
 function App() {
   return (
@@ -84,7 +84,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <NaturalNumbersLesson />
+            <DivisionLesson />
           </div>
         }
       />
