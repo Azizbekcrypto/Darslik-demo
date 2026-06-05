@@ -8,7 +8,7 @@ import CssLesson from './components/Csslesson1';
 import CssLesson2 from './components/Csslesson2';
 import PortfolioStruktura from './components/PractisHTML';
 import PortfolioCss from './components/PractisCSS';
-import DivisionLesson from './components/DivisionLesson';
+import DivisionLesson from './components/MathLesson1';
 
 function App() {
   return (
