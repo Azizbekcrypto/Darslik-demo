@@ -376,6 +376,16 @@ const lessons = [
   {
     id: 37,
     number: "37",
+    title: "Backend Praktika 1 — CRUD (AvtoIjara)",
+    subtitle: "Sxemani qo'lda loyihalab, Express + PostgreSQL bilan CRUD backend quramiz",
+    screens: 17,
+    emoji: "db",
+    ready: true,
+  },
+
+  {
+    id: 38,
+    number: "38",
     title: "API va Postman — front backend bilan qanday gaplashadi",
     subtitle: "So'rov/javob, GET/POST/PUT/DELETE va Postman bilan o'z API'ingizni chaqirish",
     screens: 18,
@@ -384,12 +394,92 @@ const lessons = [
   },
 
   {
-    id: 38,
-    number: "38",
+    id: 39,
+    number: "39",
+    title: "Backend Praktika 2 — Fullstack ulash (AvtoIjara)",
+    subtitle: "Modul 3 React frontini serverga fetch bilan ulash — loading, error, CORS",
+    screens: 18,
+    emoji: "react",
+    ready: true,
+  },
+
+  {
+    id: 40,
+    number: "40",
     title: "Autentifikatsiya va .env — login, JWT, maxfiy kalitlar",
     subtitle: "Email orqali login, JWT token, route himoyasi (401) va secret'larni .env'ga ko'chirish",
     screens: 18,
     emoji: "auth",
+    ready: true,
+  },
+
+  {
+    id: 41,
+    number: "41",
+    title: "Backend Praktika 3 — Loyiha kuni (AvtoStoyanka)",
+    subtitle: "Qorovul uchun to'liq fullstack panel: 2 jadval bog'lanishi (FK/JOIN), kirish-chiqish, tolov",
+    screens: 19,
+    emoji: "db",
+    ready: true,
+  },
+
+  {
+    id: 42,
+    number: "42",
+    title: "Backend Praktika 4 — Feedback bilan yaxshilash",
+    subtitle: "AvtoStoyankani yaxshilash: fikr yig'ish, saralash (Impact/Effort), upgrade (tasdiq, dashboard, sozlamalar)",
+    screens: 18,
+    emoji: "react",
+    ready: true,
+  },
+
+  {
+    id: 43,
+    number: "43",
+    title: "Nest arxitektura — tirik ko'rish",
+    subtitle: "Tayyor NestJS skeletni clone qilib, Swagger'da tirik API, fayl xaritasi va so'rov yo'lini ko'ramiz",
+    screens: 20,
+    emoji: "server",
+    ready: true,
+  },
+
+  {
+    id: 44,
+    number: "44",
+    title: "Birinchi resursni qo'lda qo'shish",
+    subtitle: "Admin avtosalon mashinalari (Car) jadvalini noldan: Entity → DTO → Service → Controller → Module → AppModule'ga ulash, Swagger'da tirik",
+    screens: 20,
+    emoji: "server",
+    ready: true,
+  },
+
+  {
+    id: 45,
+    number: "45",
+    title: "Praktika: KitobShop backend",
+    subtitle: "AI agentni boshqarib 3 bog'langan resursli onlayn kitob do'koni: Category, Book, Order — auth, @ManyToOne bog'lanish va top kitoblar bilan",
+    screens: 21,
+    emoji: "server",
+    ready: true,
+  },
+
+  {
+    id: 46,
+    number: "46",
+    title: "Unit-test: Jest",
+    subtitle: "Nega test kerak, Jest o'rnatish, birinchi test: describe / it / expect / toBe va npm test bilan PASS/FAIL",
+    screens: 20,
+    emoji: "server",
+    ready: true,
+  },
+
+  {
+    id: 47,
+    number: "47",
+    title: "Edge cases va error path",
+    subtitle: "Happy path yetarli emas: chegara holatlar (0, manfiy), noto'g'ri ma'lumot va exception'larni toThrow bilan sinash",
+    screens: 20,
+    emoji: "server",
     ready: true,
   },
 
@@ -426,7 +516,23 @@ const modules = [
     title: "Ma'lumot va backend",
     subtitle: "Node.js + PostgreSQL — ma'lumot, jadval, bog'lanish va sxema",
     from: 32,
-    to: 99,
+    to: 42,
+  },
+  {
+    id: 5,
+    label: "Modul 05",
+    title: "Nest arxitektura",
+    subtitle: "Professional NestJS qatlamli arxitektura — clone, sikl, agent bilan loyiha qurish",
+    from: 43,
+    to: 45,
+  },
+  {
+    id: 6,
+    label: "Modul 06",
+    title: "Loyihani testlash",
+    subtitle: "Jest bilan unit-test — kodingizni kompyuter avtomatik tekshiradi, happy path va edge case",
+    from: 46,
+    to: 47,
   },
 ]
 

@@ -426,7 +426,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               {phase === 'idle' && <TLine out={<span style={{ color: CODE.comment }}># express'ni o'rnatishga tayyor</span>} />}
               {phase !== 'idle' && <TLine cmd="npm install express" />}
               {phase === 'installing' && <TLine out={<span style={{ color: CODE.attr }}>⏳ yuklanmoqda…</span>} />}
-              {phase === 'done' && <><TLine out={<span style={{ color: CODE.str }}>+ express o'rnatildi ✓</span>} /><TLine out={<span style={{ color: CODE.comment }}>added 1 package</span>} /></>}
+              {phase === 'done' && <><TLine out={<span style={{ color: CODE.str }}>+ express o'rnatildi ✓</span>} /><TLine out={<span style={{ color: CODE.comment }}>added 57 packages</span>} /></>}
             </div>
             {phase === 'idle' && <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={install}>⬇ npm install express</button>}
           </Col>

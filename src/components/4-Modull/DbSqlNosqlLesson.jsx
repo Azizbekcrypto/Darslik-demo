@@ -533,7 +533,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="SQL kuchi · so'rov" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "So'rovni ishga tushiring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">"Har postning egasini ko'rsat" — SQL buni <span className="italic" style={{ color: T.accent }}>bir qatorda</span> bajaradi</h2></div>
-        <Mentor>SQL — bu <b style={{ color: T.ink }}>jadval bilan gaplashish tili</b>. Siz so'rov yozasiz, u javobni jadval qilib qaytaradi. Eng kuchli tomoni — <b style={{ color: T.ink }}>JOIN</b>: ikki jadvalni <span className="mono">user_id</span> orqali bir-biriga ulaydi. Bugun yozmaymiz — faqat bitta so'rovni ishga tushirib, sehrini ko'ramiz.</Mentor>
+        <Mentor>SQL — bu <b style={{ color: T.ink }}>jadval bilan gaplashish tili</b>. Siz so'rov yozasiz, u javobni jadval qilib qaytaradi. Eng kuchli tomoni — <b style={{ color: T.ink }}>JOIN</b>: ikki jadvalni <span className="mono">user_id</span> orqali bir-biriga ulaydi. Bugun yozmaymiz — faqat bitta so'rovni ishga tushirib, qanchalik kuchli ekanini ko'ramiz.</Mentor>
         <div className="split">
           <Col>
             <p className="flow-label">SQL so'rovi (faqat ko'rsatish)</p>

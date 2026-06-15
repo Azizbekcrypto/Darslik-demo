@@ -546,7 +546,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     controller: { word: "@Controller('games')", info: <>Bu klass <b>/games</b> bilan boshlanadigan barcha so'rovlarni boshqaradi — umumiy manzil. Ichidagi metodlar shunga qo'shiladi.</> },
     get: { word: '@Get()', info: <><span className="mono">GET /games</span> so'rovi kelsa — pastdagi <span className="mono">findAll()</span> metodi ishga tushadi. Dekorator metodni so'rovga bog'laydi.</> },
     getid: { word: "@Get(':id')", info: <><span className="mono">GET /games/5</span> kelsa — <span className="mono">findOne()</span> ishlaydi. <span className="mono">:id</span> — o'zgaruvchi qism (o'tgan ekrandagidek).</> },
-    param: { word: "@Param('id')", info: <>So'rovdagi <span className="mono">:id</span> qiymatini <b>ushlab oladi</b> va metodga beradi. Endi kod o'sha raqamni bilади.</> },
+    param: { word: "@Param('id')", info: <>So'rovdagi <span className="mono">:id</span> qiymatini <b>ushlab oladi</b> va metodga beradi. Endi kod o'sha raqamni biladi.</> },
     post: { word: '@Post()', info: <><span className="mono">POST /games</span> kelsa — <span className="mono">create()</span> ishlaydi: yangi o'yin qo'shadi. Mana shu dekoratorni dars oxirida o'zingiz yozasiz!</> }
   };
   const [active, setActive] = useState(null);

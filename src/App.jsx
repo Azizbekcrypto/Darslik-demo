@@ -40,6 +40,15 @@ import RoutingLesson from './components/4-Modull/RoutingLesson';
 import PostgresCrudLesson from './components/4-Modull/PostgresCrudLesson';
 import ApiPostmanLesson from './components/4-Modull/ApiPostmanLesson';
 import AuthEnvLesson from './components/4-Modull/AuthEnvLesson';
+import BackendCrudPracticeLesson from './components/4-Modull/BackendCrudPracticeLesson';
+import FullstackConnectPracticeLesson from './components/4-Modull/FullstackConnectPracticeLesson';
+import FullstackProjectDayLesson from './components/4-Modull/FullstackProjectDayLesson';
+import FullstackFeedbackLesson from './components/4-Modull/FullstackFeedbackLesson';
+import NestArchAliveLesson from './components/4a-Modull/NestArchAliveLesson';
+import NestArchResourceLesson from './components/4a-Modull/NestArchResourceLesson';
+import NestArchPracticeLesson from './components/4a-Modull/NestArchPracticeLesson';
+import JestUnitTestLesson from './components/4b-Modull/JestUnitTestLesson';
+import EdgeCasesTestLesson from './components/4b-Modull/EdgeCasesTestLesson';
 
 
 function App() {
@@ -422,7 +431,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ApiPostmanLesson />
+            <BackendCrudPracticeLesson />
           </div>
         }
       />
@@ -432,7 +441,97 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
+            <ApiPostmanLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/39"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <FullstackConnectPracticeLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/40"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
             <AuthEnvLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/41"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <FullstackProjectDayLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/42"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <FullstackFeedbackLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/43"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <NestArchAliveLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/44"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <NestArchResourceLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/45"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <NestArchPracticeLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/46"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <JestUnitTestLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/47"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <EdgeCasesTestLesson />
           </div>
         }
       />
