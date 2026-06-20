@@ -592,7 +592,7 @@ const Screen7 = (props) => (
   <QuestionScreen {...props} idx={7} scope="module-mikro" eyebrow="Mashq · 2-savol"
     questionText="Sessiyani qaysi joyga tegishli ekanini qaysi ustun bog'laydi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Sessiyani <span className="italic" style={{ color: T.accent }}>joyga</span> qaysi ustun bog'laydi?</h2></>}
-    options={['joy_id — foreign key (joylar.id ga ishora)', 'mashina TEXT', 'tolov INTEGER', 'kirgan TIMESTAMP']} correctIdx={0}
+    options={['joy_id INTEGER', 'mashina TEXT', 'tolov INTEGER', 'kirgan TIMESTAMP']} correctIdx={0}
     explainCorrect="To'g'ri! joy_id — foreign key: u joylar jadvalidagi id ga ishora qiladi. Shu orqali har sessiya qaysi joyga tegishli ekani aniqlanadi."
     explainWrong={{
       1: "mashina — bu davlat raqami, joyga bog'lamaydi. Bog'lovchi — joy_id (foreign key).",
@@ -614,7 +614,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="2-qadam · REJISSYOR (backend)" screen={screen} scrollSignal={done} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "Promptni AI'ga bering"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Backendni AI'ga <span className="italic" style={{ color: T.accent }}>qanday</span> yozdiramiz?</h2></div>
-        <Mentor>Sir — <b style={{ color: T.ink }}>aniq va qisqa prompt</b>da. Nima, qaysi yo'l (path), nima qilsin — shuni yozsangiz, AI agentiga berib qo'ysangiz, u kodni o'zi yozadi. Mana backend uchun tayyor prompt.</Mentor>
+        <Mentor>Sir — <b style={{ color: T.ink }}>aniq va qisqa prompt</b>da. Nima, qaysi yo'l (path), nima qilsin — shuni yozsangiz, AI'ga berib qo'ysangiz, u shu ko'rsatma asosida kodni yozadi. Mana backend uchun tayyor prompt.</Mentor>
         <div className="split">
           <Col>
             <p className="flow-label">Agentga prompt — backend</p>
@@ -628,7 +628,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="sk-info"><p className="body" style={{ margin: 0, color: T.ink }}><b style={{ color: T.accent }}>Kirish (POST)</b> — sessiya yoziladi + joy band (🟥). <span className="mono">NOW()</span> vaqtni avtomatik qo'yadi.</p></div>
             <div className="sk-info"><p className="body" style={{ margin: 0, color: T.ink }}><b style={{ color: T.accent }}>Chiqish (PUT)</b> — chiqqan vaqt + 10 000 yoziladi, joy bo'sh (🟩).</p></div>
             <div className="sk-info"><p className="body" style={{ margin: 0, color: T.ink }}><b style={{ color: T.accent }}>GET</b> — joylar va tarix (JOIN bilan o'qiladi).</p></div>
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Prompt aniq bo'lgani uchun agent to'g'ri yozdi. Endi shu API'ni ishlatadigan <b>frontni</b> yozdiramiz.</p></div>}
+            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Prompt aniq bo'lgani uchun AI to'g'ri yozdi. Endi shu API'ni ishlatadigan <b>frontni</b> yozdiramiz.</p></div>}
           </Col>
         </div>
       </div>
@@ -682,7 +682,7 @@ const Screen9b = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="2-qadam · REJISSYOR (front)" screen={screen} scrollSignal={done} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "Promptni AI'ga bering"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi qorovul <span className="italic" style={{ color: T.accent }}>panelini</span> (front) yozdiramiz.</h2></div>
-        <Mentor>Backend tayyor, lekin qorovul kod ko'rmaydi — unga <b style={{ color: T.ink }}>panel</b> kerak. Frontga ham aniq prompt beramiz: nimani ko'rsatsin, qaysi API'ni chaqirsin. Shu prompt agentga berilsa — panelni o'zi quradi.</Mentor>
+        <Mentor>Backend tayyor, lekin qorovul kod ko'rmaydi — unga <b style={{ color: T.ink }}>panel</b> kerak. Frontga ham aniq prompt beramiz: nimani ko'rsatsin, qaysi API'ni chaqirsin. Shu prompt AI'ga berilsa — panelni o'zi quradi.</Mentor>
         <div className="split">
           <Col>
             <p className="flow-label">Agentga prompt — frontend</p>

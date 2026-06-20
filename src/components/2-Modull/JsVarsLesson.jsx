@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 
 // ============================================================
-// 08-DARS — JAVASCRIPT: O'ZGARUVCHILAR (Переменные) — PLATFORM STANDARD v16
+// 08-DARS — JAVASCRIPT: O'ZGARUVCHILAR (Peremennie) — PLATFORM STANDARD v16
 // Mavzu: o'zgaruvchi nima (nomlangan quti), qiymat berish (=),
 //        let / const / var, ma'lumot turlari (string, number, boolean),
 //        o'z qo'li bilan birinchi o'zgaruvchilarni yozish.
@@ -498,8 +498,8 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 const Screen4 = (props) => (
   <QuestionScreen {...props} idx={4} scope="module-mikro" eyebrow="Mashq · 1-savol"
     audioText="O'zgaruvchi nima? To'g'ri variantni tanlang."
-    questionText="O'zgaruvchi (переменная) nima?"
-    question={<><p className="eyebrow" style={{ color: T.accent }}>O'zgaruvchi nima?</p><h2 className="title h-sub" style={{ marginTop: 8 }}>O'zgaruvchi (переменная) nima?</h2></>}
+    questionText="O'zgaruvchi (peremennaya) nima?"
+    question={<><p className="eyebrow" style={{ color: T.accent }}>O'zgaruvchi nima?</p><h2 className="title h-sub" style={{ marginTop: 8 }}>O'zgaruvchi (peremennaya) nima?</h2></>}
     options={['Hisob-kitob amali', "Qiymat saqlaydigan nomlangan \"quti\"", 'Internet sahifasi', 'Rang turi']} correctIdx={1}
     explainCorrect="To'g'ri! O'zgaruvchi — nomi bor quti: ichida qiymat (matn, raqam...) saqlanadi va siz uni nom orqali chaqirasiz."
     explainWrong={{ 0: 'Yo’q — bu hisoblash emas. O’zgaruvchi qiymat saqlaydigan nomlangan quti.', 2: 'Yo’q — bu sahifa emas. O’zgaruvchi — kod ichidagi qiymat qutisi.', 3: 'Yo’q — rang emas. O’zgaruvchi — qiymat saqlaydigan nomlangan quti.', default: 'O’zgaruvchi — qiymat saqlaydigan nomlangan quti.' }} />

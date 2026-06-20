@@ -485,7 +485,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 // ===== SCREEN 3 — ROUTES / ROUTE (3 bo'lakni bosib o'rganish) =====
 const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const PARTS = {
-    routes: { lbl: '<Routes>', t: 'kommutator', desc: "Barcha route'larni o'rab turadi. URL'ga qarab qaysi birini ko'rsatishni hal qiladi." },
+    routes: { lbl: '<Routes>', t: 'yo\'l tanlovchi', desc: "Barcha route'larni o'rab turadi. URL'ga qarab qaysi birini ko'rsatishni hal qiladi." },
     path: { lbl: 'path="/"', t: 'manzil', desc: "Qaysi URL'da ishlashi. Brauzer manzili shunga teng bo'lsa — shu route tanlanadi." },
     element: { lbl: 'element={<Home />}', t: 'qaysi sahifa', desc: "Shu manzilda ko'rsatiladigan komponent. Manzil → komponent." }
   };

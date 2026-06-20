@@ -147,7 +147,7 @@ const Ico = {
   taxi: (s = 26) => (<svg viewBox="0 0 24 24" width={s} height={s}><path d="M4 16.2l1.5-4.9A2.5 2.5 0 0 1 7.9 9.6h8.2a2.5 2.5 0 0 1 2.4 1.7l1.5 4.9v3a.8.8 0 0 1-.8.8h-1.5a.8.8 0 0 1-.8-.8V19H6.6v.2a.8.8 0 0 1-.8.8H4.3a.8.8 0 0 1-.8-.8z" fill="#FFB300" /><rect x="9" y="6.4" width="6" height="2.6" rx="0.5" fill="#222" /><circle cx="7.6" cy="16.4" r="1.15" fill="#222" /><circle cx="16.4" cy="16.4" r="1.15" fill="#222" /></svg>)
 };
 
-const LESSON_META = { lessonId: 'pm-pitch-03-v16', lessonTitle: { uz: 'Storytelling — питч', ru: 'Сторителлинг — питч' } };
+const LESSON_META = { lessonId: 'pm-pitch-03-v16', lessonTitle: { uz: 'Storytelling — pitch', ru: 'Сторителлинг — питч' } };
 const SCREEN_META = [
   { id: 's0',  type: 'hook',        template: 'custom',   scored: false, scope: 'hook' },
   { id: 's1',  type: 'rule',        template: 'custom',   scored: false, scope: null },
@@ -364,12 +364,12 @@ const MentorCollapseScroll = ({ targetRef }) => {
   return null;
 };
 
-// Teleprompter — питч-kartasi (script)
+// Teleprompter — pitch-kartasi (script)
 const PitchCard = ({ items, minH = 200 }) => (
   <div style={{ background: CODE.bg, borderRadius: 14, padding: '16px 17px', minHeight: minH, boxShadow: `0 12px 30px -10px rgba(${T.shadowBase},0.3)`, display: 'flex', flexDirection: 'column', gap: 12 }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 9, borderBottom: `1px solid #ffffff18` }}>
       <span style={{ color: '#9FB4D8', display: 'inline-flex' }}>{p3.mic(15)}</span>
-      <span className="mono" style={{ fontSize: 10.5, letterSpacing: '0.12em', color: '#9FB4D8', textTransform: 'uppercase' }}>2 daqiqalik питч</span>
+      <span className="mono" style={{ fontSize: 10.5, letterSpacing: '0.12em', color: '#9FB4D8', textTransform: 'uppercase' }}>2 daqiqalik pitch</span>
     </div>
     {items.map((it, i) => (
       <div key={i}>
@@ -394,7 +394,7 @@ const RehearseTimer = () => {
     <div className="frame fade-step" style={{ display: 'flex', alignItems: 'center', gap: 13, padding: '13px 16px', flexWrap: 'wrap' }}>
       <span style={{ fontFamily: "'Fraunces',serif", fontSize: 30, lineHeight: 1, color: over ? T.accent : (running ? T.success : T.ink), minWidth: 64 }}>{mm}:{ss}</span>
       <div style={{ flex: 1, minWidth: 150 }}>
-        <p style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, fontSize: 13, color: T.ink, margin: 0 }}>{over ? 'Vaqt tugadi — qanday chiqdi?' : (running ? 'Ovoz chiqarib o\'qing — oyna oldida!' : 'Питчингizni 2 daqiqada o\'qib mashq qiling')}</p>
+        <p style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, fontSize: 13, color: T.ink, margin: 0 }}>{over ? 'Vaqt tugadi — qanday chiqdi?' : (running ? 'Ovoz chiqarib o\'qing — oyna oldida!' : 'Pitchingizni 2 daqiqada o\'qib mashq qiling')}</p>
       </div>
       {!running && !over && <button className="btn" onClick={start}>▶ Repetitsiya</button>}
       {(running || over) && <button className="btn-soft" onClick={reset}>↺ Qaytadan</button>}
@@ -435,7 +435,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             <div className="fade-up delay-3" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {OPTS.map(o => { const on = picked === o.id; return (<button key={o.id} className={`hook-option ${on ? 'on' : ''}`} disabled={picked !== null} onClick={() => pick(o.id)}><span className="radio">{on && <span className="radio-dot" />}</span><span>{o.label}</span></button>); })}
             </div>
-            {picked !== null && <p className="hook-ack fade-step">Mahsulotning o'zi bir xil — lekin <b>qanday aytish</b> hammasini hal qiladi. Buni <b>питч</b> deyiladi. Bugun 2 daqiqada qiziqtirishni o'rganamiz.</p>}
+            {picked !== null && <p className="hook-ack fade-step">Mahsulotning o'zi bir xil — lekin <b>qanday aytish</b> hammasini hal qiladi. Buni <b>pitch</b> deyiladi. Bugun 2 daqiqada qiziqtirishni o'rganamiz.</p>}
           </Col>
         </Split>
       </div>
@@ -445,13 +445,13 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
 
 // ===== SCREEN 1 — REJA =====
 const Screen1 = ({ screen, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's1', text: `G'oyani topdik, sahifani tuzdik. Endi eng muhimi — buni odamlarga qanday qilib 2 daqiqada tushuntirish. Buni питч deyiladi va u kino treyleri kabi ishlaydi. Bugun shuni to'rtta qism bilan o'rganamiz.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's1', text: `G'oyani topdik, sahifani tuzdik. Endi eng muhimi — buni odamlarga qanday qilib 2 daqiqada tushuntirish. Buni pitch deyiladi va u kino treyleri kabi ishlaydi. Bugun shuni to'rtta qism bilan o'rganamiz.`, trigger: 'on_mount', waits_for: null }]);
   const STEPS = [
     { text: 'Birinchi gap — diqqatni tortadi', tag: '' },
     { text: 'Muammo va yechimni hikoya qiling', tag: '' },
     { text: 'Demo bilan ishontiring va chaqiring', tag: '' },
     { text: 'Cho\'zib yubormang — 2 daqiqa', tag: 'vaqt' },
-    { text: 'O\'z питчингizni yozib, mashq qilasiz', tag: 'amaliyot' }
+    { text: 'O\'z pitchingizni yozib, mashq qilasiz', tag: 'amaliyot' }
   ];
   const isNarrow = useIsMobile(768);
   const [showSteps, setShowSteps] = useState(false);
@@ -460,10 +460,10 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Col>
       <p className="flow-label">Bugungi asosiy g'oya</p>
       <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Idea ic={p3.film(22)} c="#E0892B" h="ПИТЧ = TREYLER" t="Hammasini aytmaydi — qiziqtiradi" />
+        <Idea ic={p3.film(22)} c="#E0892B" h="PITCH = TREYLER" t="Hammasini aytmaydi — qiziqtiradi" />
         <Idea ic={p3.mic(22)} c={T.blue} h="4 QISM" t="Diqqat tortish · Muammo · Yechim · Demo+harakat" />
       </div>
-      <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ Demo Day'da shu питч bilan saytingizni taqdim qilasiz</p>
+      <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ Demo Day'da shu pitch bilan saytingizni taqdim qilasiz</p>
     </Col>
   );
   const StepsBlock = (<Col><p className="flow-label">5 qadam</p><ol className="roadmap">{STEPS.map((s, i) => (<li key={i} className="step-card fade-up" style={{ animationDelay: `${0.08 + i * 0.05}s` }}><span className="step-num">{String(i + 1).padStart(2, '0')}</span><span className="step-body"><span className="step-text">{s.text}</span>{s.tag && <span className="step-tag">{s.tag}</span>}</span></li>))}</ol></Col>);
@@ -471,7 +471,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Stage eyebrow="Reja" screen={screen} audioState={audio} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Mahsulotingizni 2 daqiqada qanday qiziqtirasiz?</span></h2></div>
-        <Mentor>G'oyani topdik, sahifani tuzdik. Endi eng muhimi — buni <b style={{ color: T.ink }}>2 daqiqada</b> tushuntirish. Bu — <b style={{ color: T.ink }}>питч</b>, va u kino <b style={{ color: T.ink }}>treyleri</b> kabi ishlaydi.</Mentor>
+        <Mentor>G'oyani topdik, sahifani tuzdik. Endi eng muhimi — buni <b style={{ color: T.ink }}>2 daqiqada</b> tushuntirish. Bu — <b style={{ color: T.ink }}>pitch</b>, va u kino <b style={{ color: T.ink }}>treyleri</b> kabi ishlaydi.</Mentor>
         {!isNarrow ? (<Split>{PreviewBlock}{StepsBlock}</Split>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{PreviewBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>
@@ -480,7 +480,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
 
 // ===== SCREEN 2 — DIQQAT TORTISH (birinchi gap) =====
 const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's2', text: `Kino treyleri birinchi soniyada ushlaydi. Питч ham shunday — birinchi gap qiziqtirmasa, qolganini hech kim eshitmaydi. Quyidagi uchta boshlamadan qaysi biri eng kuchli? To'g'ri javobni tanlang.`, trigger: 'on_mount', waits_for: { type: 'option_picked' } }]);
+  const audio = useAudio([{ id: 's2', text: `Kino treyleri birinchi soniyada ushlaydi. Pitch ham shunday — birinchi gap qiziqtirmasa, qolganini hech kim eshitmaydi. Quyidagi uchta boshlamadan qaysi biri eng kuchli? To'g'ri javobni tanlang.`, trigger: 'on_mount', waits_for: { type: 'option_picked' } }]);
   const OPTS = [
     { id: 0, label: 'Salom, men bir sayt qildim.', why: 'Bu hech kimni qiziqtirmaydi — na muammo, na qiziqish bor. Zaif boshlama.' },
     { id: 1, label: 'Uyingizda ishlatilmay yotgan narsalar bormi?', why: 'Mana bu — kuchli! Savol bilan boshlaydi, tinglovchini o\'ylantiradi va muammoga olib keladi.' },
@@ -508,9 +508,9 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   );
 };
 
-// ===== SCREEN 3 — REAL MAHSULOTLAR BIR JUMLALI ПИТЧ =====
+// ===== SCREEN 3 — REAL MAHSULOTLAR BIR JUMLALI PITCH =====
 const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's3', text: `Eng zo'r mahsulotlar o'zini bitta jumlada tushuntira oladi. Har bir mahsulotni bosib, uning bir jumlali питчini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's3', text: `Eng zo'r mahsulotlar o'zini bitta jumlada tushuntira oladi. Har bir mahsulotni bosib, uning bir jumlali pitchini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
   const SITES = {
     youtube: { ic: Ico.youtube(24), name: 'YouTube', line: 'Sevimli videolaringizni xohlagan vaqtda, bepul ko\'ring — darslar ham, ko\'ngilochar ham bir joyda.' },
     market: { ic: Ico.market(24), name: 'Bozor', line: 'Uydan chiqmasdan, bir necha daqiqada e\'lon bering — yoki kerakli narsani arzonga toping.' },
@@ -524,10 +524,10 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const tap = (k) => { setActive(k); setSeen(prev => { const n = new Set(prev); n.add(k); return n; }); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="Bir jumlali питч" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/4 ko'ring`} onClick={onNext} /></>}>
+    <Stage eyebrow="Bir jumlali pitch" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/4 ko'ring`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mashhur mahsulotlar o'zini <span className="italic" style={{ color: T.accent }}>bir jumlada</span> qanday aytadi?</h2></div>
-        <Mentor>Eng zo'r mahsulotlar o'zini <b style={{ color: T.ink }}>bitta jumlada</b> tushuntira oladi. Har birini bosib, питчini ko'ring.</Mentor>
+        <Mentor>Eng zo'r mahsulotlar o'zini <b style={{ color: T.ink }}>bitta jumlada</b> tushuntira oladi. Har birini bosib, pitchini ko'ring.</Mentor>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -547,17 +547,17 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 // ===== SCREEN 4 — TEST 1 =====
 const Screen4 = (props) => (
   <QuestionScreen {...props} scope="module-mikro" eyebrow="Mashq · 1-savol"
-    audioText="Yaxshi питч nimadan boshlanadi?"
-    questionText="Yaxshi питч nimadan boshlanadi?"
-    question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Yaxshi питч <span className="italic" style={{ color: T.accent }}>nimadan</span> boshlanadi?</h2></>}
+    audioText="Yaxshi pitch nimadan boshlanadi?"
+    questionText="Yaxshi pitch nimadan boshlanadi?"
+    question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Yaxshi pitch <span className="italic" style={{ color: T.accent }}>nimadan</span> boshlanadi?</h2></>}
     options={['Texnik tafsilotlardan (qaysi tilda qilingani)', 'Diqqatni tortadigan birinchi gapdan', 'Salomlashuv va o\'zini tanishtirishdan', 'Narxidan']} correctIdx={1}
     explainCorrect="To'g'ri! Treyler kabi — birinchi gap tinglovchini ushlaydi. Aks holda qolganini eshitmaydi."
-    explainWrong={{ 0: 'Texnik tafsilot tinglovchiga qiziq emas. Avval qiziqtiruvchi birinchi gap kerak.', 2: 'Uzoq salomlashuv zeriktiradi. Darhol qiziqtiruvchi birinchi gap bilan boshlang.', 3: 'Narx — keyin. Avval qiziqtirish, muammoni his qildirish kerak.', default: 'Питч diqqatni tortadigan birinchi gapdan boshlanadi.' }} />
+    explainWrong={{ 0: 'Texnik tafsilot tinglovchiga qiziq emas. Avval qiziqtiruvchi birinchi gap kerak.', 2: 'Uzoq salomlashuv zeriktiradi. Darhol qiziqtiruvchi birinchi gap bilan boshlang.', 3: 'Narx — keyin. Avval qiziqtirish, muammoni his qildirish kerak.', default: 'Pitch diqqatni tortadigan birinchi gapdan boshlanadi.' }} />
 );
 
 // ===== SCREEN 5 — 4 QISM (tap → vazifa) =====
 const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's5', text: `Yaxshi питч to'rtta qismdan iborat: diqqat tortish, muammo, yechim va demo bilan harakat. Har birini bosib, vazifasini va "Bozor" misolini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's5', text: `Yaxshi pitch to'rtta qismdan iborat: diqqat tortish, muammo, yechim va demo bilan harakat. Har birini bosib, vazifasini va "Bozor" misolini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
   const [active, setActive] = useState(null);
   const [seen, setSeen] = useState(new Set());
   const isNarrow = useIsMobile(768);
@@ -565,10 +565,10 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const tap = (k) => { setActive(k); setSeen(prev => { const n = new Set(prev); n.add(k); return n; }); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="Питч tuzilishi" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/4 qismni oching`} onClick={onNext} /></>}>
+    <Stage eyebrow="Pitch tuzilishi" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/4 qismni oching`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Питч qaysi <span className="italic" style={{ color: T.accent }}>4 qism</span>dan iborat?</h2></div>
-        <Mentor>Yaxshi питч 4 qismdan iborat: <b style={{ color: T.ink }}>diqqat tortish, muammo, yechim, demo+harakat</b>. Har birini bosib, vazifasini va "Bozor" misolini ko'ring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Pitch qaysi <span className="italic" style={{ color: T.accent }}>4 qism</span>dan iborat?</h2></div>
+        <Mentor>Yaxshi pitch 4 qismdan iborat: <b style={{ color: T.ink }}>diqqat tortish, muammo, yechim, demo+harakat</b>. Har birini bosib, vazifasini va "Bozor" misolini ko'ring.</Mentor>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -577,7 +577,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             {active ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span style={{ color: PMETA[active].color, display: 'inline-flex' }}>{PMETA[active].ic}</span><span className="sk-wordbadge" style={{ color: PMETA[active].color, background: PMETA[active].color + '1c' }}>{PMETA[active].label}</span></span><p className="body" style={{ color: T.ink, margin: '12px 0 0' }}>{PMETA[active].job}</p><p style={{ fontFamily: G, fontStyle: 'italic', color: T.ink2, margin: '9px 0 0', fontSize: 13.5, lineHeight: 1.5 }}>"{PMETA[active].ex}"</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir qismni bosing</p></div> : null)}
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>To'rt qism birga — tayyor питч. Endi ularni <b>tartib bilan</b> bog'laymiz.</p></div>}
+            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>To'rt qism birga — tayyor pitch. Endi ularni <b>tartib bilan</b> bog'laymiz.</p></div>}
           </Col>
         </div>
       </div>
@@ -588,17 +588,17 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 // ===== SCREEN 5b — TEST 2 =====
 const Screen5b = (props) => (
   <QuestionScreen {...props} scope="module-mikro" eyebrow="Tekshiruv"
-    audioText="Demo va harakat qismi питчда nima vazifani bajaradi?"
-    questionText="Демo + harakat qismi питчда nima vazifani bajaradi?"
+    audioText="Demo va harakat qismi pitchda nima vazifani bajaradi?"
+    questionText="Demo + harakat qismi pitchda nima vazifani bajaradi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>Mustahkamlash</p><h2 className="title h-sub" style={{ marginTop: 8 }}>"Demo + harakat" qismi <span className="italic" style={{ color: T.accent }}>nima uchun</span> kerak?</h2></>}
-    options={['Ko\'rsatib ishontiradi va aniq keyingi qadamni beradi', 'Питчни uzaytirish uchun', 'Texnik tafsilotlarni sanash uchun', 'Salomlashish uchun']} correctIdx={0}
-    explainCorrect="To'g'ri! Demo — ishlayotganini ko'rsatadi, harakat esa aniq aytadi: 'hoziroq sinab ko'ring'. Питчни kuchli yakunlaydi."
-    explainWrong={{ 1: 'Maqsad uzaytirish emas. Demo ishontiradi, harakat keyingi qadamni beradi.', 2: 'Texnik tafsilot kerak emas. Demo — natijani ko\'rsatadi.', 3: 'Salomlashuv emas — bu питчning kuchli yakuni: ko\'rsat va chaqir.', default: 'Demo ishontiradi, harakat aniq chaqiradi.' }} />
+    options={['Ko\'rsatib ishontiradi va aniq keyingi qadamni beradi', 'Pitchni uzaytirish uchun', 'Texnik tafsilotlarni sanash uchun', 'Salomlashish uchun']} correctIdx={0}
+    explainCorrect="To'g'ri! Demo — ishlayotganini ko'rsatadi, harakat esa aniq aytadi: 'hoziroq sinab ko'ring'. Pitchni kuchli yakunlaydi."
+    explainWrong={{ 1: 'Maqsad uzaytirish emas. Demo ishontiradi, harakat keyingi qadamni beradi.', 2: 'Texnik tafsilot kerak emas. Demo — natijani ko\'rsatadi.', 3: 'Salomlashuv emas — bu pitchning kuchli yakuni: ko\'rsat va chaqir.', default: 'Demo ishontiradi, harakat aniq chaqiradi.' }} />
 );
 
 // ===== SCREEN 6 — TREYLER STEPPER =====
 const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's6', text: `Endi питчни treyler kabi yig'amiz: diqqatni tortamiz, muammoni eslatamiz, yechimni aytamiz va demo bilan chaqiramiz. Tugmani bosib, питчning qurilishini kuzating.`, trigger: 'on_mount', waits_for: { type: 'flow_done' } }]);
+  const audio = useAudio([{ id: 's6', text: `Endi pitchni treyler kabi yig'amiz: diqqatni tortamiz, muammoni eslatamiz, yechimni aytamiz va demo bilan chaqiramiz. Tugmani bosib, pitchning qurilishini kuzating.`, trigger: 'on_mount', waits_for: { type: 'flow_done' } }]);
   const [step, setStep] = useState(storedAnswer ? PARTS.length : 0);
   const [running, setRunning] = useState(false);
   const timer = useRef(null);
@@ -610,21 +610,21 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Treyler" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Avval kuzating'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(8px,1.4vw,13px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Питч treyler kabi <span className="italic" style={{ color: T.accent }}>qurilsa</span> — qanday bo'ladi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Pitch treyler kabi <span className="italic" style={{ color: T.accent }}>qurilsa</span> — qanday bo'ladi?</h2></div>
         <Mentor>Avval <b style={{ color: T.ink }}>diqqatni tortamiz</b>, muammoni eslatamiz, yechimni aytamiz va demo bilan <b style={{ color: T.ink }}>chaqiramiz</b>. Tugmani bosing.</Mentor>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {PARTS.map((s, i) => { const on = step > i; return (<React.Fragment key={s.key}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '8px 13px', opacity: on ? 1 : 0.4, boxShadow: on ? `0 7px 18px -10px rgba(${T.shadowBase},0.18)` : 'none', transition: 'all 0.4s' }}><IcoChip color={on ? s.color : T.ink3} soft={on ? s.color + '1c' : '#ECEAE5'} size={31}>{s.ic}</IcoChip><div style={{ minWidth: 0, flex: 1 }}><p style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 13, color: on ? s.color : T.ink3, margin: 0 }}>{s.label}</p>{on && <p style={{ fontFamily: G, fontStyle: 'italic', fontSize: 12.5, color: T.ink2, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: isMobile ? 'normal' : 'nowrap' }}>"{s.ex}"</p>}</div>{on && <span style={{ color: T.success }}>{Ico.check(15)}</span>}</div>{i < PARTS.length - 1 && <div style={{ display: 'flex', justifyContent: 'center', color: step > i + 1 ? T.success : T.ink3, transform: 'rotate(90deg)', lineHeight: 1, transition: 'color 0.3s' }}>{Ico.arrow(12)}</div>}</React.Fragment>); })}
         </div>
-        <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Qurilmoqda…' : (done ? '↻ Yana ko\'rish' : 'Питчни qurish')}</button>
-        {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana to'liq питч: <b>diqqat tortish → muammo → yechim → demo+harakat</b>. Treyler kabi qiziqtiradi.</p></div>}
+        <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Qurilmoqda…' : (done ? '↻ Yana ko\'rish' : 'Pitchni qurish')}</button>
+        {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana to'liq pitch: <b>diqqat tortish → muammo → yechim → demo+harakat</b>. Treyler kabi qiziqtiradi.</p></div>}
       </div>
     </Stage>
   );
 };
 
-// ===== SCREEN 7 — KUCHLI vs ZAIF ПИТЧ (toggle) =====
+// ===== SCREEN 7 — KUCHLI vs ZAIF PITCH (toggle) =====
 const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's7', text: `Bir mahsulot — ikki питч. Biri to'rtta qismni bajaradi, biri shunchaki gapiradi. Ikkalasini bosib solishtiring.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's7', text: `Bir mahsulot — ikki pitch. Biri to'rtta qismni bajaradi, biri shunchaki gapiradi. Ikkalasini bosib solishtiring.`, trigger: 'on_mount', waits_for: null }]);
   const [v, setV] = useState('strong');
   const [seen, setSeen] = useState(new Set(['strong']));
   const done = seen.size >= 2;
@@ -635,13 +635,13 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Kuchli vs zaif" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Ikkalasini ko\'ring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Qaysi питч sizni <span className="italic" style={{ color: T.accent }}>ishontiradi</span>?</h2></div>
-        <Mentor>Bir mahsulot — ikki питч. Biri 4 qismni bajaradi, biri shunchaki gapiradi. Ikkalasini bosib solishtiring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Qaysi pitch sizni <span className="italic" style={{ color: T.accent }}>ishontiradi</span>?</h2></div>
+        <Mentor>Bir mahsulot — ikki pitch. Biri 4 qismni bajaradi, biri shunchaki gapiradi. Ikkalasini bosib solishtiring.</Mentor>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
-              <button className={`chip ${v === 'strong' ? 'chip-on' : ''}`} onClick={() => set('strong')}>Kuchli питч</button>
-              <button className={`chip ${v === 'weak' ? 'chip-on' : ''}`} onClick={() => set('weak')}>Zaif питч</button>
+              <button className={`chip ${v === 'strong' ? 'chip-on' : ''}`} onClick={() => set('strong')}>Kuchli pitch</button>
+              <button className={`chip ${v === 'weak' ? 'chip-on' : ''}`} onClick={() => set('weak')}>Zaif pitch</button>
             </div>
             <div key={v}><PitchCard items={v === 'strong' ? STRONG : WEAK} minH={210} /></div>
           </Col>
@@ -649,7 +649,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {v === 'strong'
               ? <div className="frame-success fade-step" key="s"><p className="small mono" style={{ margin: '0 0 6px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Ishontiradi</p><p className="body" style={{ margin: 0, color: T.ink }}>Birinchi gap ushlaydi, muammo tanish, yechim aniq, demo chaqiradi. Tinglovchi sinab ko'rgisi keladi.</p></div>
               : <div className="frame-warn fade-step" key="w"><p className="small mono" style={{ margin: '0 0 6px', fontWeight: 600, color: T.accent, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Zerikarli</p><p className="body" style={{ margin: 0, color: T.ink }}>Faqat texnik faktlar — na qiziqarli boshlama, na muammo, na chaqiriq. Tinglovchi befarq qoladi.</p></div>}
-            {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mahsulot bir xil — <b>питч</b> hammasini hal qiladi. Fakt emas, hikoya soting.</p></div>}
+            {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mahsulot bir xil — <b>pitch</b> hammasini hal qiladi. Fakt emas, hikoya soting.</p></div>}
           </Col>
         </div>
       </div>
@@ -682,7 +682,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Mentor>Avval <b style={{ color: T.ink }}>qismni</b>, keyin uning <b style={{ color: T.ink }}>vazifasini</b> bosing. To'rttasini to'g'ri ulang.</Mentor>
         <div className="split">
           <Col>
-            <p className="flow-label">Питч qismlari</p>
+            <p className="flow-label">Pitch qismlari</p>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {KEYS.map(id => { const s = PMETA[id]; const m = matched[id]; const on = sel === id; return (<button key={id} onClick={() => pickP(id)} disabled={m} style={cardBtn({ cursor: m ? 'default' : 'pointer', opacity: m ? 0.5 : 1, background: m ? T.successSoft : T.paper, boxShadow: on ? `inset 0 0 0 2px ${T.accent}, 0 8px 20px -7px rgba(255,79,40,0.22)` : `0 6px 16px -8px rgba(${T.shadowBase},0.16)` })}><span style={{ color: m ? T.success : s.color, display: 'inline-flex' }}>{m ? Ico.check(18) : s.ic}</span><span style={{ flex: 1, fontWeight: 600 }}>{s.label}</span></button>); })}
             </div>
@@ -693,7 +693,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               {NEEDS.map(n => { const m = matched[n.id]; const isWrong = wrong === n.id; return (<button key={n.id} onClick={() => pickN(n.id)} disabled={m || !sel} style={cardBtn({ cursor: (m || !sel) ? 'default' : 'pointer', opacity: m ? 0.5 : (!sel ? 0.65 : 1), background: m ? T.successSoft : (isWrong ? T.accentSoft : T.paper), boxShadow: `0 6px 16px -8px rgba(${T.shadowBase},0.16)` })}><span style={{ flex: 1 }}>{n.text}</span>{m && <span style={{ color: T.success, display: 'inline-flex' }}>{Ico.check(16)}</span>}</button>); })}
             </div>
             {wrong && !done && <p className="small" style={{ color: T.accent, margin: 0 }}>Bu boshqa qismning vazifasi. Qaytadan urinib ko'ring.</p>}
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Zo'r! Har bir qism питчда nima uchun turishini bildingiz.</p></div>}
+            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Zo'r! Har bir qism pitchda nima uchun turishini bildingiz.</p></div>}
           </Col>
         </div>
       </div>
@@ -704,17 +704,17 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 // ===== SCREEN 9 — TEST 3 =====
 const Screen9 = (props) => (
   <QuestionScreen {...props} scope="module-mikro" eyebrow="Mashq · 2-savol"
-    audioText="Питч haqida eng to'g'ri fikr qaysi?"
-    questionText="Питч haqida eng to'g'ri fikr qaysi?"
-    question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Питч haqida eng <span className="italic" style={{ color: T.accent }}>to'g'ri</span> fikr qaysi?</h2></>}
+    audioText="Pitch haqida eng to'g'ri fikr qaysi?"
+    questionText="Pitch haqida eng to'g'ri fikr qaysi?"
+    question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Pitch haqida eng <span className="italic" style={{ color: T.accent }}>to'g'ri</span> fikr qaysi?</h2></>}
     options={['Mahsulot haqida hamma narsani aytish kerak', 'Treyler kabi — faqat qiziqtirib, foydani aytish kerak', 'Qancha uzun bo\'lsa, shuncha yaxshi', 'Texnik tafsilotlar eng muhim']} correctIdx={1}
-    explainCorrect="To'g'ri! Питч — treyler: hammasini aytmaydi, qisqa va qiziqarli qilib foydani ko'rsatadi."
-    explainWrong={{ 0: 'Hammasini aytsa, tinglovchi charchaydi. Faqat eng muhimini — qiziqtirib ayting.', 2: 'Uzunlik yomon. 2 daqiqada, qisqa va aniq bo\'lishi kerak.', 3: 'Texnik tafsilot tinglovchiga qiziq emas. Foydani ayting.', default: 'Питч — treyler kabi: qisqa, qiziqarli, foydani ko\'rsatadi.' }} />
+    explainCorrect="To'g'ri! Pitch — treyler: hammasini aytmaydi, qisqa va qiziqarli qilib foydani ko'rsatadi."
+    explainWrong={{ 0: 'Hammasini aytsa, tinglovchi charchaydi. Faqat eng muhimini — qiziqtirib ayting.', 2: 'Uzunlik yomon. 2 daqiqada, qisqa va aniq bo\'lishi kerak.', 3: 'Texnik tafsilot tinglovchiga qiziq emas. Foydani ayting.', default: 'Pitch — treyler kabi: qisqa, qiziqarli, foydani ko\'rsatadi.' }} />
 );
 
 // ===== SCREEN 10 — ZAIF QISMNI TUZATISH (debugging) =====
 const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's10', text: `Bir питч yozilgan, lekin ochilishi zaif — texnik tafsilotdan boshlangan, hech kimni qiziqtirmaydi. Qaysi qator zaif ekanini toping va o'sha qatorni bosing.`, trigger: 'on_mount', waits_for: { type: 'error_found' } }]);
+  const audio = useAudio([{ id: 's10', text: `Bir pitch yozilgan, lekin ochilishi zaif — texnik tafsilotdan boshlangan, hech kimni qiziqtirmaydi. Qaysi qator zaif ekanini toping va o'sha qatorni bosing.`, trigger: 'on_mount', waits_for: { type: 'error_found' } }]);
   const [found, setFound] = useState(!!storedAnswer);
   const [fixed, setFixed] = useState(!!storedAnswer);
   const done = fixed;
@@ -726,17 +726,17 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     { key: 'demo', label: 'Demo + harakat', color: '#7B3FE4', bad: PMETA.demo.ex, good: PMETA.demo.ex }
   ];
   const clickLine = (k) => { if (found) return; if (k === 'ilgak') { setFound(true); audio.triggerEvent('error_found'); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Topdingiz! Birinchi gap texnik tafsilotdan boshlangan — bu qiziqtirmaydi. Kuchli gap bilan almashtiramiz.`); }, 300); } };
-  const fix = () => { setFixed(true); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Tuzatildi! Endi питч savol bilan, qiziqtirib boshlanadi.`); }, 300); };
+  const fix = () => { setFixed(true); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Tuzatildi! Endi pitch savol bilan, qiziqtirib boshlanadi.`); }, 300); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
     <Stage eyebrow="Tuzatish" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : (found ? 'Endi tuzating' : 'Zaif qatorni toping')} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bu питчда qaysi qator <span className="italic" style={{ color: T.accent }}>zaif</span>?</h2></div>
-        <Mentor>Питч yozilgan, lekin <b style={{ color: T.ink }}>ochilishi zaif</b> — texnik tafsilotdan boshlangan. Qaysi qator qiziqtirmaydi? O'sha qatorni bosing.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Bu pitchda qaysi qator <span className="italic" style={{ color: T.accent }}>zaif</span>?</h2></div>
+        <Mentor>Pitch yozilgan, lekin <b style={{ color: T.ink }}>ochilishi zaif</b> — texnik tafsilotdan boshlangan. Qaysi qator qiziqtirmaydi? O'sha qatorni bosing.</Mentor>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
-              <div className="ai-row"><span className="ai-badge">ПИТЧ</span><span className="ai-bubble">Tekshirib ko'ring:</span></div>
+              <div className="ai-row"><span className="ai-badge">PITCH</span><span className="ai-bubble">Tekshirib ko'ring:</span></div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {lines.map(l => { const bad = found && !fixed && l.key === 'ilgak'; const txt = (l.key === 'ilgak' && !fixed) ? l.bad : l.good; return (<div key={l.key} onClick={() => { if (!found && !fixed) clickLine(l.key); }} style={{ cursor: (found || fixed) ? 'default' : 'pointer', display: 'flex', flexDirection: 'column', gap: 2, background: bad ? T.accentSoft : (fixed && l.key === 'ilgak' ? T.successSoft : T.bg), borderRadius: 10, padding: '9px 12px', boxShadow: bad ? `inset 0 0 0 1.5px ${T.accent}` : 'none', transition: 'all 0.18s' }}><span className="mono" style={{ fontSize: 9.5, fontWeight: 700, color: l.color, textTransform: 'uppercase' }}>{l.label}</span><span style={{ fontFamily: G, fontSize: 13, color: T.ink, fontStyle: (l.key === 'ilgak' && !fixed) ? 'normal' : 'normal' }}>"{txt}"</span></div>); })}
               </div>
@@ -747,7 +747,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             {!found && <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Eslang: birinchi gap <b>qiziqtirishi</b> kerak. Qaysi qator texnik fakt bo'lib, befarq qoldiradi?</p></div>}
             {found && !fixed && <div className="frame-warn fade-step"><p className="note-h" style={{ color: T.accent }}>Topdingiz!</p><p className="body" style={{ margin: 0, color: T.ink }}>Birinchi gap "HTML va CSS da qilingan" deb boshlanyapti — bu hech kimni qiziqtirmaydi. Chap tugmani bosib, kuchli gapga almashtiring.</p></div>}
-            {fixed && <div className="takeaway fade-step"><div className="ta-bulb" style={{ color: '#E0892B', display: 'inline-flex' }}>{p3.hook(34)}</div><p className="ta-h">Zaif boshlama — butun питчни yo'qotadi</p><p className="ta-sub">Birinchi gap muammoga teginsin, faktga emas</p></div>}
+            {fixed && <div className="takeaway fade-step"><div className="ta-bulb" style={{ color: '#E0892B', display: 'inline-flex' }}>{p3.hook(34)}</div><p className="ta-h">Zaif boshlama — butun pitchni yo'qotadi</p><p className="ta-sub">Birinchi gap muammoga teginsin, faktga emas</p></div>}
           </Col>
         </div>
       </div>
@@ -757,7 +757,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 11 — ENG KUCHLI GAPNI TANLASH (build) =====
 const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's11', text: `Endi питчни o'zingiz yig'ing. Har bir qism uchun ikkita variant bor — kuchliroq, qiziqarliroq gapni tanlang. O'ngda питч-kartangiz to'ladi.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's11', text: `Endi pitchni o'zingiz yig'ing. Har bir qism uchun ikkita variant bor — kuchliroq, qiziqarliroq gapni tanlang. O'ngda pitch-kartangiz to'ladi.`, trigger: 'on_mount', waits_for: null }]);
   const POOL = {
     ilgak: { color: '#E0892B', a: 'Salom, men bir sayt qildim.', b: 'Uyingizda ishlatilmay yotgan narsalar bormi?' },
     muammo: { color: T.accent, a: 'Sayt ko\'k rangda.', b: 'Sotish qiyin — xaridor topish ko\'p vaqt oladi.' },
@@ -777,19 +777,19 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   }, [allGood]);
   const items = KEYS.map(k => ({ label: PMETA[k].label, color: POOL[k].color, text: pick[k] ? POOL[k][pick[k]] : '', ph: 'tanlanmagan…' }));
   return (
-    <Stage eyebrow="Питч yig'ish" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!allGood} label={allGood ? 'Davom etish' : (allPicked ? 'Eng kuchli gaplarni tanlang' : 'Har qismdan tanlang')} onClick={onNext} /></>}>
+    <Stage eyebrow="Pitch yig'ish" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!allGood} label={allGood ? 'Davom etish' : (allPicked ? 'Eng kuchli gaplarni tanlang' : 'Har qismdan tanlang')} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har qism uchun <span className="italic" style={{ color: T.accent }}>kuchliroq</span> gapni tanlang</h2></div>
-        <Mentor>Har bir qism uchun ikkita variant — <b style={{ color: T.ink }}>qiziqarliroq</b> gapni tanlang. O'ngda питч-kartangiz to'ladi.</Mentor>
+        <Mentor>Har bir qism uchun ikkita variant — <b style={{ color: T.ink }}>qiziqarliroq</b> gapni tanlang. O'ngda pitch-kartangiz to'ladi.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
         <div className="split" ref={workRef}>
           <Col>
             {KEYS.map(k => (<div key={k}><p className="flow-label" style={{ margin: '0 0 6px', color: POOL[k].color }}>{PMETA[k].label}</p><div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>{['a', 'b'].map(v => { const on = pick[k] === v; return (<button key={v} onClick={() => set(k, v)} style={{ textAlign: 'left', border: 'none', cursor: 'pointer', borderRadius: 10, padding: '10px 13px', fontFamily: G, fontSize: 13, color: on ? '#fff' : T.ink, background: on ? POOL[k].color : T.paper, boxShadow: on ? `0 6px 14px -6px ${POOL[k].color}` : `0 5px 14px -8px rgba(${T.shadowBase},0.16)`, transition: 'all 0.16s' }}>"{POOL[k][v]}"</button>); })}</div></div>))}
           </Col>
           <Col>
-            <p className="flow-label">Питч-kartangiz</p>
+            <p className="flow-label">Pitch-kartangiz</p>
             <PitchCard items={items} minH={200} />
-            {allGood && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana — kuchli питч! Har qism qiziqtiradi va harakatga undaydi.</p></div>}
+            {allGood && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana — kuchli pitch! Har qism qiziqtiradi va harakatga undaydi.</p></div>}
           </Col>
         </div>
       </div>
@@ -800,17 +800,17 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 // ===== SCREEN 12 — TEST 4 =====
 const Screen12 = (props) => (
   <QuestionScreen {...props} scope="module-mikro" eyebrow="Mashq · 3-savol"
-    audioText="2 daqiqalik питчда vaqtni qanday taqsimlash to'g'ri?"
-    questionText="2 daqiqalik питчда eng ko'p vaqtni nimaga ajratasiz?"
+    audioText="2 daqiqalik pitchda vaqtni qanday taqsimlash to'g'ri?"
+    questionText="2 daqiqalik pitchda eng ko'p vaqtni nimaga ajratasiz?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>2 daqiqada eng ko'p e'tibor <span className="italic" style={{ color: T.accent }}>nimaga</span>?</h2></>}
     options={['Texnik tafsilotlarni sanashga', 'Muammo va yechimni aniq ko\'rsatishga', 'Uzoq salomlashuvga', 'Qaysi dasturlarda qilganini aytishga']} correctIdx={1}
     explainCorrect="To'g'ri! Vaqtning katta qismi — muammo va yechimga. Tinglovchi 'nega kerak va qanday yordam beradi'ni tushunishi shart."
     explainWrong={{ 0: 'Texnik tafsilot vaqtni behuda yeydi. Muammo va yechimga e\'tibor bering.', 2: 'Salomlashuv qisqa bo\'lsin. Asosiysi — muammo va yechim.', 3: 'Qaysi dasturda qilingani tinglovchiga qiziq emas. Foydani ko\'rsating.', default: 'Eng ko\'p e\'tibor — muammo va yechimga.' }} />
 );
 
-// ===== SCREEN 13 — NAMUNA (to'liq Bozor питчi) =====
+// ===== SCREEN 13 — NAMUNA (to'liq Bozor pitchi) =====
 const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's13', text: `Mana to'liq "Bozor" питчi — kartada yozilgan. Har bir qatorni bosib, nega aynan shunday yozilganini ko'ring. Keyin o'zingiznikini yozasiz.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's13', text: `Mana to'liq "Bozor" pitchi — kartada yozilgan. Har bir qatorni bosib, nega aynan shunday yozilganini ko'ring. Keyin o'zingiznikini yozasiz.`, trigger: 'on_mount', waits_for: null }]);
   const [seen, setSeen] = useState(new Set());
   const isNarrow = useIsMobile(768);
   const [active, setActive] = useState(null);
@@ -820,8 +820,8 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Namuna" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Endi navbat sizga →' : `${seen.size}/4 qatorni oching`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Tayyor питч: har qator <span className="italic" style={{ color: T.accent }}>nega</span> shunday?</h2></div>
-        <Mentor>Mana to'liq "Bozor" питчи. Har qatorni bosib, <b style={{ color: T.ink }}>nega</b> aynan shunday yozilganini ko'ring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Tayyor pitch: har qator <span className="italic" style={{ color: T.accent }}>nega</span> shunday?</h2></div>
+        <Mentor>Mana to'liq "Bozor" pitchi. Har qatorni bosib, <b style={{ color: T.ink }}>nega</b> aynan shunday yozilganini ko'ring.</Mentor>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -830,7 +830,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             {active ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span style={{ color: PMETA[active].color, display: 'inline-flex' }}>{PMETA[active].ic}</span><span className="sk-wordbadge" style={{ color: PMETA[active].color, background: PMETA[active].color + '1c' }}>{PMETA[active].label}</span></span><p className="body" style={{ color: T.ink, margin: '12px 0 0' }}>{PMETA[active].job}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir qatorni bosing</p></div> : null)}
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har qator o'z vazifasini bajaradi. Endi o'zingizning питчingizni yozasiz.</p></div>}
+            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har qator o'z vazifasini bajaradi. Endi o'zingizning pitchingizni yozasiz.</p></div>}
           </Col>
         </div>
       </div>
@@ -840,21 +840,21 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 14 — QOIDA (global savol) =====
 const Screen14 = ({ screen, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's14', text: `Sizga savol: odamlar aslida nimani sotib oladi — mahsulotnimi? Yo'q. Ular yechilgan muammoni, o'zining yaxshiroq holatini sotib oladi. Shuning uchun питч faktni emas, hikoyani aytadi: muammodan yechimga.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's14', text: `Sizga savol: odamlar aslida nimani sotib oladi — mahsulotnimi? Yo'q. Ular yechilgan muammoni, o'zining yaxshiroq holatini sotib oladi. Shuning uchun pitch faktni emas, hikoyani aytadi: muammodan yechimga.`, trigger: 'on_mount', waits_for: null }]);
   return (
     <Stage eyebrow="Qoida" screen={screen} audioState={audio} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Yakuniy ishga →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Odamlar aslida <span className="italic" style={{ color: T.accent }}>nimani</span> sotib oladi?</h2></div>
-        <Mentor>Mahsulotni emas — <b style={{ color: T.ink }}>yechilgan muammoni</b>, o'zining yaxshiroq holatini. Shuning uchun питч faktni emas, <b style={{ color: T.ink }}>hikoyani</b> aytadi: muammodan yechimga.</Mentor>
+        <Mentor>Mahsulotni emas — <b style={{ color: T.ink }}>yechilgan muammoni</b>, o'zining yaxshiroq holatini. Shuning uchun pitch faktni emas, <b style={{ color: T.ink }}>hikoyani</b> aytadi: muammodan yechimga.</Mentor>
         <div className="split">
           <Col>
             <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 'clamp(18px,2.6vw,26px)' }}>
               <IcoChip size={54} color="#E0892B" soft="#E0892B1c">{p3.film(28)}</IcoChip>
-              <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, margin: 0, color: T.ink, fontSize: 'clamp(18px,2.4vw,22px)' }}>Питч = hikoya</p><p className="body" style={{ margin: '3px 0 0', color: T.ink2 }}>Fakt emas — yechilgan muammoni soting.</p></div>
+              <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, margin: 0, color: T.ink, fontSize: 'clamp(18px,2.4vw,22px)' }}>Pitch = hikoya</p><p className="body" style={{ margin: '3px 0 0', color: T.ink2 }}>Fakt emas — yechilgan muammoni soting.</p></div>
             </div>
           </Col>
           <Col>
-            <p className="flow-label">Yaxshi питч — har doim</p>
+            <p className="flow-label">Yaxshi pitch — har doim</p>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {PARTS.map((s, i) => (<React.Fragment key={s.key}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '10px 13px', boxShadow: `0 5px 14px -8px rgba(${T.shadowBase},0.16)` }}><span style={{ color: s.color, display: 'inline-flex' }}>{s.ic}</span><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, color: T.ink, fontSize: 13.5 }}>{s.label}</span></div>{i < PARTS.length - 1 && <span style={{ color: T.ink3, textAlign: 'center', fontSize: 11 }}>↓</span>}</React.Fragment>))}
             </div>
@@ -865,10 +865,10 @@ const Screen14 = ({ screen, onNext, onPrev }) => {
   );
 };
 
-// ===== SCREEN 15 — YAKUNIY: O'Z ПИТЧИНГ + REPETITSIYA =====
+// ===== SCREEN 15 — YAKUNIY: O'Z PITCHING + REPETITSIYA =====
 const emptyPitch = () => ({ ilgak: '', muammo: '', yechim: '', demo: '' });
 const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's15', text: `Mana eng muhim qadam. O'z mahsulotingiz uchun 2 daqiqalik питч yozing: diqqat tortish, muammo, yechim va demo bilan harakat. O'ngda питч-kartangiz to'ladi. Keyin taymerni bosib, ovoz chiqarib mashq qiling.`, trigger: 'on_mount', waits_for: { type: 'typed_ok' } }]);
+  const audio = useAudio([{ id: 's15', text: `Mana eng muhim qadam. O'z mahsulotingiz uchun 2 daqiqalik pitch yozing: diqqat tortish, muammo, yechim va demo bilan harakat. O'ngda pitch-kartangiz to'ladi. Keyin taymerni bosib, ovoz chiqarib mashq qiling.`, trigger: 'on_mount', waits_for: { type: 'typed_ok' } }]);
   const [pit, setPit] = useState(() => storedAnswer?.pitch || emptyPitch());
   const filled = PARTS.filter(p => pit[p.key] && pit[p.key].trim().length >= 3).length;
   const passed = filled >= 4;
@@ -879,7 +879,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       prevPassed.current = true;
       onAnswer(screen, { correct: true, pitch: pit, stage: 'final', screenIdx: screen });
       audio.triggerEvent('typed_ok');
-      if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Ajoyib! Питчingiz tayyor. Endi taymerni bosib, oyna oldida ovoz chiqarib mashq qiling.`); }, 300);
+      if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Ajoyib! Pitchingiz tayyor. Endi taymerni bosib, oyna oldida ovoz chiqarib mashq qiling.`); }, 300);
       if (typeof window !== 'undefined' && window.innerWidth < 768 && workRef.current) { const el = workRef.current; setTimeout(() => { if (el) el.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, 360); }
     }
   }, [passed]);
@@ -888,18 +888,18 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Yakuniy ish" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? 'Davom etish' : `To'ldiring (${filled}/4)`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">O'z mahsulotingiz uchun <span className="italic" style={{ color: T.accent }}>2 daqiqalik питч</span> yozing</h2></div>
-        <Mentor>To'rt qismni yozing: <b style={{ color: T.ink }}>diqqat tortish, muammo, yechim, demo+harakat</b>. O'ngda питч-kartangiz to'ladi — keyin <b style={{ color: T.ink }}>ovoz chiqarib</b> mashq qiling.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">O'z mahsulotingiz uchun <span className="italic" style={{ color: T.accent }}>2 daqiqalik pitch</span> yozing</h2></div>
+        <Mentor>To'rt qismni yozing: <b style={{ color: T.ink }}>diqqat tortish, muammo, yechim, demo+harakat</b>. O'ngda pitch-kartangiz to'ladi — keyin <b style={{ color: T.ink }}>ovoz chiqarib</b> mashq qiling.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
         <div className="split" ref={workRef}>
           <Col>
             {PARTS.map(p => { const ok = pit[p.key] && pit[p.key].trim().length >= 3; return (<div key={p.key} style={{ background: T.paper, borderRadius: 12, padding: '11px 13px', boxShadow: ok ? `inset 0 0 0 1.5px ${T.success}, 0 6px 16px -9px rgba(31,122,77,0.16)` : `0 6px 16px -9px rgba(${T.shadowBase},0.16)`, transition: 'box-shadow 0.2s' }}><div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 6 }}><span style={{ color: ok ? T.success : p.color, display: 'inline-flex' }}>{ok ? Ico.check(15) : p.ic}</span><span className="mono" style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em', color: T.ink, textTransform: 'uppercase' }}>{p.label}</span></div><textarea value={pit[p.key]} onChange={e => upd(p.key, e.target.value)} placeholder={p.ex} rows={2} style={{ width: '100%', fontFamily: G, fontSize: 13.5, color: T.ink, background: T.bg, border: 'none', borderRadius: 9, padding: '8px 11px', resize: 'vertical', minHeight: 38, outline: 'none', lineHeight: 1.45, boxSizing: 'border-box' }} /></div>); })}
           </Col>
           <Col>
-            <p className="flow-label">Питч-kartangiz</p>
+            <p className="flow-label">Pitch-kartangiz</p>
             <PitchCard items={items} minH={188} />
             {passed && <RehearseTimer />}
-            {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! Endi Demo Day'da shu питч bilan saytingizni taqdim qilasiz.</p></div>}
+            {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! Endi Demo Day'da shu pitch bilan saytingizni taqdim qilasiz.</p></div>}
           </Col>
         </div>
       </div>
@@ -909,10 +909,10 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 16 — YAKUN + DEMO DAY =====
 const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
-  const audio = useAudio([{ id: 's16', text: "Tabriklaymiz! Endi siz mahsulot menejeri kabi o'ylaysiz: kim uchun, qanday tartibda va qanday qilib питч qilish. Bularning hammasi Demo Day uchun. O'sha kuni o'zingiz xohlagan saytni qurib, питч qilasiz. Omad!", trigger: 'on_mount', waits_for: null }]);
-  const RECAP = ['Питч — treyler: qiziqtiradi, hammasini aytmaydi', 'Diqqat tortish: birinchi gap e\'tiborni tortadi', '4 qism: diqqat tortish → muammo → yechim → demo+harakat', 'Odamlar yechilgan muammoni sotib oladi'];
-  const HOMEWORK = [{ b: 'Питчni mashq qiling', t: '— oyna oldida 2 daqiqada ovoz chiqarib ayting' }, { b: 'Do\'stga ayting', t: '— u 2 daqiqada tushundimi? Qiziqdimi?' }, { b: 'Demo Day\'ga tayyorlaning', t: '— o\'z saytingiz va питчingizni o\'ylab qo\'ying' }];
-  const GLOSSARY = [{ b: 'Питч', t: '— mahsulotni qisqa, qiziqarli tushuntirish' }, { b: 'Diqqat tortish', t: '— diqqatni tortuvchi birinchi gap' }, { b: 'Demo', t: '— mahsulot ishlayotganini ko\'rsatish' }, { b: 'Harakatga chaqiruv (CTA)', t: '— "hoziroq sinab ko\'ring"' }, { b: 'Demo Day', t: '— o\'z mahsulotingizni taqdim qilish kuni' }];
+  const audio = useAudio([{ id: 's16', text: "Tabriklaymiz! Endi siz mahsulot menejeri kabi o'ylaysiz: kim uchun, qanday tartibda va qanday qilib pitch qilish. Bularning hammasi Demo Day uchun. O'sha kuni o'zingiz xohlagan saytni qurib, pitch qilasiz. Omad!", trigger: 'on_mount', waits_for: null }]);
+  const RECAP = ['Pitch — treyler: qiziqtiradi, hammasini aytmaydi', 'Diqqat tortish: birinchi gap e\'tiborni tortadi', '4 qism: diqqat tortish → muammo → yechim → demo+harakat', 'Odamlar yechilgan muammoni sotib oladi'];
+  const HOMEWORK = [{ b: 'Pitchni mashq qiling', t: '— oyna oldida 2 daqiqada ovoz chiqarib ayting' }, { b: 'Do\'stga ayting', t: '— u 2 daqiqada tushundimi? Qiziqdimi?' }, { b: 'Demo Day\'ga tayyorlaning', t: '— o\'z saytingiz va pitchingizni o\'ylab qo\'ying' }];
+  const GLOSSARY = [{ b: 'Pitch', t: '— mahsulotni qisqa, qiziqarli tushuntirish' }, { b: 'Diqqat tortish', t: '— diqqatni tortuvchi birinchi gap' }, { b: 'Demo', t: '— mahsulot ishlayotganini ko\'rsatish' }, { b: 'Harakatga chaqiruv (CTA)', t: '— "hoziroq sinab ko\'ring"' }, { b: 'Demo Day', t: '— o\'z mahsulotingizni taqdim qilish kuni' }];
   const correct = SCORED_IDX.filter(i => answers[i]?.correct).length;
   const total = SCORED_IDX.length;
   const PASSED = (total ? correct / total : 0) >= 0.6;
@@ -923,10 +923,10 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
   return (
     <Stage eyebrow="Tayyor" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><button className="btn-ghost" onClick={onReset} style={{ padding: 'clamp(11px,1.6vw,13px) clamp(16px,2.2vw,22px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Qaytadan</button><button className="btn-white-accent" onClick={onFinish} style={{ marginLeft: 'auto', padding: 'clamp(11px,1.6vw,13px) clamp(22px,2.6vw,30px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Yakunlash</button></>}>
       <div className="screen">
-        <div className="hero"><div className="hero-l"><span className="done-chip fade-up"><span className="tick">{Ico.check(11)}</span> PM bloki tugadi</span><h2 className="title h-title fade-up d1">Endi siz <span className="italic" style={{ color: T.accent }}>питч</span> qila olasiz.</h2><p className="body h-sub fade-up d2">{PASSED ? 'Tabriklaymiz! Kim uchun, qanday tartibda va qanday питч — hammasini o\'rgandingiz. Demo Day\'ga tayyorsiz!' : 'Yaxshi harakat! Bir-ikki joyni mustahkamlash uchun darsni qayta ko\'ring.'}</p></div><ScoreRing correct={correct} total={total} /></div>
+        <div className="hero"><div className="hero-l"><span className="done-chip fade-up"><span className="tick">{Ico.check(11)}</span> PM bloki tugadi</span><h2 className="title h-title fade-up d1">Endi siz <span className="italic" style={{ color: T.accent }}>pitch</span> qila olasiz.</h2><p className="body h-sub fade-up d2">{PASSED ? 'Tabriklaymiz! Kim uchun, qanday tartibda va qanday pitch — hammasini o\'rgandingiz. Demo Day\'ga tayyorsiz!' : 'Yaxshi harakat! Bir-ikki joyni mustahkamlash uchun darsni qayta ko\'ring.'}</p></div><ScoreRing correct={correct} total={total} /></div>
         <div className="split">
           <div className="card fade-up d3"><div className="card-lbl" style={{ color: T.success }}><span style={{ color: T.success, display: 'inline-flex' }}>{Ico.check(15)}</span> Endi siz bilasiz</div><ul className="recap">{RECAP.map((r, i) => (<li key={i} style={{ animationDelay: `${0.3 + i * 0.07}s` }}><span className="ck" style={{ display: 'inline-flex' }}>{Ico.check(15)}</span><span>{r}</span></li>))}</ul></div>
-          <div className="card hw fade-up d4"><div className="card-lbl" style={{ color: T.accent }}>Demo Day'ga tayyorgarlik</div><p className="body" style={{ margin: '0 0 10px', color: T.ink }}>Питчingizni jonli qiling:</p><ul>{HOMEWORK.map((h, i) => (<li key={i}><b>{h.b}</b> <span className="t">{h.t}</span></li>))}</ul><p className="hw-note">Demo Day — o'zingiz xohlagan saytni qurib, питч qilasiz! 🎬</p></div>
+          <div className="card hw fade-up d4"><div className="card-lbl" style={{ color: T.accent }}>Demo Day'ga tayyorgarlik</div><p className="body" style={{ margin: '0 0 10px', color: T.ink }}>Pitchingizni jonli qiling:</p><ul>{HOMEWORK.map((h, i) => (<li key={i}><b>{h.b}</b> <span className="t">{h.t}</span></li>))}</ul><p className="hw-note">Demo Day — o'zingiz xohlagan saytni qurib, pitch qilasiz! 🎬</p></div>
         </div>
         <div ref={glossRef} className="gloss fade-up d4" style={{ scrollMarginBottom: 16 }}><div className="gloss-head" onClick={toggleGloss}><span className="lbl">Kalit so'zlar (takrorlash)</span><span className="gloss-toggle">{open ? '−' : '+'}</span></div>{open && (<div className="gloss-body">{GLOSSARY.map((g, i) => (<span key={i}><b>{g.b}</b> {g.t}{i < GLOSSARY.length - 1 ? ' · ' : ''}</span>))}</div>)}</div>
       </div>

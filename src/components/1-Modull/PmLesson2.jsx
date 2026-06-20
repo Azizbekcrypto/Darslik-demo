@@ -468,7 +468,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Stage eyebrow="Reja" screen={screen} audioState={audio} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Sayt qaysi tartibda tuzilsa, foydalanuvchi tushunadi?</span></h2></div>
-        <Mentor>O'tgan darsda g'oyani topdik: <b style={{ color: T.ink }}>kim, muammo, yechim</b>. Endi savol — buni saytda <b style={{ color: T.ink }}>qanday tartibda</b> ko'rsatamiz? Struktura — bu UX qaror.</Mentor>
+        <Mentor>O'tgan darsda g'oyani topdik: <b style={{ color: T.ink }}>kim, muammo, yechim</b>. Endi savol — buni saytda <b style={{ color: T.ink }}>qanday tartibda</b> ko'rsatamiz? Struktura — bu UX qaror (foydalanuvchi qulayligi uchun qaror).</Mentor>
         {!isNarrow ? (<Split>{PreviewBlock}{StepsBlock}</Split>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{PreviewBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>

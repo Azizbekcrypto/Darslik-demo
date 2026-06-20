@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 
 // ============================================================
-// PEAN STACK — OBZOR: PostgreSQL + Express + React + Node.js — PLATFORM STANDARD v16
+// PERN STACK — OBZOR: PostgreSQL + Express + React + Node.js — PLATFORM STANDARD v16
 // Mavzu: frontend vs backend, React (ko'rinish), Node.js (JS serverda),
 //        Express (yo'llar/so'rovlar), PostgreSQL (doimiy ombor),
 //        to'liq so'rov sayohati — 4 texnologiya bitta jamoa (stack).
@@ -42,7 +42,7 @@ const STR = ({ children }) => <span style={{ color: CODE.str }}>{children}</span
 const FN = ({ children }) => <span style={{ color: CODE.punct }}>{children}</span>;
 const CM = ({ children }) => <span style={{ color: CODE.comment }}>{children}</span>;
 
-const LESSON_META = { lessonId: 'pean-stack-01-v16', lessonTitle: { uz: 'PEAN Stack — 4 texnologiya, bitta jamoa', ru: 'PEAN Stack — 4 технологии, одна команда' } };
+const LESSON_META = { lessonId: 'pean-stack-01-v16', lessonTitle: { uz: 'PERN Stack — 4 texnologiya, bitta jamoa', ru: 'PERN Stack — 4 технологии, одна команда' } };
 const SCREEN_META = [
   { id: 's0',  type: 'hook',        template: 'custom',   scored: false, scope: 'hook' },
   { id: 's1',  type: 'rule',        template: 'custom',   scored: false, scope: null },
@@ -201,7 +201,7 @@ const Mentor = ({ children }) => {
   );
 };
 
-// ===== 4 TEXNOLOGIYA (PEAN) — yagona manba =====
+// ===== 4 TEXNOLOGIYA (PERN) — yagona manba =====
 const TECH = [
   { key: 'react',    name: 'React',      color: '#019ACB', soft: '#E2F4FA', rest: 'Zal',       role: "Ko'rinish — foydalanuvchi ko'radigan va bosadigan hamma narsa", side: 'Frontend' },
   { key: 'express',  name: 'Express',    color: '#FF4F28', soft: '#FFE8E1', rest: 'Ofitsiant', role: "Yo'llar — so'rovni qabul qiladi va kerakli joyga yetkazadi", side: 'Backend' },
@@ -303,13 +303,13 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     { text: "React — ko'rinish", tag: 'frontend' },
     { text: 'Node.js — JS serverda', tag: 'backend' },
     { text: 'Express va PostgreSQL', tag: "yo'llar + ombor" },
-    { text: "To'liq sayohat", tag: 'PEAN' }
+    { text: "To'liq sayohat", tag: 'PERN' }
   ];
   const isNarrow = useIsMobile(768);
   const [showSteps, setShowSteps] = useState(false);
   const PreviewBlock = (
     <Col>
-      <p className="flow-label">Bugungi jamoa — PEAN stack</p>
+      <p className="flow-label">Bugungi jamoa — PERN stack</p>
       <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {TECH.map((t, i) => (
           <div key={t.key} className="pean-row fade-up" style={{ animationDelay: `${0.08 + i * 0.06}s` }}>
@@ -720,7 +720,7 @@ const Screen9 = (props) => (
     }} />
 );
 
-// ===== SCREEN 10 — PEAN = JAMOA (4 karta) =====
+// ===== SCREEN 10 — PERN = JAMOA (4 karta) =====
 const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [active, setActive] = useState(null);
   const [seen, setSeen] = useState(new Set());
@@ -729,7 +729,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const cur = active ? techBy(active) : null;
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="PEAN jamoasi" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/4 a'zoni taniqing`} onClick={onNext} /></>}>
+    <Stage eyebrow="PERN jamoasi" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/4 a'zoni taniqing`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">To'rt texnologiya — nega <span className="italic" style={{ color: T.accent }}>bitta jamoa</span>?</h2></div>
         <Mentor>Futbol jamoasida darvozabon, himoyachi, yarim himoyachi, hujumchi bor — har birining o'z roli. Saytda ham shunday. To'rt a'zoning har birini bosib, rolini bilib oling.</Mentor>
@@ -753,7 +753,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 <p className="small" style={{ color: T.ink2, margin: 0 }}>Restoranda: <b style={{ color: cur.color }}>{cur.rest}</b></p>
               </div>
             ) : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>A'zoni bosing</p></div>}
-            {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bu jamoaning nomi — <b style={{ color: T.accent }}>PEAN stack</b>: <b>P</b>ostgreSQL + <b>E</b>xpress + Re<b>a</b>ct + <b>N</b>ode.js. <b>Stack</b> — bir-birini to'ldiruvchi texnologiyalar to'plami.</p></div>}
+            {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bu jamoaning nomi — <b style={{ color: T.accent }}>PERN stack</b>: <b>P</b>ostgreSQL + <b>E</b>xpress + <b>R</b>eact + <b>N</b>ode.js. <b>Stack</b> — bir-birini to'ldiruvchi texnologiyalar to'plami.</p></div>}
           </Col>
         </div>
       </div>
@@ -956,11 +956,11 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Debugging" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : (found ? 'Endi tuzating' : 'Xatoni toping')} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI jamoani tushuntirdi — lekin bitta rol <span className="italic" style={{ color: T.accent }}>adashgan</span>?</h2></div>
-        <Mentor>AI'dan PEAN jamoasini tushuntirishni so'radik. U deyarli to'g'ri yozdi, lekin <b style={{ color: T.ink }}>bitta a'zoning roli</b> adashib ketdi. Siz endi stackni bilasiz — xato qatorni toping va bosing!</Mentor>
+        <Mentor>AI'dan PERN jamoasini tushuntirishni so'radik. U deyarli to'g'ri yozdi, lekin <b style={{ color: T.ink }}>bitta a'zoning roli</b> adashib ketdi. Siz endi stackni bilasiz — xato qatorni toping va bosing!</Mentor>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
-              <div className="ai-row"><span className="ai-badge">AI</span><span className="ai-bubble">PEAN jamoasi rollari:</span></div>
+              <div className="ai-row"><span className="ai-badge">AI</span><span className="ai-bubble">PERN jamoasi rollari:</span></div>
               <div className="ai-code">
                 {LINES.map(l => (
                   <div key={l.key} className={`ai-line ${found && l.key === 'pg' ? (fixed ? 'ok' : 'bad') : ''}`} onClick={() => tap(l.key)} style={{ cursor: found ? 'default' : 'pointer' }}>{l.text}</div>
@@ -1072,12 +1072,12 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
     "React — ko'rinishni bloklardan yig'adi (frontend)",
     "Node.js — JavaScript'ni serverda ishlatadi",
     "Express — so'rov yo'llari · PostgreSQL — doimiy ombor",
-    "4 texnologiya birga = PEAN stack"
+    "4 texnologiya birga = PERN stack"
   ];
   const HOMEWORK = [
     { b: 'YouTube', t: "— frontend nimani ko'rsatadi, backend nimani saqlaydi? Yozing" },
     { b: 'Telegram', t: '— xabaringiz telefonda emas, qayerda saqlanadi?' },
-    { b: "O'z saytingiz", t: "— unga PEAN'ning qaysi a'zolari yetishmayapti?" }
+    { b: "O'z saytingiz", t: "— unga PERN'ning qaysi a'zolari yetishmayapti?" }
   ];
   const GLOSSARY = [
     { b: 'frontend', t: "— ko'rinadigan qism (zal)" },
@@ -1103,7 +1103,7 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
   return (
     <Stage eyebrow="Tayyor" screen={screen} navContent={<><NavBack onPrev={onPrev} /><button className="btn-ghost" onClick={onReset} style={{ padding: 'clamp(11px,1.6vw,13px) clamp(16px,2.2vw,22px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Qaytadan</button><button className="btn-white-accent" onClick={onFinish} style={{ marginLeft: 'auto', padding: 'clamp(11px,1.6vw,13px) clamp(22px,2.6vw,30px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Yakunlash ✓</button></>}>
       <div className="screen">
-        <div className="hero"><div className="hero-l"><span className="done-chip fade-up"><span className="tick">✓</span> Dars tugadi</span><h2 className="title h-title fade-up d1">Katta saytlarning <span className="italic" style={{ color: T.accent }}>xaritasi</span> endi qo'lingizda.</h2><p className="body h-sub fade-up d2">{PASSED ? "Tabriklaymiz! Frontend, backend va PEAN jamoasi endi sizga tanish." : "Yaxshi harakat! Bir-ikki ekranni qayta ko'rib, xaritani mustahkamlang."}</p></div><ScoreRing correct={correct} total={total} /></div>
+        <div className="hero"><div className="hero-l"><span className="done-chip fade-up"><span className="tick">✓</span> Dars tugadi</span><h2 className="title h-title fade-up d1">Katta saytlarning <span className="italic" style={{ color: T.accent }}>xaritasi</span> endi qo'lingizda.</h2><p className="body h-sub fade-up d2">{PASSED ? "Tabriklaymiz! Frontend, backend va PERN jamoasi endi sizga tanish." : "Yaxshi harakat! Bir-ikki ekranni qayta ko'rib, xaritani mustahkamlang."}</p></div><ScoreRing correct={correct} total={total} /></div>
         <div className="split">
           <div className="card fade-up d3"><div className="card-lbl" style={{ color: T.success }}><span className="tick" style={{ width: 16, height: 16, borderRadius: '50%', background: T.success, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>✓</span> Endi siz bilasiz</div><ul className="recap">{RECAP.map((r, i) => (<li key={i} style={{ animationDelay: `${0.3 + i * 0.07}s` }}><span className="ck">✓</span><span>{r}</span></li>))}</ul></div>
           <div className="card hw fade-up d4"><div className="card-lbl" style={{ color: T.accent }}>Uyga vazifa — detektiv bo'ling</div><p className="body" style={{ margin: '0 0 10px', color: T.ink }}>3 ta tanish ilovani "ichidan" tahlil qiling:</p><ul>{HOMEWORK.map((h, i) => (<li key={i}><b>{h.b}</b> <span className="t">{h.t}</span></li>))}</ul><p className="hw-note">Oldinda: avval mini-do'kon praktikasi, so'ng React moduli (frontend) va Node.js + Express + NestJS moduli (backend). Xarita qo'lingizda!</p></div>
@@ -1294,7 +1294,7 @@ export default function PeanStackLesson({ lang: langProp, onFinished }) {
         .term-line { display: flex; gap: 9px; animation: el-pop 0.25s ease-out; }
         .term-arrow { color: ${T.success}; flex-shrink: 0; }
 
-        /* === PEAN: BRAUZER OYNASI === */
+        /* === PERN: BRAUZER OYNASI === */
         .bw { background: ${T.paper}; border-radius: 13px; box-shadow: 0 10px 26px -8px rgba(${T.shadowBase},0.2); overflow: hidden; }
         .bw-bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; background: #EFEBE4; border-bottom: 1px solid rgba(167,166,162,0.25); }
         .bw-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
@@ -1306,7 +1306,7 @@ export default function PeanStackLesson({ lang: langProp, onFinished }) {
         .bw-spin { display: flex; align-items: center; gap: 10px; min-height: 110px; justify-content: center; color: ${T.ink3}; font-family: 'JetBrains Mono'; font-size: 13px; }
         .cmt { font-size: 13.5px; color: ${T.ink}; background: ${T.bg}; border-radius: 8px; padding: 7px 11px; margin-bottom: 6px; }
 
-        /* === PEAN: JAMOA / NISHONLAR === */
+        /* === PERN: JAMOA / NISHONLAR === */
         .pean-row { display: flex; align-items: center; gap: 11px; background: ${T.paper}; border-radius: 12px; padding: 9px 13px; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.14); }
         .pean-badge { width: 28px; height: 28px; border-radius: 8px; color: #fff; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: 'Manrope'; }
         .ttag { display: inline-flex; align-items: center; gap: 6px; font-family: 'Manrope'; font-weight: 700; font-size: 12.5px; padding: 4px 11px; border-radius: 99px; }
@@ -1314,21 +1314,21 @@ export default function PeanStackLesson({ lang: langProp, onFinished }) {
         .tech-card { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; background: ${T.paper}; border: none; border-radius: 14px; padding: 14px 15px; cursor: pointer; transition: all 0.18s; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); font-family: 'Manrope'; color: ${T.ink}; text-align: left; }
         .tech-card:hover { transform: translateY(-2px); }
 
-        /* === PEAN: RESTORAN === */
+        /* === PERN: RESTORAN === */
         .rest-card { display: flex; align-items: center; gap: 13px; width: 100%; text-align: left; background: ${T.paper}; border: none; border-radius: 14px; padding: 15px 17px; cursor: pointer; transition: all 0.18s; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); font-family: 'Manrope'; color: ${T.ink}; font-size: clamp(14px,1.7vw,16px); }
         .rest-card:hover:not(.on) { box-shadow: 0 10px 22px -6px rgba(${T.shadowBase},0.22); }
         .rest-card.on { box-shadow: inset 0 0 0 2px ${T.accent}, 0 8px 20px -6px rgba(255,79,40,0.22); }
         .rest-ic { width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
         .rest-body { display: flex; flex-direction: column; gap: 2px; }
 
-        /* === PEAN: REACT BLOKLARI (mini sayt) === */
+        /* === PERN: REACT BLOKLARI (mini sayt) === */
         .rb { font-family: 'Manrope', sans-serif; }
         .rb-header { background: ${T.ink}; color: ${T.bg}; border-radius: 8px; padding: 8px 12px; font-weight: 700; font-size: 13px; margin-bottom: 8px; }
         .rb-card { display: flex; align-items: center; gap: 9px; background: ${T.bg}; border-radius: 8px; padding: 8px 10px; font-size: 12.5px; color: ${T.ink}; margin-bottom: 8px; }
         .rb-thumb { width: 26px; height: 26px; border-radius: 6px; background: #f5d8cf; flex-shrink: 0; display: inline-block; }
         .rb-btn { background: ${T.accent}; color: #fff; border: none; border-radius: 8px; padding: 7px 14px; font-weight: 700; font-size: 12.5px; cursor: default; font-family: 'Manrope'; }
 
-        /* === PEAN: SAYOHAT QADAMLARI === */
+        /* === PERN: SAYOHAT QADAMLARI === */
         .jr-step { display: flex; align-items: center; gap: 11px; background: ${T.paper}; border-radius: 12px; padding: 9px 13px; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.12); transition: all 0.25s; }
         .jr-step.cur { transform: translateX(4px); }
         .jr-num { width: 22px; height: 22px; border-radius: 50%; color: #fff; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.25s; }
@@ -1339,21 +1339,21 @@ export default function PeanStackLesson({ lang: langProp, onFinished }) {
         .jr-mini { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; background: ${T.paper}; border-radius: 12px; padding: 11px 14px; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.14); font-family: 'Manrope'; font-size: 13px; color: ${T.ink2}; }
         .jr-mini-arr { color: ${T.ink3}; }
 
-        /* === PEAN: BAZA JADVALI === */
+        /* === PERN: BAZA JADVALI === */
         .dbt { background: ${T.paper}; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.16); transition: opacity 0.3s; }
         .dbt-row { display: grid; grid-template-columns: 44px 1fr 1fr; gap: 8px; padding: 9px 14px; font-size: 13px; color: ${T.ink}; border-bottom: 1px solid rgba(167,166,162,0.18); font-family: 'Manrope'; }
         .dbt-row:last-child { border-bottom: none; }
         .dbt-head { background: ${T.purpleSoft}; color: ${T.purple}; font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-family: 'JetBrains Mono'; }
         .dbt-empty { padding: 16px 14px; font-size: 13px; color: ${T.ink3}; font-style: italic; }
 
-        /* === PEAN: SLOT (s13) === */
+        /* === PERN: SLOT (s13) === */
         .slotx { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; background: ${T.paper}; border: 1.5px dashed transparent; border-radius: 12px; padding: 7px 13px; cursor: pointer; transition: all 0.18s; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.12); font-family: 'Manrope'; color: ${T.ink}; text-align: left; }
         .slotx.act { border-color: ${T.accent}; box-shadow: 0 8px 20px -6px rgba(255,79,40,0.2); }
         .slotx.bad { box-shadow: inset 0 0 0 2px ${T.accent}; animation: shake-x 0.3s ease-in-out; }
         .slotx.ok { box-shadow: inset 0 0 0 2px ${T.success}; }
         .slotx-l { display: flex; flex-direction: column; gap: 1px; font-size: clamp(13px,1.6vw,14.5px); }
 
-        /* === PEAN: VAZIFA KARTASI / POOL === */
+        /* === PERN: VAZIFA KARTASI / POOL === */
         .task-card { background: ${T.paper}; border-radius: 14px; padding: 16px 18px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.16); }
         .pool-chip { display: flex; align-items: center; gap: 10px; width: 100%; background: ${T.paper}; border: none; border-radius: 12px; padding: 11px 14px; cursor: pointer; transition: all 0.18s; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.14); font-family: 'Manrope'; font-weight: 600; font-size: clamp(12.5px,1.6vw,14px); color: ${T.ink}; }
         .pool-chip:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 18px -6px rgba(${T.shadowBase},0.2); }

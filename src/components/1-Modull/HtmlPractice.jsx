@@ -854,9 +854,9 @@ const Screen16 = (props) => (
     audioText="Portfolio sahifangiz to'g'ri tartibda qanday joylashadi? Yuqoridan pastga qarab."
     questionText="Bo'limlar to'g'ri tartibi qaysi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>Butun saytni eslang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Portfolio sahifangiz <span className="italic" style={{ color: T.accent }}>yuqoridan pastga</span> qanday tartibda joylashadi?</h2></>}
-    options={['Footer → Header → Aloqa → Loyihalar', 'Aloqa → Footer → Header → Loyihalar', 'Header → Men haqimda → Loyihalar → Aloqa → Footer', 'Loyihalar → Header → Footer → Aloqa']} correctIdx={2}
+    options={['Footer → Header → Men haqimda → Loyihalar → Aloqa', 'Men haqimda → Header → Loyihalar → Aloqa → Footer', 'Header → Men haqimda → Loyihalar → Aloqa → Footer', 'Header → Loyihalar → Men haqimda → Footer → Aloqa']} correctIdx={2}
     explainCorrect="To'g'ri! Yuqorida header (ism), keyin bo'limlar (men haqimda, loyihalar, aloqa), eng pastda footer."
-    explainWrong={{ 0: 'Footer eng pastda bo’lishi kerak, yuqorida emas. Header — birinchi.', 1: 'Header birinchi, footer oxirgi bo’ladi. Bu tartib chalkash.', 3: 'Header doim birinchi bo’ladi, footer esa oxirgi.', default: 'To’g’ri tartib: Header → bo’limlar → Footer.' }} />
+    explainWrong={{ 0: 'Footer eng pastda bo’lishi kerak, yuqorida emas. Header — birinchi.', 1: 'Header birinchi bo’ladi — "Men haqimda" undan keyin keladi.', 3: 'Boshlanishi to’g’ri, lekin Footer eng oxirida bo’lishi kerak.', default: 'To’g’ri tartib: Header → bo’limlar → Footer.' }} />
 );
 
 // ===== SCREEN 17 — YAKUN =====

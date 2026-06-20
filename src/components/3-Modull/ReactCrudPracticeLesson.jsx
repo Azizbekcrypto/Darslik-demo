@@ -840,7 +840,7 @@ const Screen12 = (props) => (
   <QuestionScreen {...props} idx={12} scope="module-mikro" eyebrow="Mashq · 4-savol"
     questionText="O'yinning like sonini oshirish — bu CRUD'ning qaysi amali?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>O'yinning <span className="italic" style={{ color: T.accent }}>like sonini oshirish</span> — qaysi amal?</h2></>}
-    options={['Update — mavjud o\'yinni o\'zgartirish (games.map)', 'Create — yangi o\'yin qo\'shish', 'Delete — o\'yinni o\'chirish', 'Read — ro\'yxatni ko\'rsatish']} correctIdx={0}
+    options={['Update — mavjud o\'yinni o\'zgartirish', 'Create — yangi o\'yin qo\'shish', 'Delete — o\'yinni o\'chirish', 'Read — ro\'yxatni ko\'rsatish']} correctIdx={0}
     explainCorrect="To'g'ri! Like soni o'zgaradi, lekin o'yin o'sha o'yinligicha qoladi — bu Update. games.map bilan faqat o'sha elementni yangilaymiz."
     explainWrong={{
       1: "Yo'q — yangi o'yin qo'shilmayapti, mavjudi o'zgaryapti. Bu Update.",
@@ -928,7 +928,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Yakuniy · amaliy" screen={screen} scrollSignal={passed} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? 'Davom etish' : 'Qo\'shish qatorini yozing'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: <span className="italic" style={{ color: T.accent }}>qo'shish</span> kodini o'zingiz yozing.</h2></div>
-        <Mentor>VS Code'da <span className="mono">App.jsx</span> ochiq: forma tayyor, yangi o'yin <span className="mono">yangi</span>'da turibdi — faqat <b style={{ color: T.ink }}>6-qator bo'sh</b>. Uni ro'yxatga qo'shing: <b style={{ color: T.ink }}>setGames(</b> + <b style={{ color: T.ink }}>[...games</b> (eski hammasi) + <b style={{ color: T.ink }}>, yangi]</b> (yangisi) + <b style={{ color: T.ink }}>)</b>.</Mentor>
+        <Mentor>VS Code'da <span className="mono">App.jsx</span> ochiq: forma tayyor, yangi o'yin <span className="mono">yangi</span>'da turibdi — faqat <b style={{ color: T.ink }}>3-qator bo'sh</b>. Uni ro'yxatga qo'shing: <b style={{ color: T.ink }}>setGames(</b> + <b style={{ color: T.ink }}>[...games</b> (eski hammasi) + <b style={{ color: T.ink }}>, yangi]</b> (yangisi) + <b style={{ color: T.ink }}>)</b>.</Mentor>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-2">
@@ -960,7 +960,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <Win title="Mening o'yinlarim — localhost:5173" minH={130}>
               {valid
                 ? <div className="fade-step"><CardGrid cols={3}><MyCard game={GAMES[0]} /><MyCard game={GAMES[1]} /><MyCard game={{ ...POOL[0] }} flash /></CardGrid><p className="small" style={{ color: T.success, fontWeight: 700, margin: '8px 0 0' }}>✓ "Piggy" qo'shildi!</p></div>
-                : <p style={{ fontFamily: 'Georgia, serif', color: T.ink3, fontStyle: 'italic', margin: 0, textAlign: 'center', lineHeight: 1.5 }}>6-qator yozilmaguncha qo'shish ishlamaydi: <span className="mono" style={{ fontStyle: 'normal' }}>setGames([...games, yangi])</span></p>}
+                : <p style={{ fontFamily: 'Georgia, serif', color: T.ink3, fontStyle: 'italic', margin: 0, textAlign: 'center', lineHeight: 1.5 }}>3-qator yozilmaguncha qo'shish ishlamaydi: <span className="mono" style={{ fontStyle: 'normal' }}>setGames([...games, yangi])</span></p>}
             </Win>
           </Col>
         </div>

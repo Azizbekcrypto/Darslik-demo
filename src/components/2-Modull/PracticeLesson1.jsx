@@ -645,7 +645,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Vosita 4 · Jonli salom" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Ismingizni yozing'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Siz yozayotganingizni sayt qanday <span className="italic" style={{ color: T.accent }}>darhol sezadi?</span></h2></div>
-        <Mentor>Bu eng sehrli his: matn maydoniga <b style={{ color: T.ink }}>har bir harf</b> yozganingizda sayt <b style={{ color: T.ink }}>shu zahoti</b> o'zgaradi. "Yozish" hodisasi har bosishda ishlaydi va salomni yangilaydi. Ismingizni yozib ko'ring.</Mentor>
+        <Mentor>Bu eng yoqimli his: matn maydoniga <b style={{ color: T.ink }}>har bir harf</b> yozganingizda sayt <b style={{ color: T.ink }}>shu zahoti</b> o'zgaradi. "Yozish" hodisasi har harf yozilganda ishlaydi va salomni yangilaydi. Ismingizni yozib ko'ring.</Mentor>
         <div className="split">
           <Col>
             <p className="flow-label">Saytingiz</p>
@@ -726,7 +726,7 @@ const Screen11 = (props) => (
   <QuestionScreen {...props} scope="module-mikro" eyebrow="Mashq · 3-savol"
     questionText="Foydalanuvchi ism yozganda jonli salom o'zgarishi uchun qaysi hodisa kerak?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Foydalanuvchi <span className="italic" style={{ color: T.accent }}>ism yozganda</span> salom jonli o'zgarishi uchun qaysi hodisa kerak?</h2></>}
-    options={['Bosish (click)', "Yozish (input) — har harfda ishlaydi", 'Hover (ustiga olib borish)', 'Hech qanday hodisa kerak emas']} correctIdx={1}
+    options={['Bosish (click)', "Yozish (input)", 'Hover (ustiga olib borish)', 'Hech qanday hodisa kerak emas']} correctIdx={1}
     explainCorrect="To'g'ri! Yozish (input) hodisasi har bir harf kiritilganda ishlaydi, shuning uchun salom real vaqtda o'zgaradi."
     explainWrong={{
       0: 'Yo’q — bosish faqat tugma uchun. Yozilayotgan matnni kuzatish uchun "input" hodisasi kerak.',

@@ -548,7 +548,7 @@ const Screen5b = (props) => (
 );
 // ===== SCREEN 6 — TARIX (vaqt mashinasi) =====
 const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's6', text: `Endi sehr boshlanadi. Har commit tarixda saqlanadi. Istalgan eski commit'ni tanlasangiz, kodingiz aynan o'sha holatga qaytadi — xuddi vaqt mashinasi. Tarixdagi commit'larni bosib, kod qanday o'zgarishini ko'ring.`, trigger: 'on_mount', waits_for: { type: 'time_travel' } }]);
+  const audio = useAudio([{ id: 's6', text: `Endi eng kuchli qism boshlanadi. Har commit tarixda saqlanadi. Istalgan eski commit'ni tanlasangiz, kodingiz aynan o'sha holatga qaytadi — xuddi vaqt mashinasi. Tarixdagi commit'larni bosib, kod qanday o'zgarishini ko'ring.`, trigger: 'on_mount', waits_for: { type: 'time_travel' } }]);
   const HISTORY = [
     { hash: 'c7d8e9f', msg: "Tugma qo'shildi", code: ['<h1>Salom</h1>', '<p>Mening saytim</p>', '<button>Obuna</button>'] },
     { hash: 'e4f5a6b', msg: "Paragraf qo'shildi", code: ['<h1>Salom</h1>', '<p>Mening saytim</p>'] },

@@ -924,7 +924,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="React Native" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "Ikkala ko'rinishni ko'ring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bitta texnalogiya bilan <span className="italic" style={{ color: T.accent }}>telefon ilovasi</span> ham yasaladimi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Bitta texnologiya bilan <span className="italic" style={{ color: T.accent }}>telefon ilovasi</span> ham yasaladimi?</h2></div>
         <Mentor>Eng zo'r yangilik: React'ni o'rgansangiz, faqat sayt emas — haqiqiy <b style={{ color: T.ink }}>telefon ilovalarini</b> ham yasay olasiz. Buning nomi <b style={{ color: T.ink }}>React Native</b>. Ikkala ko'rinishni almashtiring: <b style={{ color: T.ink }}>kod bitta, dunyo ikkita</b>.</Mentor>
         <div className="split">
           <Col>
@@ -1032,7 +1032,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 ? <p style={{ color: T.ink3, fontStyle: 'italic', margin: 0, fontFamily: 'Georgia, serif', fontSize: 13 }}>Bo'sh sahifa — blok qo'shing…</p>
                 : <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>{items.map((k, i) => renderPart(k, i))}</div>}
             </Win>
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Siz hozir <b>React'chа fikrladingiz</b>: sahifa = komponentlar ro'yxati. Keyingi darsda buni haqiqiy kodda yozasiz.</p></div>}
+            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Siz hozir <b>React'cha fikrladingiz</b>: sahifa = komponentlar ro'yxati. Keyingi darsda buni haqiqiy kodda yozasiz.</p></div>}
           </Col>
         </div>
       </div>
@@ -1180,7 +1180,7 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
     "React Native — shu bilim bilan telefon ilovalari"
   ];
   const HOMEWORK = [
-    { b: 'Komponent ovi', t: "— Instagram yoki YouTube'ni oching, takrorlanadigan 5 ta bo'lakni toping va daftarringizga yozing" },
+    { b: 'Komponent ovi', t: "— Instagram yoki YouTube'ni oching, takrorlanadigan 5 ta bo'lakni toping va daftaringizga yozing" },
     { b: "Bo'laklash", t: "— sevimli saytingiz bosh sahifasini qog'ozga komponentlarga bo'lib chizing" },
     { b: 'Kuzatuv', t: "— 3 ta ilovada like yoki tugma bosing: sahifa to'liq yangilanadimi yoki faqat bir joyi?" }
   ];

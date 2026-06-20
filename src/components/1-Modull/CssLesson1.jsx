@@ -475,7 +475,7 @@ const Screen4 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}><span className="mono">h1 {'{'} color: red; {'}'}</span> — bu yerda <span className="italic" style={{ color: T.accent }}>color</span> nima deb ataladi?</h2></>}
     options={['Selektor', 'Qiymat', 'Teg', 'Xususiyat (property)']} correctIdx={3}
     explainCorrect="To'g'ri! color — bu xususiyat (property): nimani o'zgartirishni aytadi. Bu yerda — matn rangini."
-    explainWrong={{ 1: 'Selektor — bu h1 (qaysi element). color esa xususiyat.', 2: 'Qiymat — bu red (qanday). color esa xususiyat.', 3: 'Teg — bu HTML tushunchasi. CSS’da color — xususiyat.', default: 'color — bu xususiyat (property).' }} />
+    explainWrong={{ 0: 'Selektor — bu h1 (qaysi element). color esa xususiyat.', 1: 'Qiymat — bu red (qanday). color esa xususiyat.', 2: 'Teg — bu HTML tushunchasi. CSS’da color — xususiyat.', default: 'color — bu xususiyat (property).' }} />
 );
 
 // ===== SCREEN 5 — RANGLAR =====
@@ -517,7 +517,7 @@ const Screen5b = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>Mustahkamlash</p><h2 className="title h-sub" style={{ marginTop: 8 }}><span className="italic" style={{ color: T.accent }}>Matnning</span> rangini qaysi xususiyat o'zgartiradi?</h2></>}
     options={['background-color', 'color', 'font-size', 'margin']} correctIdx={1}
     explainCorrect="To'g'ri! color — matnning (harflarning) rangini o'zgartiradi."
-    explainWrong={{ 1: 'background-color — bu fon rangi, matn emas. Matn uchun — color.', 2: 'font-size — shrift o’lchami. Rang uchun — color.', 3: 'margin — tashqi bo’shliq. Rang uchun — color.', default: 'Matn rangi — color xususiyati.' }} />
+    explainWrong={{ 0: 'background-color — bu fon rangi, matn emas. Matn uchun — color.', 2: 'font-size — shrift o’lchami. Rang uchun — color.', 3: 'margin — tashqi bo’shliq. Rang uchun — color.', default: 'Matn rangi — color xususiyati.' }} />
 );
 // ===== SCREEN 6 — RANG FORMATLARI (nom / hex) =====
 const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
@@ -623,7 +623,7 @@ const Screen9 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Shriftning <span className="italic" style={{ color: T.accent }}>o'lchamini</span> qaysi xususiyat belgilaydi?</h2></>}
     options={['color', 'font-family', 'font-size', 'padding']} correctIdx={2}
     explainCorrect="To'g'ri! font-size — shriftning o'lchamini (masalan 24px) belgilaydi."
-    explainWrong={{ 1: 'color — matn rangi, o’lcham emas. O’lcham — font-size.', 2: 'font-family — shrift turi (Sans, Serif). O’lcham — font-size.', 3: 'padding — ichki bo’shliq. Shrift o’lchami — font-size.', default: 'Shrift o’lchami — font-size xususiyati.' }} />
+    explainWrong={{ 0: 'color — matn rangi, o’lcham emas. O’lcham — font-size.', 1: 'font-family — shrift turi (Sans, Serif). O’lcham — font-size.', 3: 'padding — ichki bo’shliq. Shrift o’lchami — font-size.', default: 'Shrift o’lchami — font-size xususiyati.' }} />
 );
 
 // ===== SCREEN 10 — PADDING (ichki bo'shliq) =====
@@ -694,7 +694,7 @@ const Screen12 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Kontent bilan elementning cheti orasidagi <span className="italic" style={{ color: T.accent }}>ichki</span> bo'shliq qaysi xususiyat?</h2></>}
     options={['margin', 'color', 'font-size', 'padding']} correctIdx={3}
     explainCorrect="To'g'ri! padding — ichki bo'shliq (kontent bilan chet orasida)."
-    explainWrong={{ 1: 'margin — tashqi bo’shliq (elementlar orasida). Ichki — padding.', 2: 'color — matn rangi, bo’shliq emas.', 3: 'font-size — shrift o’lchami. Ichki bo’shliq — padding.', default: 'Ichki bo’shliq — padding.' }} />
+    explainWrong={{ 0: 'margin — tashqi bo’shliq (elementlar orasida). Ichki — padding.', 1: 'color — matn rangi, bo’shliq emas.', 2: 'font-size — shrift o’lchami. Ichki bo’shliq — padding.', default: 'Ichki bo’shliq — padding.' }} />
 );
 
 // ===== SCREEN 13 — BUILDER (kartani bezat) =====

@@ -372,7 +372,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Stage eyebrow="Reja" screen={screen} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Do'konni <span className="italic" style={{ color: T.accent }}>oxiriga</span> yetkazamiz</h2></div>
-        <Mentor>Reja bizda bor: o'zakka savat va jami narxni qo'shamiz, bug'larni tuzatamiz, jilolaymiz va <b style={{ color: T.ink }}>deploy</b> qilamiz. Dars oxirida sizda haqiqiy, ulashiladigan do'kon bo'ladi. Mana yo'l — 5 qadam.</Mentor>
+        <Mentor>Reja bizda bor: o'zakka savat va jami narxni qo'shamiz, buglarni tuzatamiz, jilolaymiz va <b style={{ color: T.ink }}>deploy</b> qilamiz. Dars oxirida sizda haqiqiy, ulashiladigan do'kon bo'ladi. Mana yo'l — 5 qadam.</Mentor>
         {!isNarrow ? (
           <Split>{PreviewBlock}{StepsBlock}</Split>
         ) : !showSteps ? (
@@ -569,8 +569,8 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Bug tuzatish" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Aniq tushuntiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bug'ni AI'ga <span className="italic" style={{ color: T.accent }}>aniq tushuntiramiz</span></h2></div>
-        <Mentor>Bug'ni tuzatish uchun AI'ga <b style={{ color: T.ink }}>aniq</b> aytish kerak: nima noto'g'ri va qanday bo'lishi kerak. "Tuzat" — kam; "jami ikki barobar ko'p, bir marta hisoblansin" — aniq. Qaysi tushuntirish eng aniq?</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Bugni AI'ga <span className="italic" style={{ color: T.accent }}>aniq tushuntiramiz</span></h2></div>
+        <Mentor>Bugni tuzatish uchun AI'ga <b style={{ color: T.ink }}>aniq</b> aytish kerak: nima noto'g'ri va qanday bo'lishi kerak. "Tuzat" — kam; "jami ikki barobar ko'p, bir marta hisoblansin" — aniq. Qaysi tushuntirish eng aniq?</Mentor>
         <div className="split">
           <Col>
             <p className="flow-label">AI'ga qanday aytamiz?</p>
@@ -583,7 +583,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <p className="flow-label">Do'kon (savatda 2 ta ruchka)</p>
             <div ref={fixRef}><Browser url="maktab-dokoni.uz"><InteractiveShop cart={cart} onAdd={add} showCart showTotal buggy={!good} /></Browser></div>
             {good
-              ? <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tuzatildi! Aniq tushuntirdingiz — AI bug'ni topdi va jami narx endi to'g'ri ({som(cart.reduce((s, i) => s + PRODUCTS[i].price, 0))} so'm). Mana — AI bilan debugging.</p></div>
+              ? <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tuzatildi! Aniq tushuntirdingiz — AI bugni topdi va jami narx endi to'g'ri ({som(cart.reduce((s, i) => s + PRODUCTS[i].price, 0))} so'm). Mana — AI bilan debugging.</p></div>
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Hozircha jami narx ikki barobar (xato). Aniq buyruq tanlang — tuzatamiz.</p>}
           </Col>
         </div>
@@ -595,8 +595,8 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 // ===== SCREEN 8 — TEST 2 =====
 const Screen8 = (props) => (
   <QuestionScreen {...props} scope="module-mikro" eyebrow="Mashq · 2-savol"
-    questionText="AI bug'ni tuzatishi uchun unga qanday aytish kerak?"
-    question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>AI bug'ni <span className="italic" style={{ color: T.accent }}>tuzatishi</span> uchun unga qanday aytish kerak?</h2></>}
+    questionText="AI bugni tuzatishi uchun unga qanday aytish kerak?"
+    question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>AI bugni <span className="italic" style={{ color: T.accent }}>tuzatishi</span> uchun unga qanday aytish kerak?</h2></>}
     options={['Faqat "tuzat" deyish kifoya', 'Nima noto\'g\'ri va qanday bo\'lishi kerakligini aniq aytish', 'Hech narsa demaslik — AI o\'zi topadi', 'Jahl bilan "ishlamayapti!" deyish']} correctIdx={1}
     explainCorrect="To'g'ri! Aniq bug-report: nima noto'g'ri (jami ikki barobar) va qanday bo'lishi kerak (bir marta hisoblansin). Aniqlik — AI tez va to'g'ri tuzatadi."
     explainWrong={{

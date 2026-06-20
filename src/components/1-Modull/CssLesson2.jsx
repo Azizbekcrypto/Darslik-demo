@@ -453,7 +453,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 };
 // ===== SCREEN 3 — DISPLAY: FLEX (konteyner vs bola) =====
 const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's3', text: `Mana sehrli xususiyat: display flex. Xuddi tokchaga kitoblarni tik terib qo'ygandek — siz uni konteynerga, ya'ni qutilarni o'rab turgan qatorga berasiz, va ichidagi barcha bolalar darhol yonma-yon tiziladi. Muhim: flex bolalarga emas, konteynerga yoziladi. Avval flexni yoqing, so'ng konteyner va bolani bosib ko'ring.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's3', text: `Mana eng muhim xususiyat: display flex. Xuddi tokchaga kitoblarni tik terib qo'ygandek — siz uni konteynerga, ya'ni qutilarni o'rab turgan qatorga berasiz, va ichidagi barcha bolalar darhol yonma-yon tiziladi. Muhim: flex bolalarga emas, konteynerga yoziladi. Avval flexni yoqing, so'ng konteyner va bolani bosib ko'ring.`, trigger: 'on_mount', waits_for: null }]);
   const [flex, setFlex] = useState(!!storedAnswer);
   const [part, setPart] = useState(null);
   const [seen, setSeen] = useState(() => new Set(storedAnswer ? ['box', 'kid'] : []));
@@ -469,7 +469,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="display: flex" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "flex'ni yoqing"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Elementlarni qatorga qanday <span className="italic" style={{ color: T.accent }}>tizamiz</span>?</h2></div>
-        <Mentor>Sehrli xususiyat: <span className="mono">display: flex</span>. Xuddi <b style={{ color: T.ink }}>tokchaga kitob terish</b> kabi — uni <b style={{ color: T.ink }}>konteynerga</b> berasiz, ichidagi bolalar o'zi tiziladi. Flexni yoqing, so'ng <b style={{ color: T.ink }}>konteyner</b> va <b style={{ color: T.ink }}>bola</b>ni bosib ko'ring.</Mentor>
+        <Mentor>Eng muhim xususiyat: <span className="mono">display: flex</span>. Xuddi <b style={{ color: T.ink }}>tokchaga kitob terish</b> kabi — uni <b style={{ color: T.ink }}>konteynerga</b> berasiz, ichidagi bolalar o'zi tiziladi. Flexni yoqing, so'ng <b style={{ color: T.ink }}>konteyner</b> va <b style={{ color: T.ink }}>bola</b>ni bosib ko'ring.</Mentor>
         <div className="split">
           <div className="col">
             <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setFlex(f => !f)}>{flex ? '↩ flex’ni o’chirish' : '🎯 display: flex yoqish'}</button>
@@ -502,7 +502,7 @@ const Screen4 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Elementlarni <span className="italic" style={{ color: T.accent }}>yonma-yon</span> qatorga tizish uchun konteynerga qaysi xususiyat beriladi?</h2></>}
     options={['color: red', 'font-size: 20px', 'display: flex', 'text-align: center']} correctIdx={2}
     explainCorrect="To'g'ri! display: flex konteynerni flex'ga aylantiradi va bolalarini qatorga tizadi."
-    explainWrong={{ 1: 'color — matn rangi, joylashuvga aloqasi yo’q. Qator uchun — display: flex.', 2: 'font-size — shrift o’lchami. Qator uchun — display: flex.', 3: 'text-align matn ichidagi joylashuv. Elementlarni qatorga tizadigan — display: flex.', default: 'Qatorga tizadigan — display: flex.' }} />
+    explainWrong={{ 0: 'color — matn rangi, joylashuvga aloqasi yo’q. Qator uchun — display: flex.', 1: 'font-size — shrift o’lchami. Qator uchun — display: flex.', 3: 'text-align matn ichidagi joylashuv. Elementlarni qatorga tizadigan — display: flex.', default: 'Qatorga tizadigan — display: flex.' }} />
 );
 
 // ===== SCREEN 5 — FLEX-DIRECTION =====
@@ -541,7 +541,7 @@ const Screen5b = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>Mustahkamlash</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Flex elementlarni <span className="italic" style={{ color: T.accent }}>vertikal ustunga</span> tizish uchun nima yoziladi?</h2></>}
     options={['flex-direction: row', 'display: block', 'justify-content: center', 'flex-direction: column']} correctIdx={3}
     explainCorrect="To'g'ri! flex-direction: column elementlarni ustma-ust (ustunga) tizadi."
-    explainWrong={{ 1: 'row — bu qator (yonma-yon), sukut holat. Ustun uchun — column.', 2: 'display: block flexni o’chiradi. Ustun uchun — flex-direction: column.', 3: 'justify-content joylashtiradi, yo’nalishni emas. Ustun uchun — column.', default: 'Vertikal ustun — flex-direction: column.' }} />
+    explainWrong={{ 0: 'row — bu qator (yonma-yon), sukut holat. Ustun uchun — column.', 1: 'display: block flexni o’chiradi. Ustun uchun — flex-direction: column.', 2: 'justify-content joylashtiradi, yo’nalishni emas. Ustun uchun — column.', default: 'Vertikal ustun — flex-direction: column.' }} />
 );
 // ===== SCREEN 6 — GAP =====
 const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
@@ -638,7 +638,7 @@ const Screen9 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Flex elementlarni qator bo'ylab <span className="italic" style={{ color: T.accent }}>gorizontal markazga</span> joylashtirish uchun?</h2></>}
     options={['align-items: center', 'justify-content: center', 'text-align: center', 'margin: center']} correctIdx={1}
     explainCorrect="To'g'ri! justify-content: center flex elementlarni asosiy o'q (gorizontal) bo'ylab markazga to'playdi."
-    explainWrong={{ 1: 'align-items vertikal tekislaydi, gorizontal emas. Gorizontal markaz — justify-content.', 2: 'text-align matn ichida ishlaydi, flex elementlarga emas.', 3: 'margin: center degan qiymat yo’q. To’g’risi — justify-content: center.', default: 'Gorizontal markaz — justify-content: center.' }} />
+    explainWrong={{ 0: 'align-items vertikal tekislaydi, gorizontal emas. Gorizontal markaz — justify-content.', 2: 'text-align matn ichida ishlaydi, flex elementlarga emas.', 3: 'margin: center degan qiymat yo’q. To’g’risi — justify-content: center.', default: 'Gorizontal markaz — justify-content: center.' }} />
 );
 
 // ===== SCREEN 10 — DEVTOOLS (Styles paneli) =====
@@ -716,7 +716,7 @@ const Screen12 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>DevTools'ning qaysi paneli elementning <span className="italic" style={{ color: T.accent }}>CSS qoidalarini</span> ko'rsatadi va o'zgartiradi?</h2></>}
     options={['Console', 'Network', 'Styles', 'Sources']} correctIdx={2}
     explainCorrect="To'g'ri! Styles paneli tanlangan elementning barcha CSS qoidalarini ko'rsatadi va jonli o'zgartirishga imkon beradi."
-    explainWrong={{ 1: 'Console — xato va xabarlar uchun. CSS uchun — Styles.', 2: 'Network — fayllar yuklanishi uchun. CSS uchun — Styles.', 3: 'Sources — fayllar kodi uchun. Element CSS’i uchun — Styles.', default: 'Element CSS’i — Styles panelida.' }} />
+    explainWrong={{ 0: 'Console — xato va xabarlar uchun. CSS uchun — Styles.', 1: 'Network — fayllar yuklanishi uchun. CSS uchun — Styles.', 3: 'Sources — fayllar kodi uchun. Element CSS’i uchun — Styles.', default: 'Element CSS’i — Styles panelida.' }} />
 );
 
 // ===== SCREEN 13 — BUILDER (flex layout) =====

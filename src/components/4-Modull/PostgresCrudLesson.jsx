@@ -747,18 +747,18 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const done = phase === 'done';
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="Agent bilan · 2" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "Agentdan natijani oling"} onClick={onNext} /></>}>
+    <Stage eyebrow="AI bilan · 2" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "AI'dan natijani oling"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Boshqa jadvalni ko'rmoqchimisiz? <span className="italic" style={{ color: T.accent }}>Shunchaki so'rang.</span></h2></div>
-        <Mentor>Bazada faqat products emas — <span className="mono">users</span> (xaridorlar) jadvali ham bor. Uni ko'rish uchun SQL'ni eslab o'tirmaysiz: <b style={{ color: T.ink }}>agentga oddiy tilda aytasiz</b>, u SQL yozadi va bajaradi. Siz esa natijani tekshirasiz.</Mentor>
+        <Mentor>Bazada faqat products emas — <span className="mono">users</span> (xaridorlar) jadvali ham bor. Uni ko'rish uchun SQL'ni eslab o'tirmaysiz: <b style={{ color: T.ink }}>AI'ga oddiy tilda aytasiz</b>, u SQL yozadi va bajaradi. Siz esa natijani tekshirasiz.</Mentor>
         <div className="split">
           <Col>
             <p className="flow-label">Sizning so'rovingiz</p>
             <div className="ai-card">
               <div className="ai-row"><span className="ai-badge" style={{ background: T.ink }}>Siz</span><span className="ai-bubble" style={{ color: T.ink, fontWeight: 600 }}>"users jadvalidagi hamma foydalanuvchini ko'rsat"</span></div>
-              {phase === 'idle' && <button className="btn fade-step" style={{ alignSelf: 'flex-start' }} onClick={() => setPhase('sent')}>↗ Agentga yuborish</button>}
+              {phase === 'idle' && <button className="btn fade-step" style={{ alignSelf: 'flex-start' }} onClick={() => setPhase('sent')}>↗ AI'ga yuborish</button>}
               {phase !== 'idle' && <>
-                <div className="ai-row"><span className="ai-badge">Agent</span><span className="ai-bubble">Tushundim. Mana SQL:</span></div>
+                <div className="ai-row"><span className="ai-badge">AI</span><span className="ai-bubble">Tushundim. Mana SQL:</span></div>
                 <div style={{ background: CODE.bg, borderRadius: 9, padding: '4px 6px' }}><SqlCode mini q={'SELECT * FROM users'} /></div>
                 {phase === 'sent' && <button className="btn fade-step" style={{ alignSelf: 'flex-start' }} onClick={() => setPhase('done')}>✓ To'g'ri — bajar</button>}
               </>}
@@ -767,8 +767,8 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             <p className="flow-label">Natija — users jadvali</p>
             {done
-              ? <><DataTable cols={UCOLS} rows={USERS} /><SqlStatus>Agent boshqa jadvalni ham bir zumda ochib berdi. Siz nima xohlashni bildingiz — u SQL'ni yozdi.</SqlStatus></>
-              : <div className="frame-dash" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 110 }}><p className="small" style={{ color: T.ink3, fontStyle: 'italic', textAlign: 'center', margin: 0 }}>So'rovni agentga yuboring → SQL → natija</p></div>}
+              ? <><DataTable cols={UCOLS} rows={USERS} /><SqlStatus>AI boshqa jadvalni ham bir zumda ochib berdi. Siz nima xohlashni bildingiz — u SQL'ni yozdi.</SqlStatus></>
+              : <div className="frame-dash" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 110 }}><p className="small" style={{ color: T.ink3, fontStyle: 'italic', textAlign: 'center', margin: 0 }}>So'rovni AI'ga yuboring → SQL → natija</p></div>}
           </Col>
         </div>
       </div>
@@ -884,7 +884,7 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
     "Jadval = ustunlar (xususiyat) + qatorlar (yozuv)",
     "CRUD: INSERT · SELECT(+WHERE) · UPDATE · DELETE",
     "WHERE — shart; UPDATE/DELETE'da uni unutmang!",
-    "AI/agent SQL yozadi — siz o'qib tekshirasiz"
+    "AI SQL yozadi — siz o'qib tekshirasiz"
   ];
   const HOMEWORK = [
     { b: "O'z jadvalingiz", t: "— AI bilan o'z do'koningiz uchun jadval loyihalang (qaysi ustunlar?)" },

@@ -626,10 +626,10 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [repo, setRepo] = useState(storedAnswer ? 'mening-saytim' : null);
   const [connected, setConnected] = useState(!!storedAnswer);
   const done = connected;
-  const connect = () => { if (!repo) return; setConnected(true); audio.triggerEvent('connected'); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Ulandi! Endi Netlify shu repони kuzatadi.`); }, 300); };
+  const connect = () => { if (!repo) return; setConnected(true); audio.triggerEvent('connected'); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Ulandi! Endi Netlify shu reponi kuzatadi.`); }, 300); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="GitHub ulash" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Repони ulang'} onClick={onNext} /></>}>
+    <Stage eyebrow="GitHub ulash" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Reponi ulang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Netlify kodni <span className="italic" style={{ color: T.accent }}>qayerdan</span> oladi?</h2></div>
         <Mentor>Netlify kodingizni <b style={{ color: T.ink }}>GitHub'dan</b> oladi. Git darsida push qilgan repongizni tanlaysiz — shundan keyin Netlify uni doimo kuzatib turadi.</Mentor>
@@ -726,7 +726,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 8 — AVTO-DEPLOY (push -> auto) =====
 const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's8', text: `Eng sehrli qismi: kodni o'zgartirib GitHub'ga push qilsangiz, Netlify o'zi sezadi va saytni avtomatik yangilaydi. Sinab ko'ring: sarlavhani o'zgartiring, keyin "push" qiling.`, trigger: 'on_mount', waits_for: { type: 'pushed' } }]);
+  const audio = useAudio([{ id: 's8', text: `Eng qulay qismi: kodni o'zgartirib GitHub'ga push qilsangiz, Netlify GitHub'ni kuzatib turgani uchun o'zgarishni darrov sezadi va saytni avtomatik yangilaydi. Sinab ko'ring: sarlavhani o'zgartiring, keyin "push" qiling.`, trigger: 'on_mount', waits_for: { type: 'pushed' } }]);
   const [text, setText] = useState('Salom, men Aziza!');
   const [live, setLive] = useState('Salom, men Aziza!');
   const [phase, setPhase] = useState('idle'); // idle | deploying
@@ -745,7 +745,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Avto-deploy" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'O’zgartirib push qiling'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kodni o'zgartirsangiz <span className="italic" style={{ color: T.accent }}>nima bo'ladi?</span></h2></div>
-        <Mentor>Eng sehrli qismi: kodni o'zgartirib GitHub'ga <b style={{ color: T.ink }}>push</b> qilsangiz, Netlify o'zi sezadi va saytni <b style={{ color: T.ink }}>avtomatik</b> yangilaydi. Sinab ko'ring.</Mentor>
+        <Mentor>Eng qulay qismi: kodni o'zgartirib GitHub'ga <b style={{ color: T.ink }}>push</b> qilsangiz, Netlify GitHub'ni kuzatib turgani uchun o'zgarishni sezadi va saytni <b style={{ color: T.ink }}>avtomatik</b> yangilaydi. Sinab ko'ring.</Mentor>
         <div className="split">
           <Col>
             <p className="flow-label">Kod (sarlavhani o'zgartiring)</p>
@@ -943,7 +943,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 14 — DEBUGGING (index.html) =====
 const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's14', text: `Deploy bo'ldi-yu, lekin sayt ochilganda bo'm-bo'sh, "404 — sahifa topilmadi" chiqdi. Sabab: bosh sahifa fayli "index.html" deb nomlanishi shart, lekin u "home.html" deb qo'yilgan. Xato faylни bosing.`, trigger: 'on_mount', waits_for: { type: 'error_found' } }]);
+  const audio = useAudio([{ id: 's14', text: `Deploy bo'ldi-yu, lekin sayt ochilganda bo'm-bo'sh, "404 — sahifa topilmadi" chiqdi. Sabab: bosh sahifa fayli "index.html" deb nomlanishi shart, lekin u "home.html" deb qo'yilgan. Xato faylni bosing.`, trigger: 'on_mount', waits_for: { type: 'error_found' } }]);
   const [picked, setPicked] = useState(storedAnswer ? 'home' : null);
   const [fixed, setFixed] = useState(!!storedAnswer);
   const found = picked === 'home';
@@ -1043,7 +1043,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
   const audio = useAudio([{ id: 's16', text: "Dars yakunlandi. Saytingizni internetga chiqardingiz! Asosiyni eslab qoling: hosting saytni serverda saqlaydi, Netlify uni bepul deploy qiladi, deploy qilingach sayt internetda ochiq, va poddomen — maktab domeni ostidagi shaxsiy manzilingiz.", trigger: 'on_mount', waits_for: null }]);
   const RECAP = ['Hosting nima — saytning internetdagi uyi', "Netlify bilan saytni bepul deploy qilish", "GitHub'ni ulash va avto-deploy (push → yangilanadi)", 'Deploy — sayt internetda har kim uchun ochiq', 'Poddomen — ism.maktab.uz (shaxsiy manzil)'];
-  const HOMEWORK = [{ b: 'GitHub', t: '— saytingizni repoga push qiling' }, { b: 'Netlify', t: '— bepul account oching va repони ulang' }, { b: 'Deploy', t: '— saytni internetga chiqaring' }, { b: 'Manzil', t: '— poddomenni do’stingizga yuboring' }];
+  const HOMEWORK = [{ b: 'GitHub', t: '— saytingizni repoga push qiling' }, { b: 'Netlify', t: '— bepul account oching va reponi ulang' }, { b: 'Deploy', t: '— saytni internetga chiqaring' }, { b: 'Manzil', t: '— poddomenni do’stingizga yuboring' }];
   const GLOSSARY = [{ b: 'Hosting', t: '— saytni serverda saqlash' }, { b: 'Netlify', t: '— bepul hosting platformasi' }, { b: 'Deploy', t: '— saytni internetga chiqarish' }, { b: 'Domen', t: '— maktab.uz' }, { b: 'Poddomen', t: '— ism.maktab.uz' }, { b: 'index.html', t: '— bosh sahifa fayli' }, { b: 'Avto-deploy', t: '— push → sayt o’zi yangilanadi' }];
   const correct = SCORED_IDX.filter(i => answers[i]?.correct).length;
   const total = SCORED_IDX.length;

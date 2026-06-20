@@ -472,7 +472,7 @@ const Screen4 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Internetdagi saytlarni ochib, ekranga chiqaradigan dastur qanday nomlanadi?</h2></>}
     options={['Server', 'Brauzer', 'Domen', 'DNS']} correctIdx={1}
     explainCorrect="To'g'ri! Brauzer (Chrome, Safari, Firefox, Edge) — internetga deraza. U saytni topib, ekranga chizadi."
-    explainWrong={{ 1: 'Server — saytlar saqlanadigan kompyuter. Uni ochib ko’rsatadigan — brauzer.', 2: 'Domen — saytning manzili (youtube.com), dastur emas.', 3: 'DNS — manzilni IP raqamiga aylantiradi. Saytni ko’rsatadigan — brauzer.', default: 'Saytlarni ochib beradigan dastur — brauzer.' }} />
+    explainWrong={{ 0: 'Server — saytlar saqlanadigan kompyuter. Uni ochib ko’rsatadigan — brauzer.', 2: 'Domen — saytning manzili (youtube.com), dastur emas.', 3: 'DNS — manzilni IP raqamiga aylantiradi. Saytni ko’rsatadigan — brauzer.', default: 'Saytlarni ochib beradigan dastur — brauzer.' }} />
 );
 
 // ===== SCREEN 5 — DOMEN =====
@@ -522,7 +522,7 @@ const Screen5b = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>Mustahkamlash</p><h2 className="title h-sub" style={{ marginTop: 8 }}><span className="italic" style={{ color: T.accent }}>youtube.com</span>, google.uz — bunday sayt manzili nima deb ataladi?</h2></>}
     options={['Brauzer', 'Parol', 'Domen', 'Server']} correctIdx={2}
     explainCorrect="To'g'ri! Domen — saytning odam eslab qoladigan manzili (youtube.com)."
-    explainWrong={{ 1: 'Brauzer — saytni ochadigan dastur, manzil emas.', 2: 'Server — sayt saqlanadigan kompyuter. Uning manzili (nomi) — domen.', 3: 'Parol — maxfiy so’z. Sayt manzili — domen.', default: 'Sayt manzili — domen deb ataladi.' }} />
+    explainWrong={{ 0: 'Brauzer — saytni ochadigan dastur, manzil emas.', 1: 'Parol — maxfiy so’z. Sayt manzili — domen.', 3: 'Server — sayt saqlanadigan kompyuter. Uning manzili (nomi) — domen.', default: 'Sayt manzili — domen deb ataladi.' }} />
 );
 // ===== SCREEN 6 — IP MANZIL =====
 const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
@@ -641,7 +641,7 @@ const Screen9 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Domen nomini (youtube.com) kompyuter tushunadigan <span className="italic" style={{ color: T.accent }}>IP raqamiga</span> kim aylantiradi?</h2></>}
     options={['Brauzer', 'Domen', 'Server', 'DNS']} correctIdx={3}
     explainCorrect="To'g'ri! DNS — internetning telefon kitobi: domen nomini IP raqamiga aylantiradi."
-    explainWrong={{ 1: 'Brauzer DNS’dan so’raydi, lekin aylantirishni DNS bajaradi.', 2: 'Server — sayt saqlanadigan kompyuter. Nomni IP’ga aylantiradigan — DNS.', 3: 'Domen — bu nomning o’zi. Uni IP’ga aylantiradigan — DNS.', default: 'Domen → IP aylantirishni DNS bajaradi.' }} />
+    explainWrong={{ 0: 'Brauzer DNS’dan so’raydi, lekin aylantirishni DNS bajaradi.', 1: 'Domen — bu nomning o’zi. Uni IP’ga aylantiradigan — DNS.', 2: 'Server — sayt saqlanadigan kompyuter. Nomni IP’ga aylantiradigan — DNS.', default: 'Domen → IP aylantirishni DNS bajaradi.' }} />
 );
 
 // ===== SCREEN 10 — SO'ROV YO'LI (sayohat) =====
@@ -721,7 +721,7 @@ const Screen12 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Server brauzerga aniq <span className="italic" style={{ color: T.accent }}>nima</span> qaytaradi?</h2></>}
     options={['Domen nomi', 'Sahifa kodi (HTML)', 'DNS manzili', 'Boshqa brauzer']} correctIdx={1}
     explainCorrect="To'g'ri! Server sahifa kodini — HTML'ni qaytaradi. Brauzer uni o'qib, chiroyli sahifaga aylantiradi."
-    explainWrong={{ 1: 'Domen nomini siz yozasiz, server emas. Server HTML kodini qaytaradi.', 2: 'DNS manzilini DNS beradi. Server esa sahifa kodini (HTML) qaytaradi.', 3: 'Brauzer sizda allaqachon bor. Server HTML kodini jo’natadi.', default: 'Server HTML — sahifa kodini qaytaradi.' }} />
+    explainWrong={{ 0: 'Domen nomini siz yozasiz, server emas. Server HTML kodini qaytaradi.', 2: 'DNS manzilini DNS beradi. Server esa sahifa kodini (HTML) qaytaradi.', 3: 'Brauzer sizda allaqachon bor. Server HTML kodini jo’natadi.', default: 'Server HTML — sahifa kodini qaytaradi.' }} />
 );
 
 // ===== SCREEN 13 — SIMULATOR (o'zing so'rov yubor) =====
@@ -805,9 +805,9 @@ const Screen15 = (props) => (
     audioText="youtube.com yozib Enter bosganingizda, so'rov to'g'ri qaysi tartibda boradi?"
     questionText="youtube.com yozganda so'rov qaysi tartibda boradi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>Butun yo'lni eslang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>youtube.com yozib Enter bossangiz, so'rov <span className="italic" style={{ color: T.accent }}>qaysi tartibda</span> boradi?</h2></>}
-    options={['Server → DNS → Brauzer → Domen', 'DNS → Ekran → Server → Brauzer', 'Brauzer → DNS (IP topadi) → Server (sahifa) → Ekran', "To'g'ridan-to'g'ri serverdan ekranga"]} correctIdx={2}
+    options={['Server → DNS → Brauzer → Ekran', 'DNS → Brauzer → Server → Ekran', 'Brauzer → DNS → Server → Ekran', 'Brauzer → Server → DNS → Ekran']} correctIdx={2}
     explainCorrect="To'g'ri! Brauzer avval DNS'dan IP oladi, keyin serverga so'rov yuboradi, server sahifani qaytaradi, brauzer ekranga chizadi."
-    explainWrong={{ 1: "Teskari tartib. Birinchi siz va brauzer boshlaydi, server emas.", 2: "DNS birinchi emas — avval brauzer DNS'ga murojaat qiladi. Ekran esa eng oxirida.", 3: "DNS qadami tushib qoldi: brauzer avval IP'ni DNS'dan oladi.", default: "To'g'ri yo'l: Brauzer → DNS → Server → Ekran." }} />
+    explainWrong={{ 0: "Server birinchi emas — avval brauzer so'rovni boshlaydi.", 1: "DNS birinchi emas — avval brauzer DNS'ga murojaat qiladi.", 3: "DNS server'dan oldin keladi — avval IP topiladi, keyin server'ga boriladi.", default: "To'g'ri yo'l: Brauzer → DNS → Server → Ekran." }} />
 );
 
 // ===== SCREEN 16 — YAKUN =====

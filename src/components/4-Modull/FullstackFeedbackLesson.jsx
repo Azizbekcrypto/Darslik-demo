@@ -368,7 +368,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   const STEPS = [
     { text: 'Ko\'rsatamiz — Demo Day', tag: 'PM' },
     { text: 'Fikr yig\'amiz — aniq', tag: 'feedback' },
-    { text: 'Saralaymiz — qaysi avval', tag: 'Impact / Effort' },
+    { text: 'Saralaymiz — qaysi avval', tag: 'Foyda / Mehnat' },
     { text: 'Upgrade qilamiz + qayta test', tag: 'AI bilan' }
   ];
   const isNarrow = useIsMobile(768);
@@ -930,7 +930,7 @@ const Screen17 = ({ screen, answers, onReset, onPrev, onFinish }) => {
   const GLOSSARY = [
     { b: 'Feedback', t: "— foydalanuvchi fikri (aniq bo'lsa foydali)" },
     { b: 'Impact / Effort', t: '— foyda / mehnat bo\'yicha saralash' },
-    { b: 'Iteration', t: '— qur → ko\'rsat → yaxshila sikli' },
+    { b: 'Sikl (iteration)', t: '— qur → ko\'rsat → yaxshila sikli' },
     { b: 'Tasdiq (confirm)', t: '— muhim amaldan oldin so\'rash' },
     { b: 'Dashboard', t: '— holatni bir qarashda ko\'rsatuvchi panel' },
     { b: 'Settings + UPDATE', t: '— sozlamani bazada o\'zgartirish' }

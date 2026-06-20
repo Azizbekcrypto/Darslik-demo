@@ -838,7 +838,7 @@ const Screen16 = (props) => (
     questionText="Yangi resurs qo'shganda asosan nechta fayl yoziladi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Yangi resurs = <span className="italic" style={{ color: T.accent }}>nechta</span> asosiy fayl?</h2></>}
     options={['5 ta: Entity, DTO, Service, Controller, Module', '1 ta: hammasini bitta faylga', '20 ta har xil fayl', 'Hech narsa — avtomatik bo\'ladi']} correctIdx={0}
-    explainCorrect="To'g'ri! Har resurs — bir xil 5 qadam: Entity, DTO, Service (BaseService'dan), Controller, Module. Predictable va tartibli."
+    explainCorrect="To'g'ri! Har resurs — bir xil 5 qadam: Entity, DTO, Service (BaseService'dan), Controller, Module. Oldindan aytib bo'ladigan va tartibli."
     explainWrong={{
       1: "Bitta faylga yozsak — yana o'sha chalkashlik. Arxitektura buni 5 faylga bo'ladi.",
       2: "20 ta emas — asosiy 5 ta fayl yetadi (qolgani tayyor asboblar).",
@@ -901,23 +901,25 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [hint, setHint] = useState('');
   const [sc, setSc] = useState(0);
   const timer = useRef(null);
+  const runningRef = useRef(false);
   useEffect(() => () => clearTimeout(timer.current), []);
-  const done = built.length >= 5;
+  const done = built.length >= BUILD_STEPS.length;
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: resName || 'Task' }); }, [done]);
   const start = (raw) => {
-    if (building) return;
+    if (building || runningRef.current) return; // sinxron guard — tez ketma-ket bosishda parallel zanjirlarning oldini oladi
     const clean = (raw || '').trim().replace(/[^a-zA-Z]/g, '');
     if (!clean) { setHint('Resurs nomini lotin harflarda yozing — masalan: Task'); return; }
+    runningRef.current = true;
     const R = clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
     setHint(''); setResName(R); setBuilt([]); setBuilding(true); setSc(n => n + 1);
     let i = 0;
     const tick = () => {
-      setBuilt(prev => [...prev, i]); setSc(n => n + 1); i++;
-      if (i < 5) { timer.current = setTimeout(tick, 620); } else { setBuilding(false); }
+      setBuilt(prev => (prev.length >= BUILD_STEPS.length ? prev : [...prev, i])); setSc(n => n + 1); i++;
+      if (i < BUILD_STEPS.length) { timer.current = setTimeout(tick, 620); } else { setBuilding(false); runningRef.current = false; }
     };
     timer.current = setTimeout(tick, 450);
   };
-  const reset = () => { clearTimeout(timer.current); setBuilt([]); setBuilding(false); setResName(''); setName(''); setHint(''); };
+  const reset = () => { clearTimeout(timer.current); runningRef.current = false; setBuilt([]); setBuilding(false); setResName(''); setName(''); setHint(''); };
   const R = resName || 'Task';
   return (
     <Stage eyebrow="Amaliyot · resurs quramiz" screen={screen} scrollSignal={sc} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'AI 5 faylni yozsin'} onClick={onNext} /></>}>
@@ -949,13 +951,13 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <p className="flow-label">AI yozayotgan fayllar · {R}</p>
             <div className="filestream">
               {built.length === 0 && !building && <p className="fs-empty">Buyruq bering — fayllar shu yerda paydo bo'ladi…</p>}
-              {built.map(i => (
-                <div key={i} className="fs-file el-in">
-                  <div className="fs-name"><span className="fs-ico">{BUILD_STEPS[i].icon}</span>{BUILD_STEPS[i].file(R.toLowerCase())}</div>
+              {built.map((i, idx) => { const st = BUILD_STEPS[i]; if (!st) return null; return (
+                <div key={idx} className="fs-file el-in">
+                  <div className="fs-name"><span className="fs-ico">{st.icon}</span>{st.file(R.toLowerCase())}</div>
                   <pre className="fs-code">{buildCode(i, R)}</pre>
                 </div>
-              ))}
-              {building && built.length < 5 && <p className="gen-line">{BUILD_STEPS[built.length].step} yozilmoqda</p>}
+              ); })}
+              {building && built.length < BUILD_STEPS.length && <p className="gen-line">{BUILD_STEPS[built.length]?.step} yozilmoqda</p>}
             </div>
           </Col>
         </div>

@@ -23,6 +23,13 @@ import PracticeLesson2 from './components/2-Modull/PracticeLesson2';
 import PeanStackLesson from './components/2-Modull/PeanStackLesson';
 import PracticeLesson3 from './components/2-Modull/PracticeLesson3';
 import PracticeLesson4 from './components/2-Modull/PracticeLesson4';
+import PmLesson4 from './components/2-Modull/PmLesson4';
+import PmLesson5 from './components/2-Modull/PmLesson5';
+import PmLesson6 from './components/2-Modull/PmLesson6';
+import PmLesson7 from './components/3-Modull/PmLesson7';
+import PmLesson8 from './components/3-Modull/PmLesson8';
+import PmLesson9 from './components/3-Modull/PmLesson9';
+import PmLesson10 from './components/3-Modull/PmLesson10';
 import ReactIntroLesson from './components/3-Modull/ReactIntroLesson';
 import ReactFirstComponentLesson from './components/3-Modull/ReactFirstComponentLesson';
 import ReactStateEffectLesson from './components/3-Modull/ReactStateEffectLesson';
@@ -33,6 +40,10 @@ import ReactCrudPracticeLesson from './components/3-Modull/ReactCrudPracticeLess
 import ReactRouterPracticeLesson from './components/3-Modull/ReactRouterPracticeLesson';
 import ReactProjectDayLesson from './components/3-Modull/ReactProjectDayLesson';
 import ReactBuildSiteLesson from './components/3-Modull/ReactBuildSiteLesson';
+import PmLesson11 from './components/4-Modull/PmLesson11';
+import PmLesson12 from './components/4-Modull/PmLesson12';
+import PmLesson13 from './components/4-Modull/PmLesson13';
+import PmLesson14 from './components/4-Modull/PmLesson14';
 import DataIntroLesson from './components/4-Modull/DataIntroLesson';
 import DbSqlNosqlLesson from './components/4-Modull/DbSqlNosqlLesson';
 import NodeServerLesson from './components/4-Modull/NodeServerLesson';
@@ -44,11 +55,45 @@ import BackendCrudPracticeLesson from './components/4-Modull/BackendCrudPractice
 import FullstackConnectPracticeLesson from './components/4-Modull/FullstackConnectPracticeLesson';
 import FullstackProjectDayLesson from './components/4-Modull/FullstackProjectDayLesson';
 import FullstackFeedbackLesson from './components/4-Modull/FullstackFeedbackLesson';
+import PmLesson15 from './components/4a-Modull/PmLesson15';
 import NestArchAliveLesson from './components/4a-Modull/NestArchAliveLesson';
 import NestArchResourceLesson from './components/4a-Modull/NestArchResourceLesson';
 import NestArchPracticeLesson from './components/4a-Modull/NestArchPracticeLesson';
+import PmLesson16 from './components/4b-Modull/PmLesson16';
 import JestUnitTestLesson from './components/4b-Modull/JestUnitTestLesson';
 import EdgeCasesTestLesson from './components/4b-Modull/EdgeCasesTestLesson';
+import CiCdIntroLesson from './components/4c-Modull/CiCdIntroLesson';
+import PmLesson17 from './components/4c-Modull/PmLesson17';
+import GithubActionsLesson from './components/4c-Modull/GithubActionsLesson';
+import FullPipelineProjectLesson from './components/4c-Modull/FullPipelineProjectLesson';
+import AiPipelineProjectLesson from './components/4c-Modull/AiPipelineProjectLesson';
+import PmLesson18 from './components/4c-Modull/PmLesson18';
+import FullProPipelineLesson from './components/4c-Modull/FullProPipelineLesson';
+import BotIntroLesson from './components/5-Modull/BotIntroLesson';
+import PmLesson19 from './components/5-Modull/PmLesson19';
+import BotApiButtonsLesson from './components/5-Modull/BotApiButtonsLesson';
+import BotAiProjectLesson from './components/5-Modull/BotAiProjectLesson';
+import BotAiBrainLesson from './components/5-Modull/BotAiBrainLesson';
+import BotStatefulMemoryLesson from './components/5-Modull/BotStatefulMemoryLesson';
+import BotFullProjectLesson from './components/5-Modull/BotFullProjectLesson';
+import PmLesson20 from './components/5-Modull/PmLesson20';
+import BotFeedbackIterationLesson from './components/5-Modull/BotFeedbackIterationLesson';
+import BotAiAgentLesson from './components/5-Modull/BotAiAgentLesson';
+import PmLesson21 from './components/5-Modull/PmLesson21';
+import SystemArchitectureLesson from './components/6-Modull/SystemArchitectureLesson';
+import ArchPatternsLesson from './components/6-Modull/ArchPatternsLesson';
+import AgentArchitectureLesson from './components/6-Modull/AgentArchitectureLesson';
+import ClaudeSkillsLesson from './components/6-Modull/ClaudeSkillsLesson';
+import WriteSkillLesson from './components/6-Modull/WriteSkillLesson';
+import ReactNativeBasicsLesson from './components/6-Modull/ReactNativeBasicsLesson';
+import ReactNativeAppLesson from './components/6-Modull/ReactNativeAppLesson';
+import PipelineProjectLesson from './components/6-Modull/PipelineProjectLesson';
+import MobileAppPracticeLesson from './components/6-Modull/MobileAppPracticeLesson';
+import FullSystemProjectLesson from './components/6-Modull/FullSystemProjectLesson';
+import PmLesson22 from './components/6-Modull/PmLesson22';
+import PmLesson23 from './components/6-Modull/PmLesson23';
+import PmLesson24 from './components/6-Modull/PmLesson24';
+import PmLesson25 from './components/6-Modull/PmLesson25';
 
 
 function App() {
@@ -191,7 +236,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <JsVarsLesson />
+            <PmLesson4 />
           </div>
         }
       />
@@ -201,7 +246,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <JsConditionsLesson />
+            <JsVarsLesson />
           </div>
         }
       />
@@ -211,7 +256,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <JsLoopsLesson />
+            <JsConditionsLesson />
           </div>
         }
       />
@@ -221,7 +266,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <JsFunctionsLesson />
+            <JsLoopsLesson />
           </div>
         }
       />
@@ -231,7 +276,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <PracticeLesson1 />
+            <JsFunctionsLesson />
           </div>
         }
       />
@@ -241,7 +286,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <PracticeLesson2 />
+            <PmLesson5 />
           </div>
         }
       />
@@ -251,7 +296,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <PeanStackLesson />
+            <PracticeLesson1 />
           </div>
         }
       />
@@ -261,7 +306,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <PracticeLesson3 />
+            <PracticeLesson2 />
           </div>
         }
       />
@@ -271,7 +316,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <PracticeLesson4 />
+            <PeanStackLesson />
           </div>
         }
       />
@@ -281,7 +326,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ReactIntroLesson />
+            <PracticeLesson3 />
           </div>
         }
       />
@@ -291,7 +336,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ReactFirstComponentLesson />
+            <PracticeLesson4 />
           </div>
         }
       />
@@ -301,7 +346,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ReactStateEffectLesson />
+            <PmLesson6 />
           </div>
         }
       />
@@ -311,7 +356,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ReactPropsReuseLesson />
+            <ReactIntroLesson />
           </div>
         }
       />
@@ -321,7 +366,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ReactCrudPracticeLesson />
+            <PmLesson7 />
           </div>
         }
       />
@@ -331,7 +376,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ReactApiGetLesson />
+            <ReactFirstComponentLesson />
           </div>
         }
       />
@@ -341,7 +386,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ReactApiPostLesson />
+            <ReactStateEffectLesson />
           </div>
         }
       />
@@ -351,7 +396,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ReactRouterPracticeLesson />
+            <PmLesson8 />
           </div>
         }
       />
@@ -361,7 +406,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ReactProjectDayLesson />
+            <ReactPropsReuseLesson />
           </div>
         }
       />
@@ -371,7 +416,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ReactBuildSiteLesson />
+            <ReactCrudPracticeLesson />
           </div>
         }
       />
@@ -381,7 +426,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <DataIntroLesson />
+            <ReactApiGetLesson />
           </div>
         }
       />
@@ -391,7 +436,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <DbSqlNosqlLesson />
+            <ReactApiPostLesson />
           </div>
         }
       />
@@ -401,7 +446,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <NodeServerLesson />
+            <PmLesson9 />
           </div>
         }
       />
@@ -411,7 +456,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <RoutingLesson />
+            <ReactRouterPracticeLesson />
           </div>
         }
       />
@@ -421,7 +466,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <PostgresCrudLesson />
+            <ReactProjectDayLesson />
           </div>
         }
       />
@@ -431,7 +476,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <BackendCrudPracticeLesson />
+            <ReactBuildSiteLesson />
           </div>
         }
       />
@@ -441,7 +486,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <ApiPostmanLesson />
+            <PmLesson10 />
           </div>
         }
       />
@@ -451,7 +496,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <FullstackConnectPracticeLesson />
+            <DataIntroLesson />
           </div>
         }
       />
@@ -461,7 +506,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <AuthEnvLesson />
+            <PmLesson11 />
           </div>
         }
       />
@@ -471,7 +516,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <FullstackProjectDayLesson />
+            <DbSqlNosqlLesson />
           </div>
         }
       />
@@ -481,7 +526,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <FullstackFeedbackLesson />
+            <NodeServerLesson />
           </div>
         }
       />
@@ -491,7 +536,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <NestArchAliveLesson />
+            <RoutingLesson />
           </div>
         }
       />
@@ -501,7 +546,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <NestArchResourceLesson />
+            <PostgresCrudLesson />
           </div>
         }
       />
@@ -511,7 +556,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <NestArchPracticeLesson />
+            <PmLesson12 />
           </div>
         }
       />
@@ -521,7 +566,7 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
-            <JestUnitTestLesson />
+            <BackendCrudPracticeLesson />
           </div>
         }
       />
@@ -531,7 +576,457 @@ function App() {
         element={
           <div style={{ position: 'relative' }}>
             <BackButton />
+            <ApiPostmanLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/48"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <FullstackConnectPracticeLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/49"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <AuthEnvLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/50"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson13 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/51"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <FullstackProjectDayLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/52"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <FullstackFeedbackLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/53"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson14 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/54"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <NestArchAliveLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/55"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson15 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/56"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <NestArchResourceLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/57"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <NestArchPracticeLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/58"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <JestUnitTestLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/59"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson16 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/60"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
             <EdgeCasesTestLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/61"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <CiCdIntroLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/62"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson17 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/63"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <GithubActionsLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/64"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <FullPipelineProjectLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/65"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <AiPipelineProjectLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/66"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson18 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/67"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <FullProPipelineLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/68"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <BotIntroLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/69"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson19 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/70"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <BotApiButtonsLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/71"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <BotStatefulMemoryLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/72"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <BotAiProjectLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/73"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <BotAiBrainLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/74"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <BotFullProjectLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/75"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson20 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/76"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <BotFeedbackIterationLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/77"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <BotAiAgentLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/78"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson21 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/79"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <SystemArchitectureLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/80"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson22 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/81"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <ArchPatternsLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/82"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <AgentArchitectureLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/83"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <ClaudeSkillsLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/84"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson23 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/85"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <WriteSkillLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/86"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PipelineProjectLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/87"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <ReactNativeBasicsLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/88"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <ReactNativeAppLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/89"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <MobileAppPracticeLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/90"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson24 />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/91"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <FullSystemProjectLesson />
+          </div>
+        }
+      />
+
+      <Route
+        path="/lesson/92"
+        element={
+          <div style={{ position: 'relative' }}>
+            <BackButton />
+            <PmLesson25 />
           </div>
         }
       />

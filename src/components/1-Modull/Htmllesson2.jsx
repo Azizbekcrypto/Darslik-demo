@@ -504,7 +504,7 @@ const Screen4 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri atributni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Rasm faylining manzilini qaysi atribut ko'rsatadi?</h2></>}
     options={['alt', 'src', 'href', 'file']} correctIdx={1}
     explainCorrect="To'g'ri! src (source) — rasm faylining manzilini ko'rsatadi. Masalan: img src bilan 'mushuk.jpg' ni yuklaydi."
-    explainWrong={{ 1: 'alt — rasm yuklanmaganda chiqadigan matn. Manzilni esa src ko’rsatadi.', 2: 'href — bu havola (a teg) manzili. Rasm uchun src ishlatiladi.', 3: 'file — bunday atribut yo’q. To’g’risi — src.', default: 'Rasm manzili src atributida yoziladi.' }} />
+    explainWrong={{ 0: 'alt — rasm yuklanmaganda chiqadigan matn. Manzilni esa src ko’rsatadi.', 2: 'href — bu havola (a teg) manzili. Rasm uchun src ishlatiladi.', 3: 'file — bunday atribut yo’q. To’g’risi — src.', default: 'Rasm manzili src atributida yoziladi.' }} />
 );
 
 // ===== SCREEN 5 — STRUKTURA (header/main/footer) =====
@@ -567,7 +567,7 @@ const Screen5b = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>Mustahkamlash</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Sahifaning tepasidagi <span className="italic" style={{ color: T.accent }}>logotip va menyu</span> qaysi bo'limga joylanadi?</h2></>}
     options={['<footer>', '<main>', '<header>', '<img>']} correctIdx={2}
     explainCorrect="To'g'ri! header — sahifaning tepasi: logotip, sayt nomi va menyu shu yerda turadi."
-    explainWrong={{ 1: 'footer — bu pastki qism (aloqa, ©). Tepadagi menyu header’da.', 2: 'main — bu asosiy kontent qismi. Logotip va menyu header’da.', 3: '<img> — bu rasm tegi, bo’lim emas. To’g’risi — header.', default: 'Tepadagi logotip va menyu header bo’limiga joylanadi.' }} />
+    explainWrong={{ 0: 'footer — bu pastki qism (aloqa, ©). Tepadagi menyu header’da.', 1: 'main — bu asosiy kontent qismi. Logotip va menyu header’da.', 3: '<img> — bu rasm tegi, bo’lim emas. To’g’risi — header.', default: 'Tepadagi logotip va menyu header bo’limiga joylanadi.' }} />
 );
 
 // ===== SCREEN 6 — DIV (guruhlash) =====
@@ -693,7 +693,7 @@ const Screen9 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri tegni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Foydalanuvchi matn yozadigan maydonni qaysi teg yasaydi?</h2></>}
     options={['<label>', '<form>', '<button>', '<input>']} correctIdx={3}
     explainCorrect="To'g'ri! input — foydalanuvchi matn (yoki parol, email, raqam) yozadigan maydon."
-    explainWrong={{ 1: 'label — bu maydon nomi (yozuv), yozish joyi emas. To’g’risi — input.', 2: 'form — bu butun formani o’rab turuvchi teg. Yozish joyi — input.', 3: 'button — bu yuborish tugmasi. Matn yoziladigan joy — input.', default: 'Matn yoziladigan maydon — input.' }} />
+    explainWrong={{ 0: 'label — bu maydon nomi (yozuv), yozish joyi emas. To’g’risi — input.', 1: 'form — bu butun formani o’rab turuvchi teg. Yozish joyi — input.', 2: 'button — bu yuborish tugmasi. Matn yoziladigan joy — input.', default: 'Matn yoziladigan maydon — input.' }} />
 );
 // ===== SCREEN 10 — DEVTOOLS (inspect) =====
 const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
@@ -788,7 +788,7 @@ const Screen12 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>DevTools orqali sahifadagi matnni o'zgartirsangiz, bu o'zgarish...</h2></>}
     options={["Butun internetda, hamma uchun o'zgaradi", "Saytni butunlay o'chirib yuboradi", "Faqat sizning ekraningizda, vaqtincha bo'ladi", "Hech qachon ko'rinmaydi"]} correctIdx={2}
     explainCorrect="To'g'ri! DevTools'dagi o'zgarish faqat sizning brauzeringizda va vaqtincha. Sahifani yangilasangiz, asl holiga qaytadi — shuning uchun bemalol tajriba qilsa bo'ladi."
-    explainWrong={{ 1: "Yo'q — o'zgarish faqat sizda. Boshqalar asl saytni ko'radi.", 2: "Yo'q — sayt o'chmaydi, faqat sizning ekraningizda vaqtincha ko'rinadi.", 3: "O'zgarish ko'rinadi — lekin faqat sizda va vaqtincha.", default: "DevTools o'zgarishi faqat sizda va vaqtincha bo'ladi." }} />
+    explainWrong={{ 0: "Yo'q — o'zgarish faqat sizda. Boshqalar asl saytni ko'radi.", 1: "Yo'q — sayt o'chmaydi, faqat sizning ekraningizda vaqtincha ko'rinadi.", 3: "O'zgarish ko'rinadi — lekin faqat sizda va vaqtincha.", default: "DevTools o'zgarishi faqat sizda va vaqtincha bo'ladi." }} />
 );
 // ===== SCREEN 13 — BUILDER (amaliyot) =====
 const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {

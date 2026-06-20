@@ -548,7 +548,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Body" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Posilkani yiging'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'yiningiz posilkaning <span className="italic" style={{ color: T.accent }}>qaysi qismiga</span> joylanadi?</h2></div>
-        <Mentor>Sozlamalar qutisida yana bir xona bor: <b style={{ color: T.ink }}>body — posilka yuki</b>. Lekin server obyektni tushunmaydi — unga <b style={{ color: T.ink }}>JSON matn</b> kerak. Tarjimon: <span className="mono">JSON.stringify()</span>. O'yiningizni tanlab, kod qanday yig'ilishini kuzating.</Mentor>
+        <Mentor>Sozlamalar qutisida yana bir xona bor: <b style={{ color: T.ink }}>body — posilka yuki</b>. Lekin server obyektni tushunmaydi — unga <b style={{ color: T.ink }}>JSON matn</b> kerak. Tarjimon: <span className="mono">JSON.stringify()</span>. <b style={{ color: T.ink }}>headers</b> esa serverga ma'lumot JSON ekanini aytadi. O'yiningizni tanlab, kod qanday yig'ilishini kuzating.</Mentor>
         <div className="split">
           <Col>
             <p className="flow-label">name</p>
@@ -563,6 +563,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <Jx>{'const'}</Jx>{' yangi = { name: '}{name ? <St>'{name}'</St> : <Cm>?</Cm>}{', emoji: '}{emoji ? <St>'{emoji}'</St> : <Cm>?</Cm>}{' };'}{'\n\n'}
               {'fetch(url, {'}{'\n'}
               {'  '}<At>method</At>{': '}<St>'POST'</St>{','}{'\n'}
+              {'  '}<At>headers</At>{": { 'Content-Type': 'application/json' },"}{'\n'}
               {'  '}<span style={{ borderRadius: 6, padding: '1px 5px', background: done ? 'rgba(31,122,77,0.14)' : 'rgba(255,255,255,0.06)' }}><At>body</At>{': JSON.stringify(yangi)'}</span>{'\n'}
               {'});'}
             </pre>
