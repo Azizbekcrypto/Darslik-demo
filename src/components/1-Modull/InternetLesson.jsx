@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // HTML 1-DARS — PLATFORM STANDARD v15 (Notion: design_system + platform_contract + infrastructure_v1)
@@ -291,17 +292,34 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
         <div className="mentor-msg body">{children}</div>
       </div>
     </div>
+  );
+};
+
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
   );
 };
 
@@ -367,8 +385,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <p className="flow-label">Dars oxirida bilasiz — bu yo'lni</p>
       <div className="jmini fade-up delay-1">
         {JOURNEY.map((j, i) => (<React.Fragment key={i}><div className="jmini-node"><span className="jmini-ic">{j.ic}</span><span className="jmini-l">{j.l}</span></div>{i < JOURNEY.length - 1 && <span className="jmini-arr">→</span>}</React.Fragment>))}
-      </div>
-      <p className="body" style={{ margin: 0, color: T.ink2 }}>…va kompyuter buni <b style={{ color: T.ink }}>1 soniyada</b> bajaradi.</p>
+      </div>      <p className="body" style={{ margin: 0, color: T.ink2 }}>…va kompyuter buni <b style={{ color: T.ink }}>1 soniyada</b> bajaradi.</p>
     </Col>
   );
   const StepsBlock = (
@@ -410,6 +427,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Internet aslida <span className="italic" style={{ color: T.accent }}>nima</span>?</h2></div>
         <Mentor>Internet — sehrli bulut emas. Bu dunyo bo'ylab <b style={{ color: T.ink }}>millionlab kompyuterlar</b> bir-biriga ulangan ulkan <b style={{ color: T.ink }}>tarmoq</b>. Xuddi yo'llar to'ri kabi. Tugmani bosib, ulanishlarni ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="web fade-up delay-2" style={{ height: 165 }}>
@@ -418,8 +436,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {!connected && <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setConnected(true)}>🔗 Ulanishlarni ko'rsatish</button>}
           </div>
-          <div className="col">
-            {connected ? (
+          <div className="col">            {connected ? (
               <div className="frame-success fade-step"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Mana tarmoq</p><p className="body" style={{ margin: 0, color: T.ink }}>Har bir qurilma boshqasiga <b>"yo'l"</b> bilan bog'langan. Ma'lumot shu yo'llar orqali sayohat qiladi. <b>Inter-net</b> = "tarmoqlararo" degani.</p></div>
             ) : (
               <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Telefon, noutbuk, TV, server… hammasi ulangan. Ulanishlarni ko'rish uchun tugmani bosing.</p></div>
@@ -427,6 +444,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}><b>Asosiy:</b> internet — qurilmalarni bog'lovchi tarmoq. Saytlar shu tarmoq orqali sizgacha keladi.</p></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -450,8 +468,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="fade-up delay-2" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{BROWSERS.map(b => (<button key={b.k} className={`chip ${br === b.k ? 'chip-on' : ''}`} onClick={() => pick(b.k)}>{b.ic} {b.l}</button>))}</div>
             <div className="frame-soft fade-up delay-3"><p className="body" style={{ margin: 0, color: T.ink }}>Qaysi brauzer bo'lishidan qat'i nazar — vazifasi bir xil: <b>manzilni olib, saytni keltirib, ekranga chizish</b>.</p></div>
           </div>
-          <div className="col">
-            <div className="flow-label">{done ? `${cur.l} youtube.com'ni ochdi` : "Brauzer derazasi"}</div>
+          <div className="col">            <div className="flow-label">{done ? `${cur.l} youtube.com'ni ochdi` : "Brauzer derazasi"}</div>
             <Preview title={done ? `${cur.l} — youtube.com` : 'brauzer'} minH={150}>
               {done ? (
                 <div className="fade-step"><div style={{ height: 9, width: '42%', background: '#FF0000', borderRadius: 4, marginBottom: 10 }} /><div style={{ display: 'flex', gap: 8 }}>{[0, 1].map(i => (<div key={i} style={{ flex: 1 }}><div style={{ height: 42, background: '#dcd9d2', borderRadius: 7, marginBottom: 5 }} /><div style={{ height: 6, background: '#cbc8c1', borderRadius: 3, width: '85%' }} /></div>))}</div></div>
@@ -492,6 +509,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Saytning <span className="italic" style={{ color: T.accent }}>manzili</span> qanday bo'ladi?</h2></div>
         <Mentor>Saytga borish uchun uning <b style={{ color: T.ink }}>manzilini</b> bilish kerak — bu <b style={{ color: T.ink }}>domen</b>: youtube.com, google.uz. Xuddi uyingiz manzili kabi — yozsangiz, aynan o'sha saytga borasiz. Domenni tanlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <p className="eyebrow fade-up delay-2" style={{ color: T.ink2, margin: 0 }}>Domenni tanlang</p>
@@ -502,13 +520,14 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="flow-label">Domen qismlari</div>
             {done ? (
               <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="dompill" key={cur.full}><span className="dpart dpart-name">{cur.name}</span><span className="dpart dpart-tld">{cur.tld}</span></div>
+                <div className="domsplit" key={cur.full}><span className="dpart dpart-name dsp-l">{cur.name}</span><span className="dpart dpart-tld dsp-r">{cur.tld}</span></div>
                 <div className="dlabels"><span><b style={{ color: T.accent }}>nom</b> — sayt nomi</span><span><b style={{ color: T.blue }}>zona</b> — turi</span></div>
                 <div className="sk-info"><p className="body" style={{ margin: 0, color: T.ink }}>{cur.note}</p></div>
               </div>
             ) : (<div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Domenni tanlang — qismlarga ajraladi</p></div>)}
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -535,14 +554,15 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kompyuterlar manzilni qanday <span className="italic" style={{ color: T.accent }}>yozadi</span>?</h2></div>
         <Mentor>Bir sir: kompyuterlar nomni emas, <b style={{ color: T.ink }}>raqamni</b> tushunadi. Har bir serverning raqamli manzili bor — <b style={{ color: T.ink }}>IP manzil</b>, masalan 142.250.190.78. Xuddi telefon raqami kabi. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="frame frame-col fade-up delay-2">
               <p className="eyebrow" style={{ color: T.accent, margin: 0 }}>Odamlar uchun (nom)</p>
               <span className="dompill"><span className="dpart dpart-name">youtube.com</span></span>
-              <p className="mono small" style={{ color: T.ink3, margin: 0, textAlign: 'center' }}>↓ kompyuter buni raqamga aylantiradi</p>
+              <p className={`mono small ip-conv ${revealed ? 'go' : ''}`} style={{ margin: 0, textAlign: 'center' }}>↓ kompyuter buni raqamga aylantiradi</p>
               <p className="eyebrow" style={{ color: T.blue, margin: 0 }}>Kompyuterlar uchun (raqam)</p>
-              {revealed ? <span className="ipbox fade-step">142.250.190.78</span> : <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setRevealed(true)}>🔢 IP manzilni ko'rsatish</button>}
+              {revealed ? <span className="ipbox"><span className="ip-type">142.250.190.78</span></span> : <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setRevealed(true)}>🔢 IP manzilni ko'rsatish</button>}
             </div>
           </div>
           <div className="col">
@@ -551,6 +571,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}>Siz <b>"Aziza"</b> ni eslaysiz, telefon esa <b>raqamni</b> ishlatadi. Internetda ham: siz <b>youtube.com</b>, kompyuter esa <b>IP</b> ni ishlatadi.</p></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -571,27 +592,35 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Domen nomidan IP'ni kim <span className="italic" style={{ color: T.accent }}>topadi</span>?</h2></div>
         <Mentor>142.250.190.78 ni kim yodda tutadi? Hech kim! Shuning uchun <b style={{ color: T.ink }}>DNS</b> bor — u <b style={{ color: T.ink }}>domen nomini IP raqamiga</b> aylantiradi. Xuddi telefon kontaktlari: "Aziza" deysiz, raqam topiladi. Domenni tanlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <p className="eyebrow fade-up delay-2" style={{ color: T.ink2, margin: 0 }}>Qaysi saytni qidiramiz?</p>
             <div className="fade-up delay-2" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{Object.keys(MAP).map(d => (<button key={d} className={`chip ${q === d ? 'chip-on' : ''}`} onClick={() => lookup(d)}>{d}</button>))}</div>
             <div className="dns-card fade-up delay-3">
-              <div className="dns-head">🗂️ DNS — Internet telefon kitobi</div>
-              {!q ? (<p className="body" style={{ margin: 0, color: T.ink3, fontStyle: 'italic' }}>Domen tanlang…</p>) : (
-                <div className="dns-row" key={q + phase}>
-                  <span className="dpart dpart-name">{q}</span>
-                  <span className="dns-arr">{phase === 'looking' ? '⟳' : '→'}</span>
-                  {phase === 'looking' ? <span className="mono small" style={{ color: T.ink3 }}>qidirilmoqda…</span> : <span className="ipbox ipbox-sm fade-step">{MAP[q]}</span>}
-                </div>
-              )}
+              <div className="dns-head">📖 DNS — Internet telefon kitobi {phase === 'looking' && <span className="dns-status">qidirilmoqda…</span>}{phase === 'found' && <span className="dns-status ok">topildi ✓</span>}</div>
+              <div className="dns-book">
+                {Object.entries(MAP).map(([dom, ip]) => {
+                  const isMatch = q === dom;
+                  const cls = isMatch && phase === 'looking' ? 'scan' : isMatch && phase === 'found' ? 'hit' : q && phase === 'found' ? 'dim' : '';
+                  return (
+                    <div key={dom} className={`dns-entry ${cls}`}>
+                      <span className="dns-dom">{dom}</span>
+                      <span className="dns-dots" />
+                      <span className="dns-ip" key={cls}>{isMatch && phase === 'found' ? ip : '•••.•••.•••.••'}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {!q && <p className="small" style={{ margin: 0, color: T.ink3, fontStyle: 'italic' }}>Yuqoridan domen tanlang — DNS uni kitobdan topadi</p>}
             </div>
           </div>
-          <div className="col">
-            <div className="flow-label">DNS nima qiladi</div>
+          <div className="col">            <div className="flow-label">DNS nima qiladi</div>
             <div className="anabox fade-up delay-2"><span className="ana-name">🌐 domen<br /><b>youtube.com</b></span><span className="ana-arr">DNS →</span><span className="ana-num">🔢 IP<br /><b>142.250.190.78</b></span></div>
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}><b>DNS</b> — internetning ulkan telefon kitobi. Siz nom berasiz, u IP raqamni qaytaradi. Brauzer keyin shu IP'ga boradi.</p></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -610,25 +639,28 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sayt o'zi <span className="italic" style={{ color: T.accent }}>qayerda</span> yashaydi?</h2></div>
         <Mentor>Sayt <b style={{ color: T.ink }}>serverda</b> yashaydi — doimo yoniq turadigan kuchli kompyuter. Siz so'rov yuborasiz, server saytni qaytaradi. Xuddi <b style={{ color: T.ink }}>restoran oshxonasi</b>: buyurtma berasiz, taom keladi. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="cs fade-up delay-2">
               <div className="cs-node"><span className="cs-ic">🧑‍💻</span><span className="cs-l">Siz<br />(brauzer)</span></div>
               <div className="cs-wire">
-                <div className={`cs-msg cs-req ${step >= 1 ? 'on' : ''}`}>so'rov →</div>
-                <div className={`cs-msg cs-res ${step >= 2 ? 'on' : ''}`}>← sahifa</div>
+                <div className="cs-track">
+                  <span className={`cs-chip cs-chip-req ${step >= 1 ? 'sent' : ''} ${step >= 2 ? 'gone' : ''}`}>📨 so'rov</span>
+                  <span className={`cs-chip cs-chip-res ${step >= 2 ? 'sent' : ''}`}>📄 sahifa</span>
+                </div>
               </div>
-              <div className={`cs-node ${step >= 1 ? 'cs-active' : ''}`}><span className="cs-ic">🖥️</span><span className="cs-l">Server<br />(sayt shu yerda)</span></div>
+              <div className={`cs-node ${step >= 1 ? 'cs-active' : ''} ${step === 1 ? 'cs-proc' : ''}`}><span className="cs-ic">🖥️</span><span className="cs-l">Server<br />(sayt shu yerda)</span></div>
             </div>
             {step < 2 && <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={step === 1} onClick={send}>{step === 1 ? 'Yuborilmoqda…' : '📨 Serverga so’rov yuborish'}</button>}
           </div>
-          <div className="col">
-            {done ? (
+          <div className="col">            {done ? (
               <div className="frame-success fade-step"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Server javob berdi</p><p className="body" style={{ margin: 0, color: T.ink }}>Siz so'rov yubordingiz, server sahifani qaytardi. Server <b>doim yoniq</b> turadi — shuning uchun sayt istalgan vaqtda ochiladi.</p></div>
             ) : (<div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Siz (brauzer) chap tomonda, server o'ngda. So'rov yuborib, javobni kuzating.</p></div>)}
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}><b>Server</b> — saytlarni saqlovchi va so'rovga javob beruvchi kuchli kompyuter.</p></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -658,24 +690,33 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [step, setStep] = useState(storedAnswer ? STEPS.length : 0);
   const [running, setRunning] = useState(false);
   const timer = useRef(null);
-  const flowRef = useRef(null);
   const done = step >= STEPS.length;
   useEffect(() => () => clearTimeout(timer.current), []);
-  const scrollTo = (i) => { requestAnimationFrame(() => { const els = flowRef.current && flowRef.current.querySelectorAll('.pz-step'); if (els && els[i]) els[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }); };
   const run = () => {
     clearTimeout(timer.current); setStep(0); setRunning(true);
-    const tick = (i) => { setStep(i); scrollTo(Math.min(i, STEPS.length - 1)); if (i < STEPS.length) timer.current = setTimeout(() => tick(i + 1), 720); else { setRunning(false); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); } };
-    timer.current = setTimeout(() => tick(1), 320);
+    const tick = (i) => { setStep(i); if (i < STEPS.length) timer.current = setTimeout(() => tick(i + 1), 760); else { setRunning(false); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); } };
+    timer.current = setTimeout(() => tick(1), 340);
   };
   return (
-    <Stage eyebrow="So'rov yo'li" screen={screen} narrow audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Yo'lni ishga tushiring"} onClick={onNext} /></>}>
+    <Stage eyebrow="So'rov yo'li" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Yo'lni ishga tushiring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Enter'dan saytgacha — <span className="italic" style={{ color: T.accent }}>butun yo'l</span></h2></div>
         <Mentor>Endi hammasini birlashtiramiz. <b style={{ color: T.ink }}>youtube.com</b> yozib Enter bosganingizda, so'rov 6 qadamdan o'tadi. Tugmani bosib, butun yo'lni kuzating.</Mentor>
+        <Zoomable>
         <div className="frame frame-col fade-up delay-2">
-          <div className="pz-flow" ref={flowRef}>{STEPS.map((s, i) => (<React.Fragment key={i}><div className={`pz-step ${step > i ? 'on' : ''} ${running && step === i + 1 ? 'active' : ''}`}><span className="pz-ic">{step > i ? '✓' : s.ic}</span><span className="pz-lbl">{s.l}</span></div>{i < STEPS.length - 1 && <span className={`pz-arrow ${step > i + 1 ? 'on' : ''}`}>→</span>}</React.Fragment>))}</div>
-          <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start', marginTop: 2 }}>{running ? 'Yo’l boshlandi…' : (done ? '↻ Yana ko’rsatish' : '▶ Yo’lni boshlash')}</button>
+          <div className="hz-flow">{STEPS.map((s, i) => (
+            <React.Fragment key={i}>
+              <div className={`hz-step ${step > i ? 'done' : ''} ${running && step === i + 1 ? 'active' : ''}`}>
+                <span className="hz-node">{step > i ? '✓' : i + 1}</span>
+                <span className="hz-ic">{s.ic}</span>
+                <span className="hz-lbl">{s.l}</span>
+              </div>
+              {i < STEPS.length - 1 && <span className={`hz-arrow ${step > i + 1 ? 'on' : ''}`}>→</span>}
+            </React.Fragment>
+          ))}</div>
+          <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start', marginTop: 6 }}>{running ? 'Yo’l boshlandi…' : (done ? '↻ Yana ko’rsatish' : '▶ Yo’lni boshlash')}</button>
         </div>
+        </Zoomable>
         {done && (<div className="frame-success fade-step"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Mana butun sayohat</p><p className="body" style={{ margin: 0, color: T.ink }}>Siz <b>manzil</b> yozasiz → <b>DNS</b> IP topadi → <b>server</b> sahifani beradi → <b>brauzer</b> chizadi. Va bularning hammasi — <b>bir soniyada</b>!</p></div>)}
       </div>
     </Stage>
@@ -889,6 +930,13 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
+        /* Kattalashtirish (zoom) — animatsiyani katta ekranda ko'rish */
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
 
         .feedback-block { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease-out 0.1s, margin-top 0.4s ease-out; margin-top: 0; }
@@ -921,9 +969,8 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
-        .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }        .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }
 
@@ -1203,6 +1250,22 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .pz-step.on .pz-lbl { color: ${T.ink}; }
         .pz-arrow { align-self: center; margin-top: 16px; color: ${T.ink3}; font-size: 15px; flex: 0 0 auto; transition: color 0.3s; }
         .pz-arrow.on { color: ${T.success}; }
+        /* SCREEN 10 — gorizontal bir qatorli yo'l (skrollsiz, mobilda wrap) */
+        .hz-flow { display: flex; align-items: flex-start; justify-content: center; gap: 2px; flex-wrap: wrap; }
+        .hz-step { display: flex; flex-direction: column; align-items: center; gap: 7px; flex: 1 1 78px; min-width: 72px; max-width: 128px; padding: 10px 4px; border-radius: 12px; transition: background 0.3s; }
+        .hz-step.done { background: ${T.successSoft}; }
+        .hz-step.active { background: ${T.accentSoft}; }
+        .hz-node { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px; box-shadow: inset 0 0 0 2px rgba(${T.shadowBase},0.30); color: ${T.ink2}; background: ${T.paper}; transition: all 0.4s cubic-bezier(.34,1.35,.4,1); }
+        .hz-step.done .hz-node { box-shadow: inset 0 0 0 2px ${T.success}; background: ${T.success}; color: #fff; }
+        .hz-step.active .hz-node { box-shadow: inset 0 0 0 2px ${T.accent}, 0 0 0 5px ${T.accentSoft}; color: ${T.accent}; background: ${T.accentSoft}; transform: scale(1.12); animation: vz-pulse 1.1s ease-in-out infinite; }
+        .hz-ic { font-size: 20px; line-height: 1; filter: grayscale(0.45) opacity(0.65); transition: all 0.4s; }
+        .hz-step.done .hz-ic, .hz-step.active .hz-ic { filter: none; }
+        .hz-step.active .hz-ic { transform: scale(1.12); }
+        .hz-lbl { font-size: 11px; text-align: center; color: ${T.ink2}; line-height: 1.25; font-weight: 500; transition: color 0.3s; }
+        .hz-step.done .hz-lbl, .hz-step.active .hz-lbl { color: ${T.ink}; font-weight: 600; }
+        .hz-arrow { align-self: center; margin-top: 19px; color: ${T.ink3}; font-size: 14px; flex: 0 0 auto; transition: color 0.3s; }
+        .hz-arrow.on { color: ${T.success}; }
+        @keyframes vz-pulse { 0%,100% { box-shadow: inset 0 0 0 2px ${T.accent}, 0 0 0 5px ${T.accentSoft}; } 50% { box-shadow: inset 0 0 0 2px ${T.accent}, 0 0 0 9px rgba(255,79,40,0.10); } }
         /* SCREEN 6 — Teg (qo'shtirnoq modeli) */
         .pv-plain { font-family: 'Georgia, serif'; font-size: 14px; color: ${T.ink3}; margin: 0; }
         .tegbuild-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 0 14px; }
@@ -1261,8 +1324,19 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .dpart-name { background: ${T.accentSoft}; color: ${T.accent}; }
         .dpart-tld { background: #E2F1F7; color: ${T.blue}; }
         .dlabels { display: flex; justify-content: center; gap: 18px; font-size: 12px; color: ${T.ink2}; font-family: 'Manrope'; }
+        .domsplit { display: inline-flex; align-self: center; align-items: center; gap: 7px; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(15px,2.2vw,19px); }
+        .domsplit .dpart { border-radius: 10px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.18); }
+        .dsp-l { animation: dsp-left 0.55s cubic-bezier(.34,1.45,.4,1) both; }
+        .dsp-r { animation: dsp-right 0.55s cubic-bezier(.34,1.45,.4,1) 0.06s both; }
+        @keyframes dsp-left { 0% { transform: translateX(22px); } 100% { transform: translateX(0); } }
+        @keyframes dsp-right { 0% { transform: translateX(-22px); } 100% { transform: translateX(0); } }
         .ipbox { align-self: flex-start; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(16px,2.4vw,20px); color: ${T.blue}; background: #E2F1F7; padding: 10px 16px; border-radius: 10px; }
         .ipbox-sm { font-size: clamp(13px,1.7vw,15px); padding: 5px 10px; }
+        .ip-type { display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: middle; width: 14ch; animation: ip-typing 0.9s steps(14,end); }
+        @keyframes ip-typing { from { width: 0; } to { width: 14ch; } }
+        .ip-conv { color: ${T.ink3}; transition: color 0.3s; }
+        .ip-conv.go { color: ${T.accent}; animation: ip-convpulse 0.85s ease 2; }
+        @keyframes ip-convpulse { 0%,100% { transform: translateY(0); opacity: 0.75; } 50% { transform: translateY(2px); opacity: 1; } }
         .anabox { display: flex; align-items: center; justify-content: center; gap: 12px; background: ${T.paper}; border-radius: 12px; padding: 14px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); text-align: center; }
         .ana-name { font-family: 'Manrope'; font-weight: 600; font-size: 13px; color: ${T.ink}; }
         .ana-arr { font-family: 'JetBrains Mono'; font-weight: 700; color: ${T.accent}; font-size: 12px; flex-shrink: 0; }
@@ -1271,16 +1345,36 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .dns-head { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.ink}; }
         .dns-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .dns-arr { font-family: 'JetBrains Mono'; font-weight: 700; color: ${T.accent}; }
+        .dns-status { font-family: 'Manrope'; font-weight: 600; font-size: 11px; color: ${T.accent}; margin-left: 6px; }
+        .dns-status.ok { color: ${T.success}; }
+        .dns-book { display: flex; flex-direction: column; gap: 5px; }
+        .dns-entry { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border-radius: 9px; background: ${T.bg}; box-shadow: inset 0 0 0 1.5px transparent; transition: opacity 0.4s ease, box-shadow 0.4s ease, background 0.4s ease; }
+        .dns-dom { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 13px; color: ${T.ink}; flex-shrink: 0; }
+        .dns-dots { flex: 1; height: 0; border-bottom: 1.5px dotted rgba(${T.shadowBase},0.28); margin: 6px 2px 0; }
+        .dns-ip { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: ${T.ink3}; letter-spacing: 0.5px; flex-shrink: 0; transition: color 0.3s; }
+        .dns-entry.scan { background: ${T.accentSoft}; animation: dns-scan 0.55s ease-in-out infinite; }
+        .dns-entry.hit { background: ${T.successSoft}; box-shadow: inset 0 0 0 1.5px rgba(31,122,77,0.45); }
+        .dns-entry.hit .dns-ip { color: ${T.success}; font-weight: 700; animation: pop 0.4s cubic-bezier(.34,1.4,.4,1); }
+        .dns-entry.dim { opacity: 0.4; }
+        @keyframes dns-scan { 0%,100% { box-shadow: inset 0 0 0 1.5px rgba(255,79,40,0.25); } 50% { box-shadow: inset 0 0 0 1.5px ${T.accent}; } }
         .cs { display: flex; align-items: center; gap: 8px; background: ${T.paper}; border-radius: 14px; padding: 16px 12px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); }
         .cs-node { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; padding: 8px; border-radius: 10px; transition: all 0.3s; min-width: 76px; }
         .cs-node.cs-active { background: ${T.accentSoft}; }
         .cs-ic { font-size: 30px; }
         .cs-l { font-family: 'Manrope'; font-size: 11px; font-weight: 600; color: ${T.ink2}; text-align: center; line-height: 1.2; }
-        .cs-wire { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-        .cs-msg { font-family: 'JetBrains Mono'; font-size: 11px; padding: 5px 8px; border-radius: 7px; text-align: center; opacity: 0; transform: translateX(-8px); transition: all 0.4s; }
-        .cs-req { background: ${T.accentSoft}; color: ${T.accent}; }
-        .cs-res { background: ${T.successSoft}; color: ${T.success}; transform: translateX(8px); }
-        .cs-msg.on { opacity: 1; transform: none; }
+        .cs-wire { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; justify-content: center; }
+        .cs-track { position: relative; height: 40px; }
+        .cs-track::before { content: ''; position: absolute; left: 4px; right: 4px; top: 50%; height: 2px; transform: translateY(-50%); background: repeating-linear-gradient(90deg, rgba(${T.shadowBase},0.22) 0 6px, transparent 6px 12px); border-radius: 2px; }
+        .cs-chip { position: absolute; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 5px; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 11px; padding: 6px 11px; border-radius: 20px; white-space: nowrap; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.25); transition: left 0.72s cubic-bezier(.5,0,.3,1), opacity 0.35s ease; }
+        .cs-chip-req { left: 0; background: ${T.accentSoft}; color: ${T.accent}; }
+        .cs-chip-req.sent { left: calc(100% - 82px); }
+        .cs-chip-req.gone { opacity: 0; }
+        .cs-chip-res { left: calc(100% - 82px); background: ${T.successSoft}; color: ${T.success}; opacity: 0; }
+        .cs-chip-res.sent { left: 0; opacity: 1; }
+        .cs-node.cs-proc { background: ${T.accentSoft}; animation: cs-procring 0.7s ease-in-out infinite; }
+        .cs-node.cs-proc .cs-ic { animation: cs-procscale 0.7s ease-in-out infinite; }
+        @keyframes cs-procring { 0%,100% { box-shadow: 0 0 0 0 rgba(255,79,40,0); } 50% { box-shadow: 0 0 0 7px rgba(255,79,40,0.10); } }
+        @keyframes cs-procscale { 0%,100% { transform: scale(1); } 50% { transform: scale(1.13); } }
         .jmini { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: ${T.paper}; border-radius: 12px; padding: 14px 12px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); }
         .jmini-node { display: flex; flex-direction: column; align-items: center; gap: 3px; }
         .jmini-ic { font-size: 22px; }
