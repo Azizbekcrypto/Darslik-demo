@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // PM 2-DARS — STRUKTURA UX QAROR (sayt bo'limlari tartibi) — PLATFORM STANDARD v16
@@ -295,11 +296,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -401,6 +398,27 @@ const SecCard = ({ k, i, total, onMove, showJob }) => {
   );
 };
 
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 // ===== SCREEN 0 — HOOK =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const audio = useAudio([{ id: 's0', text: `Bir xil sayt, bir xil so'zlar — lekin ikki xil tartibda joylashtirilgan. Biri tushunarli, biri chalkash. Ikkala tugmani bosib ko'ring, keyin sababini tanlang.`, trigger: 'on_mount', waits_for: { type: 'option_picked' } }]);
@@ -419,6 +437,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 780 }}>Bir xil sayt — nega biri tushunarli, biri <span className="italic" style={{ color: T.accent }}>chalkash</span>?</h1>
         <Mentor>Mana bitta marketplace sayt, bir xil so'zlar bilan — lekin ikki xil <b style={{ color: T.ink }}>tartibda</b>. Ikkala tugmani bosib solishtiring, keyin sababini tanlang.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -435,6 +454,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Bo'limlarning <b>tartibi</b> — bu UX qaror. To'g'ri tartib foydalanuvchini yechimga olib boradi, chalkashi esa yo'qotadi. Bugun shuni o'rganamiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -469,7 +489,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Sayt qaysi tartibda tuzilsa, foydalanuvchi tushunadi?</span></h2></div>
         <Mentor>O'tgan darsda g'oyani topdik: <b style={{ color: T.ink }}>kim, muammo, yechim</b>. Endi savol — buni saytda <b style={{ color: T.ink }}>qanday tartibda</b> ko'rsatamiz? Struktura — bu UX qaror (foydalanuvchi qulayligi uchun qaror).</Mentor>
-        {!isNarrow ? (<Split>{PreviewBlock}{StepsBlock}</Split>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{PreviewBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
+        {!isNarrow ? (<Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{PreviewBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>
   );
@@ -489,6 +509,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Foydalanuvchi avval <span className="italic" style={{ color: T.accent }}>nimani</span> ko'radi?</h2></div>
         <Mentor>Sayt ochilganda foydalanuvchi pastga aylantirmay turib faqat <b style={{ color: T.ink }}>tepasini</b> ko'radi — bu birinchi taassurot. Tepaga qaysi bo'limni qo'yamiz? Ikkalasini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -504,6 +525,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Shuning uchun eng muhim narsa — <b>sarlavha (hero)</b> — doim tepada, birinchi ekranda turadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -528,6 +550,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mashhur saytlar qanday <span className="italic" style={{ color: T.accent }}>tartibda</span> tuzilgan?</h2></div>
         <Mentor>Ular bir xil mantiqqa amal qiladi: avval <b style={{ color: T.ink }}>eng muhimi</b>, oxirida <b style={{ color: T.ink }}>harakat</b>. Har birini bosib, bo'limlar tartibini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -539,6 +562,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi — uchchalasida ham <b>muhimi tepada, harakat oxirida</b>. Bu tasodif emas, qoida.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -569,6 +593,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har bir bo'lim <span className="italic" style={{ color: T.accent }}>nima uchun</span> kerak?</h2></div>
         <Mentor>Yaxshi sahifada har bir bo'lim <b style={{ color: T.ink }}>o'z vazifasini</b> bajaradi — bekorga turmaydi. Har birini bosib, vazifasini bilib oling.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -580,6 +605,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Beshala bo'lim — beshta aniq vazifa. Endi ularni <b>to'g'ri tartibga</b> qo'yish qoldi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -612,11 +638,15 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.4vw,13px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yaxshi sahifa — bu <span className="italic" style={{ color: T.accent }}>hikoya</span>mi?</h2></div>
         <Mentor>Ha! Avval foydalanuvchining <b style={{ color: T.ink }}>muammosini</b> eslatamiz, keyin <b style={{ color: T.ink }}>yechimni</b>, <b style={{ color: T.ink }}>isbot</b> bilan ishontiramiz va oxirida <b style={{ color: T.ink }}>harakatga</b> chaqiramiz. Tugmani bosing.</Mentor>
+        <Zoomable>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {ORDER.map((k, i) => { const s = SECDATA[k]; const on = step > i; return (<React.Fragment key={k}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '7px 13px', opacity: on ? 1 : 0.4, boxShadow: on ? `0 7px 18px -10px rgba(${T.shadowBase},0.18)` : 'none', transition: 'all 0.4s' }}><IcoChip color={on ? s.color : T.ink3} soft={on ? s.color + '1c' : '#ECEAE5'} size={31}>{s.ic}</IcoChip><div style={{ minWidth: 0 }}><p style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 13.5, color: on ? T.ink : T.ink3, margin: 0 }}>{s.label}</p></div>{!isMobile && <span style={{ marginLeft: 'auto', fontFamily: G, fontSize: 12.5, fontStyle: 'italic', color: on ? T.ink2 : T.ink3, whiteSpace: 'nowrap' }}>{s.snip}</span>}{on && <span style={{ marginLeft: isMobile ? 'auto' : 10, color: T.success }}>{Ico.check(15)}</span>}</div>{i < ORDER.length - 1 && <div style={{ display: 'flex', justifyContent: 'center', color: step > i + 1 ? T.success : T.ink3, transform: 'rotate(90deg)', lineHeight: 1, transition: 'color 0.3s' }}>{Ico.arrow(12)}</div>}</React.Fragment>); })}
         </div>
         <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Qurilmoqda…' : (done ? '↻ Yana ko\'rish' : 'Hikoyani qurish')}</button>
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana to'g'ri tartib: <b>sarlavha → muammo → yechim → isbot → harakat</b>. Foydalanuvchi qadam-baqadam ishonadi.</p></div>}
+        </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -636,6 +666,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Tartib o'zgarsa, sahifa <span className="italic" style={{ color: T.accent }}>tushunarli</span> bo'ladimi?</h2></div>
         <Mentor>Bir xil bo'limlar — lekin biri <b style={{ color: T.ink }}>to'g'ri tartibda</b>, biri <b style={{ color: T.ink }}>aralash</b>. Ikkalasini bosib solishtiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -651,6 +682,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Xulosa: bir xil bo'limlar — <b>tartib</b> esa hammasini hal qiladi. Bu UX qaror.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -679,6 +711,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har bir bo'limni <span className="italic" style={{ color: T.accent }}>vazifasi</span> bilan ulang</h2></div>
         <Mentor>Avval <b style={{ color: T.ink }}>bo'limni</b> tanlang, keyin uning <b style={{ color: T.ink }}>vazifasini</b> bosing. To'rttasini to'g'ri ulang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Bo'limlar</p>
@@ -695,6 +728,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Zo'r! Har bir bo'lim nima uchun kerakligini bildingiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -727,6 +761,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu sahifada qaysi bo'lim <span className="italic" style={{ color: T.accent }}>noto'g'ri</span> joyda?</h2></div>
         <Mentor>Sahifa tayyor, lekin bitta bo'lim <b style={{ color: T.ink }}>noto'g'ri joyda</b>. Qaysi bo'lim erta turibdi? Pastdagi ro'yxatdan o'sha bo'limni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Sahifa tartibi</p>
@@ -741,6 +776,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && <div className="takeaway fade-step"><div className="ta-bulb" style={{ color: '#7B3FE4', display: 'inline-flex' }}>{sIco.cursor(34)}</div><p className="ta-h">Tugma — oxirda, ishongandan keyin</p><p className="ta-sub">Bitta bo'limning o'rni butun sahifani o'zgartiradi</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -759,6 +795,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu uchta bo'limni <span className="italic" style={{ color: T.accent }}>to'g'ri tartibga</span> qo'ying</h2></div>
         <Mentor>Yuqori/past o'qlar bilan bo'limlarni ko'chiring. To'g'ri tartibni o'zingiz toping — o'ngda <b style={{ color: T.ink }}>sahifa</b> real vaqtda o'zgaradi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Bo'limlar — tartiblang</p>
@@ -772,6 +809,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <PagePreview order={arr} minH={196} />
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -802,6 +840,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Tayyor tartib: har bo'lim <span className="italic" style={{ color: T.accent }}>nega</span> shu o'rinda?</h2></div>
         <Mentor>Mana to'g'ri tartibdagi sahifa. Har bir bo'limni bosib, <b style={{ color: T.ink }}>nega</b> aynan shu o'rinda turishini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -813,6 +852,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har bo'lim o'z o'rnida — sababi bilan. Endi o'zingiz tuzasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -826,6 +866,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Chiroyli sayt bilan <span className="italic" style={{ color: T.accent }}>ishonchli</span> sayt — farqi nimada?</h2></div>
         <Mentor>Ko'pincha farq — <b style={{ color: T.ink }}>tartibida</b>. Yaxshi struktura foydalanuvchini muammodan yechimga, keyin harakatga olib boradi. Bu bezak emas — <b style={{ color: T.ink }}>UX qaror</b>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 'clamp(18px,2.6vw,26px)' }}>
@@ -840,6 +881,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => {
             </div>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -872,6 +914,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">"Bozor" sahifasini <span className="italic" style={{ color: T.accent }}>to'g'ri tartibga</span> keltiring</h2></div>
         <Mentor>Beshta bo'lim aralash. O'qlar bilan ularni <b style={{ color: T.ink }}>to'g'ri tartibga</b> keltiring. Har bo'lim ostidagi izoh — uning vazifasi. O'ngda sahifa <b style={{ color: T.ink }}>real vaqtda</b> quriladi.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
+        <Zoomable>
         <div className="split" ref={workRef}>
           <Col>
             <p className="flow-label">Bo'limlar — tartiblang</p>
@@ -885,6 +928,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! Sahifa tuzilishi to'g'ri — keyingi CSS darslarida shu tuzilishni bezaymiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -966,6 +1010,12 @@ export default function PmLesson2({ lang: langProp, onFinished }) {
         .fade-up { animation: fade-in-up 0.45s cubic-bezier(.2,.7,.2,1) forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .fade-step { animation: fade-step 0.34s cubic-bezier(.2,.7,.2,1); }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes dl-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.16); } }
@@ -1003,8 +1053,8 @@ export default function PmLesson2({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -7px rgba(${T.shadowBase},0.16); }

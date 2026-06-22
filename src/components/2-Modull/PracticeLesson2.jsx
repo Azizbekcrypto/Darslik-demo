@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // PRAKTIKA 2-DARS — AI BILAN TEZ SIFATLI SAYT (promo landing) — PLATFORM STANDARD v16
@@ -184,11 +185,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -337,6 +334,7 @@ const PromoBuilder = ({ topic, setTopic, style, setStyle, color, setColor, sec, 
   const tog = (k) => setSec(s => ({ ...s, [k]: !s[k] }));
   const previewRef = useScrollIntoViewOnMobile(`${color}|${sec.button ? 1 : 0}${sec.cards ? 1 : 0}${sec.banner ? 1 : 0}`);
   return (
+    <Zoomable>
     <div className="split">
       <Col>
         <p className="flow-label">1. Mavzu (nima)</p>
@@ -354,6 +352,28 @@ const PromoBuilder = ({ topic, setTopic, style, setStyle, color, setColor, sec, 
         <div ref={previewRef}><Browser url="mening-promo.uz"><LandingPreview topic={topic} style={style} color={color} sections={sec} /></Browser></div>
       </Col>
     </div>
+    </Zoomable>
+  );
+};
+
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
   );
 };
 
@@ -376,6 +396,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Butun bir saytni <span className="italic" style={{ color: T.accent }}>bitta jumla</span> bilan qura olasizmi?</h1>
         <Mentor>1-darsda har bir narsani qo'lda qurdik. AI esa saytni soniyalarda yasaydi! Quyidagi buyruqni agentga yuboring va o'ngdagi natijaga diqqat bilan qarang.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label">Sizning buyrug'ingiz</p>
@@ -404,6 +425,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             )}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -453,7 +475,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">AI hammasini yasaydi — unda nega <span className="italic" style={{ color: T.accent }}>biz</span> kerakmiz?</h2></div>
         <Mentor>AI — juda kuchli ishchi: soniyada butun sahifa yasaydi. Ammo u sizning <b style={{ color: T.ink }}>so'zlaringizga</b> qarab ishlaydi. Shuning uchun bugun eng muhim mahorat — <b style={{ color: T.ink }}>yaxshi prompt (buyruq)</b> yozishni o'rganamiz, 6 qadamda.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{PreviewBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>6 qadamni ko'rish</button></div>
         ) : (
@@ -478,6 +500,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Aniq buyruq bersak, AI <span className="italic" style={{ color: T.accent }}>qanchalik tez</span> quradi?</h2></div>
         <Mentor>Endi <b style={{ color: T.ink }}>aniq</b> buyruq beramiz — 4 ingredient bilan. Yuboring va kuzating: 1-darsda 5 ta narsani soatlab qurgan edik. AI esa butun bir sahifani <b style={{ color: T.ink }}>bir necha soniyada</b> yasaydi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Tayyor yaxshi buyruq</p>
@@ -494,6 +517,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Browser>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -518,6 +542,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yaxshi buyruq <span className="italic" style={{ color: T.accent }}>nimalardan</span> tashkil topadi?</h2></div>
         <Mentor>Yaxshi prompt — tasodifiy gap emas, u <b style={{ color: T.ink }}>4 ingredientdan</b> iborat. Pastdagi buyruqdagi rangli qismlarni <b style={{ color: T.ink }}>bosib</b>, har birini bilib oling.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="codebox" style={{ background: T.paper, color: T.ink, fontFamily: "'Manrope'", fontSize: 'clamp(14px,1.9vw,16px)', lineHeight: 2.1, boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.16)` }}>
@@ -536,6 +561,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>4 ingredient = aniq buyruq = aniq natija. Buni eslab qoling: <b>MAVZU · USLUB · RANG · QISMLAR</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -596,6 +622,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Nega bir maqsad <span className="italic" style={{ color: T.accent }}>ikki xil</span> natija beradi?</h2></div>
         <Mentor>Avval <b style={{ color: T.ink }}>loyqa</b> buyruqni yuboramiz va natijani ko'ramiz. So'ng buyruqni <b style={{ color: T.ink }}>yaxshilab</b>, qayta yuboramiz. Ikkala natijani solishtiring — farqni o'z ko'zingiz bilan ko'rasiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">{mode === 'yomon' ? 'Buyruq (loyqa)' : 'Buyruq (aniq, 4 ingredient)'}</p>
@@ -617,6 +644,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir xil maqsad, lekin tafsilot bilan natija osmon-u yer farq qiladi. <b>Tafsilot = sifat.</b></p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -658,6 +686,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI birinchi urinishda <span className="italic" style={{ color: T.accent }}>mukammal</span> qiladimi?</h2></div>
         <Mentor>AI birinchi urinishda har doim mukammal qilmaydi — bu normal. Siz <b style={{ color: T.ink }}>qayta so'raysiz</b>: "rangni o'zgartir", "banner qo'sh". Bu — <b style={{ color: T.ink }}>iteratsiya</b>. Quyidagi buyruqlarni bering va sayt qadam-baqadam yaxshilanishini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qo'shimcha buyruqlar</p>
@@ -677,6 +706,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div ref={doneRef} className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana iteratsiya kuchi! Har bir kichik buyruq saytni mukammallikka yaqinlashtiradi. Mukammal natija — bir emas, bir necha qadam.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -711,6 +741,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI so'rovni har doim <span className="italic" style={{ color: T.accent }}>aniq</span> tushunadimi?</h2></div>
         <Mentor>AI ba'zan buyruqni biroz <b style={{ color: T.ink }}>boshqacha</b> tushunadi — bu tabiiy, do'stingiz ham shunday qilishi mumkin. Siz <b style={{ color: T.ink }}>ko'k</b> rangli o'yin sahifasi so'radingiz, AI yasab berdi. Endi solishtiring: natija buyruqqa <b style={{ color: T.ink }}>to'liq mos keldimi?</b> Qaysi qism boshqacha chiqqan?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Sizning buyrug'ingiz</p>
@@ -729,6 +760,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && <div className="takeaway fade-step"><div className="ta-bulb" style={{ fontSize: 24, fontWeight: 800, color: T.success }}>✓</div><p className="ta-h">Tekshirdingiz va aniqlashtirdingiz!</p><p className="ta-sub">AI quradi, siz solishtirib aniqlik kiritasiz — ajoyib jamoa.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -751,6 +783,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI bilan eng <span className="italic" style={{ color: T.accent }}>zo'r natijani</span> qanday olamiz?</h2></div>
         <Mentor>AI — ajoyib va juda foydali ishchi. Ba'zan adashishi ham mumkin — bu mutlaqo normal, hammaning ishida shunday bo'ladi. Sirri oddiy: <b style={{ color: T.ink }}>birga ishlaysiz</b> — AI tez quradi, siz natijani tekshirib, kerak bo'lsa aniqlashtirib qo'yasiz. Ikkala kartani bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -775,6 +808,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qoida oddiy: AI'dan <b>tezlik</b> uchun foydalaning, natijani <b>o'zingiz tekshiring</b> va kerak bo'lsa aniqroq qayta so'rang. Shunda har doim zo'r natija.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -826,6 +860,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta usul bilan <span className="italic" style={{ color: T.accent }}>nechta xil</span> sayt qura olasiz?</h2></div>
         <Mentor>Eng zo'r tomoni: bitta usulni o'rgandingiz, endi <b style={{ color: T.ink }}>faqat mavzuni almashtirib</b>, butunlay boshqa saytni yasaysiz. Mavzuni tanlang, <b style={{ color: T.ink }}>yuboring</b> — keyin boshqa mavzuni tanlab, yana yuboring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Mavzuni tanlang</p>
@@ -844,6 +879,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? O'yin, klub, tadbir, ilova — bitta usul bilan hammasi. Endi siz <b>istalgancha sayt</b> qura olasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -864,6 +900,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu usulni endi <span className="italic" style={{ color: T.accent }}>haqiqiy loyihada</span> qanday ishlatamiz?</h2></div>
         <Mentor>Bugun o'rgangan usul haqiqiy <b style={{ color: T.ink }}>Antigravity</b> muhitida aynan shunday ishlaydi: siz oddiy tilda yozasiz, agent <b style={{ color: T.ink }}>reja</b> tuzadi, quradi va brauzerda ko'rsatadi — yoqmasa qayta so'raysiz. Demoni ishga tushiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Siz Antigravity'ga yozasiz</p>
@@ -886,6 +923,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div ref={doneRef} className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Aynan shu oqim! Uyga vazifada haqiqiy Antigravity'da 4-ingredientli buyruq bilan o'z saytingizni quring.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -991,6 +1029,12 @@ export default function PracticeLesson2({ lang: langProp, onFinished }) {
         .fade-up { animation: fade-in-up 0.4s ease-out forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
@@ -1027,7 +1071,7 @@ export default function PracticeLesson2({ lang: langProp, onFinished }) {
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
         .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

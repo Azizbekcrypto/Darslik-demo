@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // PM 13-DARS (Modul 4 · PM3) — MA'LUMOT SXEMASI = PRD HUJJATI — PLATFORM STANDARD v16
@@ -259,6 +260,26 @@ function ScoreRing({ correct, total }) {
   );
 }
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
   const enabled = !!ctx.enabled;
@@ -267,11 +288,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -329,6 +346,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 860 }}>Bir xil sxema — ikki xil <span className="italic" style={{ color: T.accent }}>nigoh</span>. DB sxemasi nima?</h1>
         <Mentor>AvtoStoyanka sxemasiga dasturchi va PM boshqacha qaraydi. Har birini bosib ko'ring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -348,6 +366,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Sxema — bu <b>PRD artefakti</b> (mahsulot hujjati). U mahsulot nimani saqlashini va NEGA saqlashini aytadi. Jamoa uni o'qiydi; yangi maydon = yangi fycha (yangi imkoniyat). Bugun AvtoStoyanka sxemasini PM ko'zi bilan loyihalaymiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -380,7 +399,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>AvtoStoyanka sxemasini PM ko'zi bilan</span></h2></div>
         <Mentor>Sxema texnik chizma ko'rinadi, lekin u <b style={{ color: T.ink }}>mahsulot hujjati</b>. Uni qanday o'qish va loyihalashni ko'ramiz.</Mentor>
-        {!isNarrow ? (<Split>{IdeaBlock}{StepsBlock}</Split>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
+        {!isNarrow ? (<Zoomable><Split>{IdeaBlock}{StepsBlock}</Split></Zoomable>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>
   );
@@ -398,6 +417,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sxema — bino <span className="italic" style={{ color: T.accent }}>chizmasi</span> kabi</h2></div>
         <Mentor>Me'mor chizmasi binoni ko'rsatadi: qaysi xona, nima uchun. Sxema ham mahsulotni shunday ko'rsatadi. Ikki nigohni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -418,6 +438,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yaxshi sxema ikkalasini ham beradi: <b>texnik aniqlik + mahsulot izohi</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -437,6 +458,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AvtoStoyanka — <span className="italic" style={{ color: T.accent }}>2 jadval</span></h2></div>
         <Mentor>Stoyanka 2 narsani saqlaydi: <b style={{ color: T.ink }}>joylar</b> (qaysi bo'sh/band) va <b style={{ color: T.ink }}>sessiyalar</b> (kim kirdi-chiqdi). Har birini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -448,6 +470,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ikki jadval — lekin ular bir-biriga <b>bog'lanadi</b>. Buni keyin ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -477,6 +500,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har maydon — <span className="italic" style={{ color: T.accent }}>nega</span> kerak?</h2></div>
         <Mentor>Yaxshi PRD'da har maydonning mahsulot sababi yozilgan. Maydonni bosing — nega kerakligini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -488,6 +512,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har maydon bir mahsulot sababga ega. Sababsiz maydon — ortiqcha (xavf ham).</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -516,6 +541,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bog'lanish jonli: joyni bosing → <span className="italic" style={{ color: T.accent }}>kim turganini</span> ko'ring</h2></div>
         <Mentor><b style={{ color: T.ink }}>joy_id</b> (FK) sessiyani joyga bog'laydi. Joyni bosing — <b style={{ color: T.ink }}>JOIN</b> ikki jadvalni birlashtirib, o'sha joyda kim turganini ko'rsatadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">🅿️ joylar — bosing</p>
@@ -537,6 +563,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana FK kuchi: <b>joy_id</b> orqali "kim qayerda?" degan savolga javob beriladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -554,6 +581,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">FK bo'lmasa — <span className="italic" style={{ color: T.accent }}>chalkashlik</span></h2></div>
         <Mentor>Ikki jadvalni bog'lamasangiz nima bo'ladi? Ikki holatni solishtiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -574,6 +602,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bog'lanish — sxemaning eng muhim mahsulot qarori. Uni oldindan o'ylash kerak.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -591,6 +620,8 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har maydon <span className="italic" style={{ color: T.accent }}>qaysi jadvalga</span> tegishli?</h2></div>
         <Mentor>Sxemani o'zingiz yig'ing: har maydonni <b style={{ color: T.honey }}>joylar</b> yoki <b style={{ color: T.blue }}>sessiyalar</b> jadvaliga joylang.</Mentor>
+        <Zoomable>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 660, width: '100%', margin: '0 auto' }}>
           {FIELD_TBL.map(f => { const m = marks[f.id]; const isWrong = wrong === f.id; return (
             <div key={f.id} className={`classify-row ${m ? (f.tbl === 'joylar' ? 'cr-joylar' : 'cr-sess') : ''} ${isWrong ? 'shake-x' : ''}`}>
@@ -602,6 +633,8 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         </div>
         {wrong && !done && <p className="small" style={{ color: T.accent, textAlign: 'center', margin: 0 }}>Bu boshqa jadvalga tegishli — qaytadan o'ylab ko'ring.</p>}
         {done && <div className="frame-success fade-step" style={{ maxWidth: 660, width: '100%', margin: '0 auto' }}><p className="body" style={{ margin: 0, color: T.ink }}>Sxema tayyor! joylar — joy haqida, sessiyalar — kirib-chiqish haqida. joy_id ularni bog'laydi.</p></div>}
+        </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -637,6 +670,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yangi fycha = <span className="italic" style={{ color: T.accent }}>sxema o'zgarishi</span></h2></div>
         <Mentor>Mijoz yangi narsa so'raydi — bu ko'pincha <b style={{ color: T.ink }}>sxemaga maydon qo'shish</b> demak. Har <b style={{ color: T.ink }}>fychani</b> kerakli <b style={{ color: T.ink }}>sxema o'zgarishi</b> bilan ulang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Mijoz so'rovi (fycha)</p>
@@ -653,6 +687,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? <b>Sxema o'sishi = mahsulot o'sishi.</b> Roadmap ko'pincha sxemada boshlanadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -672,6 +707,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta sxema — <span className="italic" style={{ color: T.accent }}>butun jamoa</span> o'qiydi</h2></div>
         <Mentor>Yaxshi sxema — umumiy til. Har kim undan kerakligini oladi. Uchchalasini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -683,6 +719,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Shuning uchun sxema = hujjat: bir marta yozasiz, hamma o'qiydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -712,6 +749,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">To'liq hikoya: <span className="italic" style={{ color: T.accent }}>sxema PRD bo'lib</span> ishladi</h2></div>
         <Mentor>AvtoStoyanka jamoasining yo'li — 4 qadam. Har qatorni bosib, sxema qanday hujjat bo'lganini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="checklist fade-up delay-1">
@@ -724,6 +762,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Chizdi → o'qildi → o'sdi → tez qurildi. Sxema = hujjat. Endi o'zingiznikini yozasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -735,6 +774,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
     <div className="screen">
       <div className="head"><h2 className="title h-title fade-up">Sxemani <span className="italic" style={{ color: T.accent }}>hujjat</span> kabi yoz</h2></div>
       <Mentor>Yaxshi sxema 3 narsani beradi: NIMA saqlaydi, NEGA (mahsulot izohi), va qanday BOG'LANADI (FK/JOIN).</Mentor>
+      <Zoomable>
       <div className="split">
         <Col>
           <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 'clamp(18px,2.6vw,26px)' }}>
@@ -749,6 +789,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
           </div>
         </Col>
       </div>
+      </Zoomable>
     </div>
   </Stage>
 );
@@ -779,6 +820,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">O'z loyihangiz (yoki AvtoStoyanka) uchun: <span className="italic" style={{ color: T.accent }}>jadval.maydon — nega kerak</span></h2></div>
         <Mentor>PRD uslubida yozing: <b style={{ color: T.ink }}>jadval.maydon — mahsulot sababi</b>. Kamida 2 ta. O'ngda sxema hujjatingiz yig'iladi.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
+        <Zoomable>
         <div className="split" ref={workRef}>
           <Col>
             {lines.map((f, i) => { const ok = isComplete(f); return (
@@ -796,6 +838,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! Endi sxemangiz hujjat bo'lib, jamoaga aniq yo'l ko'rsatadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -968,8 +1011,15 @@ export default function PmLesson13({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -7px rgba(${T.shadowBase},0.16); }

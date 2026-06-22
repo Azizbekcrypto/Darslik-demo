@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // 06-DARS — NETLIFY VA DEPLOY — PLATFORM STANDARD v16
@@ -294,17 +295,34 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
         <div className="mentor-msg body">{children}</div>
       </div>
     </div>
+  );
+};
+
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
   );
 };
 
@@ -324,6 +342,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 760 }}>Saytingizni <span className="italic" style={{ color: T.accent }}>butun dunyo</span> ko'ra oladimi?</h1>
         <Mentor>Saytingiz tayyor — kompyuteringizda zo'r ishlayapti. Lekin <b style={{ color: T.ink }}>do'stingiz</b> boshqa shahardan uni ocholmayapti. Nega? <b style={{ color: T.ink }}>"Do'stim"</b> tugmasini bosib ko'ring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -337,7 +356,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
                 </Preview>
               ) : (
                 <Preview minH={158} title="???">
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 8, padding: '14px 0' }}>
+                  <div className="dl-shake" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: 8, padding: '14px 0' }}>
                     <span style={{ fontSize: 38 }}>😕</span>
                     <p style={{ fontFamily: 'Georgia, serif', fontWeight: 700, color: T.ink, margin: 0, fontSize: 'clamp(15px,2vw,18px)' }}>Bu sahifa ochilmadi</p>
                     <p style={{ fontFamily: "'JetBrains Mono', monospace", color: T.ink3, margin: 0, fontSize: 12 }}>ERR — manzil topilmadi</p>
@@ -363,6 +382,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">To'g'ri yo'nalish! Saytni internetga <b>joylashtirish</b> — bugun shuni o'rganamiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -386,7 +406,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <Preview title="aziza.maktab.uz" minH={210}>
         <MiniSite name="Aziza" />
       </Preview>
-      <p className="mono small" style={{ color: T.success, margin: 0 }}>🌍 internetda · har kim ochishi mumkin</p>
+      <p className="mono small" style={{ color: T.success, margin: 0 }}><span className="dl-globe">🌍</span> internetda · har kim ochishi mumkin</p>
     </Col>
   );
   const StepsBlock = (
@@ -405,7 +425,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Va'da beraman: dars oxirida saytingiz <b style={{ color: T.ink }}>internetda</b>, haqiqiy manzil bilan ochiq bo'ladi — masalan <span className="mono">aziza.maktab.uz</span>. Unga <b style={{ color: T.ink }}>5 ta qadamda</b> yetib boramiz.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -436,6 +456,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sayt internetda <span className="italic" style={{ color: T.accent }}>qayerda</span> yashaydi?</h2></div>
         <Mentor>Saytingiz hozir faqat <b style={{ color: T.ink }}>sizning kompyuteringizda</b> yashayapti — buni <span className="mono">localhost</span> deyiladi. Uni hammaga ochish uchun doimo ishlab turadigan boshqa kompyuterga — <b style={{ color: T.ink }}>hosting serveriga</b> qo'yish kerak.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -455,7 +476,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                   <div style={{ fontSize: 40 }}>🌍</div>
                   <p style={{ fontFamily: 'Georgia, serif', fontWeight: 700, color: T.ink, margin: '8px 0 4px', fontSize: 'clamp(15px,2vw,18px)' }}>Butun dunyo ko'radi</p>
                   <p className="body" style={{ margin: 0, color: T.ink2 }}>Sayt hosting serverida — 24/7 yonib turadi, har kim manzildan ochadi.</p>
-                  <div style={{ marginTop: 12, fontSize: 22, letterSpacing: 4 }}>{VISITORS.join(' ')}</div>
+                  <div style={{ marginTop: 12, fontSize: 22, display: 'flex', justifyContent: 'center', gap: 7 }}>{VISITORS.map((v, i) => (<span key={i} className="dl-visitor" style={{ animationDelay: `${i * 0.08}s` }}>{v}</span>))}</div>
                 </>
               )}
             </div>
@@ -473,6 +494,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="frame-soft fade-up delay-3"><p className="body" style={{ margin: 0, color: T.ink }}>Esingizdami — Internet darsida <b>server</b> haqida gaplashgandik? Hosting — aynan saytingizni shunday serverga joylashtirishdir.</p></div>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -504,8 +526,11 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Saytni qo'ysangiz — <span className="italic" style={{ color: T.accent }}>nima bo'ladi?</span></h2></div>
         <Mentor>Saytni hostingga qo'yganingizda: fayllaringiz <b style={{ color: T.ink }}>serverga ko'chiriladi</b>, <b style={{ color: T.ink }}>manzil</b> oladi, va har bir tashrifchi brauzerda o'sha manzilni ochadi. Tugmani bosib, yo'lni kuzating.</Mentor>
+        <Zoomable>
+        <div className="frame-col">
         {!isNarrow ? (
-          <div className="pz-flow" style={{ justifyContent: 'center' }}>
+          <div className="pz-flow" style={{ justifyContent: 'center', position: 'relative' }}>
+            {running && <span className="dl-packet">📄</span>}
             {STEPS.map((s, i) => (
               <React.Fragment key={i}>
                 <div className={`pz-step ${step > i ? 'on' : ''} ${running && step === i + 1 ? 'active' : ''}`} style={{ minWidth: 104 }}>
@@ -531,6 +556,8 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </div>
         )}
         <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Bajarilmoqda…' : (done ? '↻ Yana ko’rsatish' : '▶ Boshlash')}</button>
+        </div>
+        </Zoomable>
         {done && (
           <div className="frame-success fade-step"><p className="small mono" style={{ margin: '0 0 6px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Mana shu — hosting</p><p className="body" style={{ margin: 0, color: T.ink }}>Fayllaringiz serverda <b>doimo</b> turadi va manzil orqali ochiladi. Endi kerak — buni qiladigan <b>oson vosita</b>. Mana <b>Netlify</b> kiradi.</p></div>
         )}
@@ -568,6 +595,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Saytni <span className="italic" style={{ color: T.accent }}>bir necha soniyada</span> chiqaramiz</h2></div>
         <Mentor>Netlify — saytingizni <b style={{ color: T.ink }}>bepul</b> va tez internetga chiqaradigan hosting platformasi. Ikki yo'li bor — ikkalasini bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="bp-window fade-up delay-1">
@@ -591,13 +619,14 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             {active ? (
               <div className="sk-info fade-step" key={active}>
-                <span className="sk-tagbig"><span style={{ fontSize: 24 }}>{WAYS[active].ic}</span><span className="sk-wordbadge">{WAYS[active].title}</span></span>
+                <span className="sk-tagbig"><span className="dl-pop" style={{ fontSize: 24 }}>{WAYS[active].ic}</span><span className="sk-wordbadge">{WAYS[active].title}</span></span>
                 <p className="body" style={{ color: T.ink, margin: '11px 0 0' }}>{WAYS[active].body}</p>
               </div>
             ) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Chapdan bir usulni bosing</p></div> : null)}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Biz <b>GitHub'ni ulash</b> usulidan foydalanamiz — chunki Git darsida kodimizni allaqachon GitHub'ga qo'ygan edik.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -633,6 +662,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Netlify kodni <span className="italic" style={{ color: T.accent }}>qayerdan</span> oladi?</h2></div>
         <Mentor>Netlify kodingizni <b style={{ color: T.ink }}>GitHub'dan</b> oladi. Git darsida push qilgan repongizni tanlaysiz — shundan keyin Netlify uni doimo kuzatib turadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">GitHub repolaringiz</p>
@@ -650,7 +680,8 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             {connected ? (
               <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, background: T.paper, borderRadius: 14, padding: '18px 14px', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
+                <div className="dl-linkwrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, background: T.paper, borderRadius: 14, padding: '18px 14px', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
+                  <span className="dl-link-dot" />
                   <div style={{ textAlign: 'center' }}><div style={{ height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><GitHubMark size={30} /></div><span className="mono small" style={{ color: T.ink2, marginTop: 4, display: 'block' }}>GitHub</span></div>
                   <span style={{ color: T.success, fontSize: 20 }}>🔗</span>
                   <div style={{ textAlign: 'center' }}><div style={{ height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>🌍</div><span className="mono small" style={{ color: T.ink2, marginTop: 4, display: 'block' }}>Netlify</span></div>
@@ -662,6 +693,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -684,6 +716,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sayt qanday <span className="italic" style={{ color: T.accent }}>jonlanadi?</span></h2></div>
         <Mentor><b style={{ color: T.ink }}>Deploy</b> — fayllaringizni serverga joylab, saytni internetda ochiq qilish. Tugmani bosing va kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="bp-window fade-up delay-1">
@@ -695,12 +728,12 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                   <button className="btn" onClick={deploy}>🚀 Deploy qilish</button>
                 </>)}
                 {phase === 'building' && (<>
-                  <div style={{ width: 34, height: 34, border: `3px solid ${T.accentSoft}`, borderTopColor: T.accent, borderRadius: '50%', animation: 'dl-spin 0.8s linear infinite' }} />
+                  <span className="dl-launch" style={{ fontSize: 38 }}>🚀</span>
                   <p className="body" style={{ margin: 0, color: T.ink }}>Building… fayllar serverga yuklanyapti</p>
                   <p className="mono small" style={{ color: T.ink3, margin: 0 }}>index.html · style.css</p>
                 </>)}
                 {phase === 'live' && (<>
-                  <span style={{ fontSize: 40 }}>✅</span>
+                  <span className="dl-pop" style={{ fontSize: 40 }}>✅</span>
                   <p style={{ fontFamily: 'Georgia, serif', fontWeight: 700, color: T.success, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>Published! Sayt internetda</p>
                   <span className="mono" style={{ fontSize: 13, color: T.link, textDecoration: 'underline' }}>mening-saytim.netlify.app</span>
                 </>)}
@@ -719,6 +752,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -798,6 +832,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Maktabning <span className="italic" style={{ color: T.accent }}>poddomeni</span> nima?</h2></div>
         <Mentor>Maktabimizning o'z domeni bor: <span className="mono">maktab.uz</span>. Har bir o'quvchiga uning oldidan o'z nomi qo'shiladi — bu <b style={{ color: T.ink }}>poddomen</b>. Masalan <span className="mono">aziza.maktab.uz</span>. Ismni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Bitta domen — ko'p poddomen</p>
@@ -820,7 +855,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 <div className="sk-info">
                   <p className="flow-label" style={{ marginBottom: 8 }}>Manzilning qismlari</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(15px,2.2vw,19px)' }}>
-                    <span style={{ background: T.accentSoft, color: T.accent, padding: '4px 8px', borderRadius: 6, fontWeight: 700 }}>{pick}</span>
+                    <span key={pick} className="dl-assemble" style={{ background: T.accentSoft, color: T.accent, padding: '4px 8px', borderRadius: 6, fontWeight: 700 }}>{pick}</span>
                     <span style={{ color: T.ink3 }}>.</span>
                     <span style={{ background: T.bg, color: T.ink, padding: '4px 8px', borderRadius: 6, fontWeight: 700, boxShadow: `inset 0 0 0 1px ${T.ink3}55` }}>maktab.uz</span>
                   </div>
@@ -833,6 +868,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1127,6 +1163,12 @@ export default function DeployLesson({ lang: langProp, onFinished }) {
         .fade-step { animation: fade-step 0.3s ease-out; }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes dl-spin { to { transform: rotate(360deg); } }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
 
         .feedback-block { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease-out 0.1s, margin-top 0.4s ease-out; margin-top: 0; }
         .feedback-block.visible { max-height: 800px; opacity: 1; margin-top: clamp(14px,2vw,20px); }
@@ -1158,8 +1200,8 @@ export default function DeployLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }
@@ -1228,6 +1270,23 @@ export default function DeployLesson({ lang: langProp, onFinished }) {
         @media (max-width: 760px) { .split { grid-template-columns: 1fr; gap: clamp(14px,3vw,20px); } }
         .flow-label { font-family: 'Manrope'; font-weight: 700; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: ${T.ink2}; }
         .demo-swap { animation: fade-step 0.3s ease-out; }
+        /* === deploy animatsiya yaxshilashlari === */
+        .dl-packet { position: absolute; top: 50%; margin-top: -15px; left: 0; width: 30px; height: 30px; border-radius: 8px; background: ${T.paper}; box-shadow: 0 5px 14px -3px rgba(${T.shadowBase},0.4), inset 0 0 0 1.5px ${T.accent}; display: flex; align-items: center; justify-content: center; font-size: 15px; z-index: 4; animation: dlFly 2.6s linear; }
+        @keyframes dlFly { 0% { left: 2%; opacity: 0; transform: scale(0.5); } 8% { opacity: 1; transform: scale(1); } 92% { opacity: 1; transform: scale(1); } 100% { left: calc(100% - 32px); opacity: 0; transform: scale(0.5); } }
+        .dl-launch { display: inline-block; animation: dlLaunch 0.85s ease-in-out infinite; }
+        @keyframes dlLaunch { 0%,100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-11px) rotate(-1deg); } }
+        .dl-pop { display: inline-block; animation: dlPop 0.5s cubic-bezier(.34,1.6,.5,1); }
+        @keyframes dlPop { 0% { transform: scale(0); } 55% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .dl-linkwrap { position: relative; }
+        .dl-link-dot { position: absolute; top: 50%; margin-top: -7px; width: 14px; height: 14px; border-radius: 50%; background: ${T.success}; box-shadow: 0 0 0 4px rgba(31,122,77,0.18); animation: dlLink 1.15s ease-in-out infinite; }
+        @keyframes dlLink { 0% { left: 22%; opacity: 0; transform: scale(0.5); } 25% { opacity: 1; transform: scale(1); } 75% { opacity: 1; transform: scale(1); } 100% { left: 72%; opacity: 0; transform: scale(0.5); } }
+        .dl-visitor { display: inline-block; animation: dlVpop 0.5s backwards cubic-bezier(.34,1.5,.5,1); }
+        @keyframes dlVpop { from { opacity: 0; transform: scale(0) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .dl-shake { animation: dlShake 0.55s ease; }
+        @keyframes dlShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+        .dl-globe { display: inline-block; animation: dlGlobe 3s ease-in-out infinite; }
+        @keyframes dlGlobe { 0%,100% { transform: rotate(0); } 50% { transform: rotate(14deg); } }
+        .dl-assemble { animation: dlPop 0.45s cubic-bezier(.34,1.6,.5,1); }
 
         /* === ROADMAP === */
         .roadmap { display: flex; flex-direction: column; gap: 8px; list-style: none; }

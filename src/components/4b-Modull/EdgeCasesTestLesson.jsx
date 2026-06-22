@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // LOYIHANI TESTLASH MODULI · DARS 2 — EDGE CASES VA ERROR PATH — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -198,6 +199,26 @@ function ScoreRing({ correct, total }) {
   );
 }
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
   const enabled = !!ctx.enabled;
@@ -206,7 +227,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -267,6 +288,7 @@ const PickLines = ({ fileName, scaffoldTop, scaffoldBottom, candidates, agent, i
   };
   const pickedCorrect = correct.filter(c => picked.has(c.id));
   return (
+    <Zoomable>
     <div className="split">
       <Col>
         <p className="flow-label">{fileName}</p>
@@ -293,6 +315,7 @@ const PickLines = ({ fileName, scaffoldTop, scaffoldBottom, candidates, agent, i
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Edge testlar tayyor — har holat alohida sinaldi.</p></div>}
       </Col>
     </div>
+    </Zoomable>
   );
 };
 
@@ -337,6 +360,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>orderTotal(10000, 2) ishlaydi. Lekin mijoz <span className="italic" style={{ color: T.accent }}>0 ta</span> yoki <span className="italic" style={{ color: T.accent }}>−5 ta</span> buyursa-chi?</h1>
         <Mentor>Dars 46'da funksiyani <b style={{ color: T.ink }}>oddiy</b> kirishda sinadingiz. Lekin haqiqiy do'konda har xil odam bor — kimdir g'alati narsa kiritadi. Pastdagi "g'alati buyurtma"larni bosib, funksiya nima qaytarishini ko'ring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <OrderPlain />
@@ -357,6 +381,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Happy path (oddiy kirish) yetarli emas. Funksiya <b>noto'g'ri kirishni rad etishi</b> kerak — va biz buni ham <b>sinashimiz</b> kerak. Bugun: edge cases.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -390,7 +415,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Test faqat "to'g'ri ishlaydimi" ni tekshiradimi — yoki <span className="italic" style={{ color: T.accent }}>"noto'g'rini rad etadimi"</span> ham?</h2></div>
         <Mentor>Yaxshi dasturchi ikkalasini ham sinaydi: oddiy kirish (happy path) <b style={{ color: T.ink }}>va</b> g'alati kirish (edge cases). Mana natija va 4 qadam.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? <Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -409,6 +434,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">"Happy path" — bu <span className="italic" style={{ color: T.accent }}>nima</span>?</h2></div>
         <Mentor><b style={{ color: T.ink }}>Happy path</b> — hammasi rejadagidek ketadigan oddiy yo'l: mijoz to'g'ri, kutilgan ma'lumot kiritadi (2 ta kitob, 5 ta...). Dars 46'da aynan shuni sinadingiz. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="order.spec.ts" minH={90}>
@@ -423,6 +449,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yashil! Lekin bu faqat <b>oddiy</b> kirish. Haqiqiy foydalanuvchilar har doim ham "happy" emas — keyingisi: g'alati kirishlar.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -446,6 +473,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Funksiya <span className="italic" style={{ color: T.accent }}>chegarada</span> qanday ishlaydi — 0, manfiy, eng kichik?</h2></div>
         <Mentor><b style={{ color: T.ink }}>Edge case</b> (chegara holati) — oddiylikning chetidagi qiymatlar: 0, manfiy, eng kichik/katta. Himoyasiz funksiya ularda <b style={{ color: T.ink }}>jim ravishda noto'g'ri</b> javob beradi. Har birini bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <OrderPlain />
@@ -461,6 +489,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana muammo: <b>0</b> va <b>manfiy</b>da funksiya jim ravishda noto'g'ri ishlaydi. Lekin <b>1</b> to'g'ri. Demak chegara — 0 bilan 1 orasida.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -498,6 +527,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mijoz raqam o'rniga <span className="italic" style={{ color: T.accent }}>"ikki"</span> deb yozsa nima bo'ladi?</h2></div>
         <Mentor>Foydalanuvchi har doim raqam yubormaydi — matn, bo'sh qiymat (null) kelishi mumkin. Himoyasiz funksiya bunda <b style={{ color: T.ink }}>NaN</b> yoki <b style={{ color: T.ink }}>0</b> beradi — eng yomoni, xato <b style={{ color: T.ink }}>sezilmay</b> qoladi. Sinab ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <OrderPlain />
@@ -513,6 +543,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Demak funksiya noto'g'ri kirishni <b>o'zi to'xtatishi</b> kerak. Buni qanday qilamiz? — Keyingi qadam.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -529,6 +560,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Funksiya noto'g'ri kirishni qanday <span className="italic" style={{ color: T.accent }}>rad etadi</span>?</h2></div>
         <Mentor>Funksiya boshida <b style={{ color: T.ink }}>tekshiruv (guard)</b> qo'yamiz: agar quantity raqam bo'lmasa yoki 0 dan kichik bo'lsa — <span className="mono">throw new Error(...)</span> bilan <b style={{ color: T.ink }}>xato tashlaydi</b> va ishni to'xtatadi. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             {show ? <OrderGuarded /> : <OrderPlain minH={130} />}
@@ -545,6 +577,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Endi funksiya kuchli: to'g'ri kirishda hisoblaydi, noto'g'rida xato beradi. Lekin buni <b>qanday sinaymiz</b>? Xato tashlasa, test buzilmaydimi?</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -562,6 +595,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Funksiya xato tashlasa — uni qanday <span className="italic" style={{ color: T.accent }}>sinaymiz</span>?</h2></div>
         <Mentor>Xato tashlaydigan funksiyani to'g'ridan-to'g'ri chaqirsangiz, test ham buzilib qoladi. Shuning uchun funksiyani <span className="mono">() =&gt;</span> ichiga o'rab beramiz — Jest uni o'zi chaqiradi va <span className="mono">.toThrow()</span> bilan xato tashlaganini tekshiradi. Qaysi yozuv to'g'ri?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className={`vcard ${choice === 'a' ? 'shake' : ''}`} onClick={() => pick('a')} disabled={done} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6, boxShadow: choice === 'a' ? `inset 0 0 0 1.5px ${T.danger}` : undefined }}>
@@ -578,6 +612,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ To'g'ri! <span className="mono">() =&gt;</span> funksiyani "o'rab" beradi — Jest uni nazorat ostida chaqiradi va xato chiqqanini ko'rib, testni <b>PASS</b> qiladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -610,6 +645,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Chegara qayerda — <span className="italic" style={{ color: T.accent }}>1 to'g'ri, 0 noto'g'ri</span>. Ikkalasini sinaymiz.</h2></div>
         <Mentor>Eng muhim joy — chegara chizig'i. <span className="mono">quantity = 1</span> — eng kichik <b style={{ color: T.ink }}>to'g'ri</b> qiymat (PASS bo'lishi kerak). <span className="mono">quantity = 0</span> — birinchi <b style={{ color: T.ink }}>noto'g'ri</b> qiymat (xato berishi kerak). Yaxshi test chegaraning <b>ikki tomonini</b> ham sinaydi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="order.spec.ts" minH={150}>
@@ -631,6 +667,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ikkalasi ham yashil: 1 to'g'ri ishladi, 0 xato berdi (va test buni kutgan edi). Chegara puxta sinaldi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -693,6 +730,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Funksiyada <span className="mono" style={{ color: T.accent }}>throw</span> — API'da bu <span className="italic" style={{ color: T.accent }}>nimaga aylanadi</span>?</h2></div>
         <Mentor>Esingizdami — Modul 05'da <b style={{ color: T.ink }}>DTO</b> noto'g'ri ma'lumotni 400 bilan rad etardi. Bu o'sha g'oya: noto'g'ri kirish "error path"dan ketadi. Funksiyada <span className="mono">throw</span>, API'da <span className="mono">@IsNumber</span> → <b style={{ color: T.ink }}>400</b>. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="create-order.dto.ts" minH={90}>
@@ -709,6 +747,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir xil mantiq, ikki qatlam: <b>funksiyada</b> throw (unit-test toThrow bilan tekshiradi), <b>API'da</b> DTO → 400. Ikkalasi ham "error path".</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -726,6 +765,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Faqat <span className="italic" style={{ color: T.accent }}>edge-test</span> tutadigan xato — qanday qutqaradi?</h2></div>
         <Mentor>Tasavvur qiling: kimdir <span className="mono">-5</span> ta buyurtma berib, do'kondan <b style={{ color: T.ink }}>50 000 so'm "qaytim"</b> oldi. Agar faqat happy-path test bo'lsa, bu xato sezilmay ishlab ketadi. Hikoyani bosib kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={done} onClick={go}>{step === 0 ? '▶ Faqat happy-path test bilan' : (step === 1 ? '🛡️ Edge testni qo\'shish' : '✓ Tutildi')}</button>
@@ -743,6 +783,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qizil FAIL — bu yaxshi xabar! Test xatoni <b>siz</b> ko'rar oldidan tutdi. Mana edge case'ning kuchi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -773,6 +814,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Hammasi birga — <span className="italic" style={{ color: T.accent }}>happy + edge</span> to'liq test fayli</h2></div>
         <Mentor>Mana puxta test fayli: happy path va edge case'lar birga. Har holat — alohida it. Ko'rib chiqing, har qatorni endi tushunasiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="order.spec.ts" minH={210}>
@@ -795,6 +837,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>3 test ham yashil — happy va edge birga. Mana puxta sinalgan funksiya.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -817,6 +860,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI test yozdi — lekin <span className="italic" style={{ color: T.accent }}>hamma holatni</span> qamrab oldimi?</h2></div>
         <Mentor>AI tez yozadi, ammo ko'pincha faqat <b style={{ color: T.ink }}>happy path</b>ni yozadi. Tekshiruvchi sifatida siz <b style={{ color: T.ink }}>qaysi holatlar qolib ketganini</b> topasiz va qo'shtirasiz. Yetishmayotgan testlarni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <AgentCard>orderTotal funksiyasiga test yoz.</AgentCard>
@@ -840,6 +884,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Endi qamrov to'liq! AI happy path yozdi, siz <b>edge case'larni</b> qo'shdingiz. Tekshiruvchining eng muhim ishi — kamchilikni ko'rish.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -890,6 +935,7 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: exception testini <span className="italic" style={{ color: T.accent }}>o'zingiz</span> yozing.</h2></div>
         <Mentor>Manfiy buyurtma (<span className="mono">-5</span>) da funksiya xato tashlashini tekshiruvchi qatorni yozing. Eslang: <span className="mono">() =&gt;</span> bilan o'rang. Namuna: <span className="mono">expect(() =&gt; orderTotal(10000, -5)).toThrow()</span></Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">order.spec.ts — tasdiq qatorini yozing</p>
@@ -915,6 +961,7 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Zo'r! Endi exception'larni ham sinay olasiz. Funksiyangiz puxta himoyalangan.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1048,7 +1095,15 @@ export default function EdgeCasesTestLesson({ lang: langProp, onFinished }) {
         .role-ico { font-size: 20px; flex-shrink: 0; } .role-r { font-size: 11.5px; color: ${T.ink2}; font-weight: 600; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BACKEND MODULI (4-MODUL) · 4-DARS — ROUTING: SERVER SO'ROVNI QANDAY TOPADI — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -62,6 +63,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
@@ -181,11 +201,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -245,6 +261,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 860 }}>Serveringizda <span className="italic" style={{ color: T.accent }}>o'nlab eshik</span> bor — kimdir so'rasa, server <span className="italic" style={{ color: T.accent }}>qaysi kodni</span> ishga tushiradi?</h1>
         <Mentor>O'tgan darsda <b style={{ color: T.ink }}>bitta</b> eshik qurdingiz: <span className="mono">/salom</span>. Lekin haqiqiy ilovada ko'p eshik bor. Brauzer <span className="mono">GET /games/3</span> desa — server <b style={{ color: T.ink }}>qaysi kodni</b> ishga tushiradi? Avval bir nechta so'rov yuborib, qaysi eshik yonishini ko'ring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label">So'rov yuboring — bosing</p>
@@ -274,6 +291,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Server so'rovning <b>manzili</b> — method va path — bo'yicha mos kodni topadi. Bu jarayon <b>routing</b> deyiladi. Bugun uni Nest'da ochamiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -314,7 +332,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Server so'rovni <span className="italic" style={{ color: T.accent }}>qanday topadi</span> — 5 qadam</h2></div>
         <Mentor>O'tgan darsda server qurdingiz; bugun u <b style={{ color: T.ink }}>ko'p so'rovni</b> qanday boshqarishini ko'ramiz. Va'da: dars oxirida <b style={{ color: T.ink }}>Nest controller</b>'ga yangi eshik (POST) ochasiz — yangi o'yin qo'shadigan.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -344,6 +362,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har bir so'rov <span className="italic" style={{ color: T.accent }}>nimadan</span> iborat?</h2></div>
         <Mentor>Brauzer serverga so'rov yuborganda ikki narsani aytadi: <b style={{ color: T.ink }}>METHOD</b> (nima qilmoqchi — olish? qo'shish?) va <b style={{ color: T.ink }}>PATH</b> (qaysi manzilda). Mana shu ikkisi birgalikda so'rovni belgilaydi. O'zingiz bittasini yig'ing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. METHOD tanlang</p>
@@ -373,6 +392,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana so'rov: <span className="mono"><b>{method} {path}</b></span>. Server aynan shu ikki narsaga qarab kerakli kodni topadi. Endi ko'ramiz — qanday?</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -402,6 +422,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Server kelgan so'rovni <span className="italic" style={{ color: T.accent }}>qanday topadi</span>?</h2></div>
         <Mentor>Serverda <b style={{ color: T.ink }}>route'lar ro'yxati</b> bor — qabulxona xodimiga o'xshaydi. So'rov kelganda u ro'yxatdan <b style={{ color: T.ink }}>aynan mos qatorni</b> (method + path) qidiradi va o'sha kodni ishga tushiradi. Mos qator bo'lmasa — <b style={{ color: T.accent }}>404</b>. Diqqat qiling: <span className="mono">/games</span> ikki marta bor, lekin method farq qiladi!</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">So'rov yuboring</p>
@@ -420,6 +441,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana routing! Server method + path bo'yicha mos qatorni topadi. Endi method'larning o'zini ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -459,6 +481,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Method <span className="italic" style={{ color: T.accent }}>nimani</span> bildiradi?</h2></div>
         <Mentor>Method — so'rovning <b style={{ color: T.ink }}>maqsadi</b>. To'rttasi asosiy: <b style={{ color: T.ink }}>GET</b> olish, <b style={{ color: T.ink }}>POST</b> yaratish, <b style={{ color: T.ink }}>PUT</b> yangilash, <b style={{ color: T.ink }}>DELETE</b> o'chirish. Buni Minecraft sandig'i bilan tasavvur qiling. Har birini bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Method'ni bosing</p>
@@ -480,6 +503,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>To'rt niyat — to'rt method. Bugun biz <b>POST</b> (yaratish) bilan ishlaymiz. Avval — bitta route ko'p qiymatga qanday xizmat qilishini ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -514,6 +538,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har bir o'yin uchun <span className="italic" style={{ color: T.accent }}>alohida route</span> kerakmi?</h2></div>
         <Mentor>Yo'q — bu juda ko'p bo'lardi! Buning o'rniga <b style={{ color: T.ink }}>bitta</b> route yoziladi: <span className="mono">/games/:id</span>. Bu yerdagi <span className="mono">:id</span> — <b style={{ color: T.ink }}>o'zgaruvchi</b>. Qaysi raqam kelsa, server uni ushlab oladi. Bitta route — minglab o'yinga xizmat qiladi. Pastdan id tanlab sinang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Route (bitta!)</p>
@@ -535,6 +560,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bitta route <span className="mono">/games/:id</span> — har xil id'ga xizmat qildi. <span className="mono">:id</span> o'zgaruvchi, qiymati so'rovdan keladi. Endi buni Nest qanday yozishini ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -560,6 +586,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Nest routing'ni <span className="italic" style={{ color: T.accent }}>qanday yozadi</span>?</h2></div>
         <Mentor>Nest'da har route — klass ichidagi <b style={{ color: T.ink }}>metod</b>. Metod ustidagi <b style={{ color: T.accent }}>dekorator</b> (<span className="mono">@Get</span>, <span className="mono">@Post</span>) qaysi so'rovga javob berishini aytadi. Hammasi bitta <b style={{ color: T.ink }}>GamesController</b> ichida — toza va tartibli. Rangli qismlarni bosib o'rganing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ lineHeight: 1.9 }}>
@@ -584,6 +611,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Dekorator + metod = route. Bitta controller — bitta mavzuning hamma eshiklari. Nega bu yondashuv shunchalik tartibli — keyingi ekranda.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -608,6 +636,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Nega Nest bunchalik <span className="italic" style={{ color: T.accent }}>tartibli</span>?</h2></div>
         <Mentor>Server kodi o'sib ketganda chalkashlik boshlanadi. Nest buni hal qiladi: kod <b style={{ color: T.ink }}>controller'larga</b> bo'linadi, dekoratorlar routingni <b style={{ color: T.ink }}>o'zi</b> qiladi. Shuning uchun jiddiy loyihalar Nest'da yoziladi. Sabablarini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Nest nega yaxshi — bosing</p>
@@ -625,6 +654,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tartib + dekoratorlar + sodda <span className="mono">return</span> = Nest. Keyingi modulda Nest arxitekturasini chuqur o'rganasiz. Endi — so'rov controllergacha qanday yetib boradi?</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -668,6 +698,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">So'rov controllergacha <span className="italic" style={{ color: T.accent }}>qanday yetib boradi</span>?</h2></div>
         <Mentor>Hammasini birlashtiramiz. Tugmani bosing — bitta <span className="mono">POST /games</span> so'rovi yo'lni bosqichma-bosqich bosib o'tadi: routerdan controller metodigacha, so'ng javob qaytadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             {step === 0 && <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run}>▶ POST /games yuborish</button>}
@@ -686,6 +717,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana to'liq yo'l: so'rov → router → dekorator → metod → <span className="mono">return</span> → javob. Routingni endi to'liq tushunasiz!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -708,6 +740,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Frontend yangi o'yin qo'shmoqchi, lekin <span className="italic" style={{ color: T.accent }}>404</span> chiqyapti. Nega?</h2></div>
         <Mentor>Frontend <span className="mono">POST /games</span> yubordi — yangi o'yin qo'shish uchun. Lekin server <b style={{ color: T.accent }}>404</b> qaytaryapti: mos route topilmadi. Controllerga qarang — <span className="mono">create()</span> ustida qaysi dekorator turibdi?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -737,6 +770,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && <div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Method mos kelmasa — 404!</p><p className="ta-sub">Dekorator so'rov method'iga to'g'ri kelishi shart</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -782,6 +816,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har so'rovni <span className="italic" style={{ color: T.accent }}>to'g'ri metodga</span> ulang</h2></div>
         <Mentor>Routingni o'zingiz sinab ko'ring. Chapdan so'rovni tanlang, keyin o'ngdan unga javob beradigan <b style={{ color: T.ink }}>controller metodini</b> bosing. To'g'ri juftlik yashil bo'lib qoladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. So'rov (chap)</p>
@@ -798,6 +833,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Hammasi to'g'ri ulandi! Har method+path → o'z controller metodiga. Endi oxirgi qadam — yangi eshikni o'zingiz ochasiz!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -816,6 +852,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Routing — <span className="italic" style={{ color: T.accent }}>to'rt qoida</span></h2></div>
         <Mentor>Mana butun darsning yuragi. Bu to'rt qoidani esda tutsangiz — istalgan backend routingini tushunasiz. Keyingi ekranda birinchi eshigingizni o'zingiz ochasiz.</Mentor>
+        <Zoomable>
         <div className="split">
           {RULES.map((r, i) => (
             <div key={i} className="rule-card fade-up" style={{ animationDelay: `${0.1 + i * 0.07}s` }}>
@@ -824,6 +861,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => {
             </div>
           ))}
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -849,6 +887,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yangi eshikni <span className="italic" style={{ color: T.accent }}>o'zingiz oching</span> — POST.</h2></div>
         <Mentor>Pastdagi <span className="mono">create()</span> metodi yangi o'yin qo'shadi — lekin Nest hali bilmaydi bu <b style={{ color: T.ink }}>qaysi so'rovga</b> javob berishini! Metod ustiga dekoratorni yozing: u <b style={{ color: T.ink }}>POST</b> so'roviga javob bersin — <b style={{ color: T.ink }}>@Post()</b>. So'ng <b style={{ color: T.ink }}>▶ Run</b> bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-1">
@@ -882,6 +921,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {ran && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 Tabriklaymiz! Siz <b>@Post()</b> dekoratorini yozib, yangi route ochdingiz. Nest endi POST so'rovini <span className="mono">create()</span> metodiga yo'naltirdi!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1021,8 +1061,14 @@ export default function RoutingLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

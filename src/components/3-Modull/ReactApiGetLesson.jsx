@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // REACT MODULI · 5-DARS — API BILAN ISHLASH: GET — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -66,6 +67,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
@@ -185,11 +205,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -278,6 +294,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 800 }}>Yangi o'yin chiqdi — millionlab ekranda <span className="italic" style={{ color: T.accent }}>bir zumda</span> paydo bo'ldi. Qanday?</h1>
         <Mentor>O'tgan darsda katalog kod ichidagi ro'yxatdan chizilardi. Lekin Roblox'da yangi o'yin chiqsa, u <b style={{ color: T.ink }}>bir vaqtning o'zida</b> hammaning telefonida, planshetida, noutbukida paydo bo'ladi. Tugmani bosib, buni o'z ko'zingiz bilan ko'ring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={() => setPublished(true)} disabled={published}>{published ? "✓ E'lon qilindi" : "Yangi o'yinni e'lon qilish"}</button>
@@ -312,6 +329,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! O'sha markaz — <b>server</b>. Hech kim millionlab telefonga kod yozib chiqmaydi: ma'lumot bitta joyda turadi, qurilmalar undan <b>so'rab oladi</b>. Bugun katalogingiz ham shunday ishlaydi.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -358,7 +376,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Va'da beraman: dars oxirida saytingiz <b style={{ color: T.ink }}>xuddi haqiqiy Roblox kabi</b> ishlaydi — sahifa ochiladi, so'rov serverga uchadi, kartochkalar yuklanib chiqadi. Buning kaliti — bitta buyruq: <span className="mono">fetch</span>.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -392,6 +410,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ro'yxatni kod ichidan <span className="italic" style={{ color: T.accent }}>serverga ko'chirsak</span> nima o'zgaradi?</h2></div>
         <Mentor>Hozir <span className="mono">games</span> ro'yxati App.jsx ichida yashayapti — uni faqat shu sayt ko'radi. Endi uni internetdagi maxsus kompyuterga — <b style={{ color: T.ink }}>serverga</b> ko'chiramiz. Server unga <b style={{ color: T.ink }}>manzil</b> beradi, va istalgan qurilma o'sha manzildan oladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">App.jsx — sizning kodingiz</p>
@@ -420,6 +439,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Endi bu ro'yxatni telefon ham, noutbuk ham, boshqa sayt ham — <b>manzili orqali</b> oladi. Bitta markaz — hamma uchun. Savol qoldi: kod uni <b>qanday so'rab oladi</b>?</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -453,6 +473,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Serverdan ma'lumotni <span className="italic" style={{ color: T.accent }}>qaysi buyruq</span> olib keladi?</h2></div>
         <Mentor>Tanishing: <span className="mono">fetch</span>. Internet darsidagi ofitsiantni eslaysizmi? <span className="mono">fetch</span> ham shunday ishlaydi: manzilni berasiz — u serverga boradi va javobni olib keladi. Buyruqning <b style={{ color: T.ink }}>3 qismini bosib</b> o'rganing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ fontSize: 'clamp(13px,1.9vw,16px)', lineHeight: 2.1, padding: '16px 18px' }}>
@@ -482,6 +503,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>So'rov to'liq: <b>kim</b> (fetch) + <b>qayerga</b> (manzil) + <b>nima</b> (/games). Server tushundi va javob qaytardi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -521,6 +543,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Server javobni <span className="italic" style={{ color: T.accent }}>qaysi tilda</span> qaytaradi?</h2></div>
         <Mentor>Server javobi — <b style={{ color: T.ink }}>JSON</b>: kompyuterlarning umumiy ma'lumot tili. Ko'rinishi massivga o'xshaydi, lekin kelganda u hali <b style={{ color: T.ink }}>shunchaki matn</b>. Kod ishlatadigan haqiqiy massivga aylantirish uchun bitta qadam bor: <span className="mono">.json()</span>. Ikkala tugmani ketma-ket sinang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -571,6 +594,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Eslab qoling: javob keldi — avval <span className="mono">.json()</span>, keyin ishlatish. Tarjimasiz massiv yo'q, massivsiz map yo'q.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -614,6 +638,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Javob kelguncha foydalanuvchi <span className="italic" style={{ color: T.accent }}>nimani ko'radi</span>?</h2></div>
         <Mentor>Server javobi bir zumda kelmaydi — internet orqali yo'l bor. Shu kutish payti saytlar ikki xil yo'l tutadi. <b style={{ color: T.ink }}>Ikkalasini ham sinang</b> — qaysi biri yaxshiroq, o'zingiz ko'rasiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -642,6 +667,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -677,6 +703,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Hammasi birga: to'liq naqsh <span className="italic" style={{ color: T.accent }}>qanday ishlaydi</span>?</h2></div>
         <Mentor>Mana professional saytlarning yuragi — <b style={{ color: T.ink }}>4 qadam</b>: bo'sh state → useEffect so'rov yuboradi → javob keladi → setGames chizadi. ▶ tugmasini bosib, <b style={{ color: T.ink }}>kod bilan ekranni birga</b> kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run} disabled={running}>{running ? 'Ishlayapti…' : (done ? '↻ Yana koʻrish' : '▶ Naqshni ishga tushirish')}</button>
@@ -714,6 +741,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && !running && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tanish qismlarga e'tibor bering: <span className="mono">useState</span> va <span className="mono">useEffect</span> — o'tgan darslardan! Yangi mehmon faqat bitta: <span className="mono">fetch</span>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -741,6 +769,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta serverdan <span className="italic" style={{ color: T.accent }}>har xil ro'yxat</span> olsa bo'ladimi?</h2></div>
         <Mentor>Bo'ladi! Server — katta bino, <b style={{ color: T.ink }}>endpointlar — eshiklar</b>: <span className="mono">/games</span> hammasi, <span className="mono">/top</span> eng zo'rlari, <span className="mono">/new</span> yangilari. Eshikni tanlang — <span className="mono">fetch</span> o'sha ro'yxatni olib keladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Eshikni tanlang</p>
@@ -775,6 +804,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -812,6 +842,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Manzilda <span className="italic" style={{ color: T.accent }}>bitta harf xato</span> bo'lsa-chi?</h2></div>
         <Mentor>Internet darsidagi <span className="mono">youtub.com</span>ni eslaysizmi? Serverlarda ham shunday: <b style={{ color: T.ink }}>yo'q eshikni</b> so'rasangiz, server <b style={{ color: T.ink }}>404 — "Topilmadi"</b> deb javob beradi. Avval xato manzilni, keyin to'g'risini sinab ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -846,6 +877,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>404 — dushman emas, <b>xabarchi</b>: manzilni tekshir, deydi. Konsolda 404 ko'rsangiz — birinchi navbatda <b>manzil harflarini</b> tekshirasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -872,6 +904,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Serverli saytni <span className="italic" style={{ color: T.accent }}>AI bilan</span> boyitsak-chi?</h2></div>
         <Mentor>Endi siz so'rov naqshini bilasiz — agent kodini <b style={{ color: T.ink }}>tekshira olasiz</b>: manzil to'g'rimi, .json() bormi, javob state'ga tushyaptimi. Buyruq bering, rejani <b style={{ color: T.ink }}>tasdiqlang</b>, natijani sinang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. Agentga so'z bilan ayting</p>
@@ -914,6 +947,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Natija shu yerda paydo bo'ladi — keyin uni o'zingiz tekshirasiz.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -973,6 +1007,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">So'rov kodini <span className="italic" style={{ color: T.accent }}>o'zingiz yig'a olasizmi</span>?</h2></div>
         <Mentor>4 bo'lak — <b style={{ color: T.ink }}>to'g'ri tartibda</b> bosing: avval <b style={{ color: T.ink }}>qachon</b> (useEffect), keyin <b style={{ color: T.ink }}>qayerga</b> (fetch), keyin <b style={{ color: T.ink }}>tarjima</b> (.json), oxirida <b style={{ color: T.ink }}>ekranga</b> (setGames). Xato bossangiz — bo'lak silkinadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Bo'laklar</p>
@@ -1011,6 +1046,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && loaded && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tartib muhim edi: so'rovsiz javob yo'q, tarjimasiz massiv yo'q, setGames'siz ekran yo'q. Siz naqshni <b>tushunib</b> yig'dingiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1030,6 +1066,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — siz esa <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
         <Mentor>AI so'rov kodini bir zumda yozib berdi — naqsh to'g'ri. Lekin katalog <b style={{ color: T.ink }}>yuklanmayapti</b>: skeleton aylanaveryapti, konsolda <b style={{ color: T.ink }}>404</b>. Siz endi 404 nima deyishini bilasiz. Xato qaysi qatorda?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-2">
@@ -1073,6 +1110,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1110,6 +1148,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: so'rovni <span className="italic" style={{ color: T.accent }}>o'zingiz</span> yuboring.</h2></div>
         <Mentor>VS Code'da <span className="mono">App.jsx</span> ochiq: naqsh tayyor — useState bor, .json() bor, setGames bor. Faqat <b style={{ color: T.ink }}>4-qator bo'sh: so'rovning o'zi yo'q!</b> Yozing: <b style={{ color: T.ink }}>fetch(</b> + <b style={{ color: T.ink }}>'https://robo-api.uz/games'</b> qo'shtirnoqda + <b style={{ color: T.ink }}>)</b>.</Mentor>
+        <Zoomable>
         <div className="split split-wide">
           <Col>
             <div className="vsc fade-up delay-2">
@@ -1165,6 +1204,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {passed && loaded && <span className="tagpill fade-step" style={{ color: T.success }}>✓ so'rov → skeleton → javob → katalog</span>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1308,8 +1348,14 @@ export default function ReactApiGetLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

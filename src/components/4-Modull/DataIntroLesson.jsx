@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BACKEND MODULI (4-MODUL) · 1-DARS — MA'LUMOT VA BOG'LANISHLAR — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -64,6 +65,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
@@ -183,11 +203,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -313,6 +329,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Server <span className="italic" style={{ color: T.accent }}>o'chsa</span>, postlaringiz qayerda qoladi?</h1>
         <Mentor>React darsida <span className="mono">fetch('.../posts')</span> yozib, serverdan postlar ro'yxatini oldingiz. Lekin bir savol: server kompyuteri <b style={{ color: T.ink }}>o'chib qolsa</b>, o'sha postlar yo'qoladimi? Pastdagi tugma bilan <b style={{ color: T.ink }}>serverni o'chirib-yoqib</b> ko'ring — ikki xil joyda nima bo'lishini kuzating.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={toggle}>{off ? '⏻ Serverni yoqish' : '⏻ Serverni o\'chirish'}</button>
@@ -352,6 +369,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Topdingiz! Postlar serverning vaqtinchalik xotirasida emas, alohida <b>ma'lumotlar bazasida</b> (diskda) saqlanadi. Shuning uchun server o'chib-yonsa ham yo'qolmaydi. Bugun aynan shu ma'lumot dunyosiga kiramiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -400,7 +418,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Va'da: dars oxirida haqiqiy ilovaning <b style={{ color: T.ink }}>ma'lumot xaritasini</b> — sxemasini — o'zingiz chizasiz. Sxema ikki narsadan iborat: <b style={{ color: T.ink }}>jadvallar</b> (ma'lumot saqlanadigan qutilar) va ular orasidagi <b style={{ color: T.ink }}>bog'lanishlar</b> (ularni ulovchi chiziqlar). O'ngdagi 5 qadam bizni shu natijaga olib boradi.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -427,6 +445,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kompyuter oddiy jumlani <span className="italic" style={{ color: T.accent }}>tushunadimi</span>?</h2></div>
         <Mentor>Mana Ali haqida oddiy jumla — biz odamlar uni bemalol o'qiymiz. Lekin kompyuter uchun bu <b style={{ color: T.ink }}>shunchaki harflar</b>: "izoh qayerda?" desangiz, topa olmaydi. Yechim — bir xil ma'noni <b style={{ color: T.ink }}>bo'laklarga ajratib</b>, har bo'lakka nom berish. Tugmani bosing — o'sha jumlani kompyuter tushunadigan ko'rinishga keltiramiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">① Odam yozganda — oddiy jumla</p>
@@ -448,6 +467,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -470,6 +490,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Frontendda ko'rgan shakl — <span className="italic" style={{ color: T.accent }}>JSON</span> nimadan tuziladi?</h2></div>
         <Mentor>Bu shaklni React darsida ko'rgansiz! Nomi — <b style={{ color: T.ink }}>JSON</b>. Server ma'lumotni xuddi shunday yuboradi. U <b style={{ color: T.ink }}>kalit: qiymat</b> juftliklaridan yig'iladi. Har bir bo'lakni bosib, nima ekanini o'rganing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Bitta post — JSON ko'rinishida</p>
@@ -492,6 +513,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>JSON — <b>kalit: qiymat</b> juftliklari to'plami, <span className="mono">{'{ }'}</span> qavslar ichida. Bitta narsa (bitta post, bitta foydalanuvchi) shunday yoziladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -527,6 +549,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Minglab post — <span className="italic" style={{ color: T.accent }}>qanday saqlanadi</span>?</h2></div>
         <Mentor>Bitta post — bitta JSON edi. Endi tasavvur qiling, postlar <b style={{ color: T.ink }}>minglab</b>. Ularni <b style={{ color: T.ink }}>jadvalga</b> joylaymiz — xuddi Excel jadvalidek. Har bir post — bitta <b style={{ color: T.ink }}>qator</b> (gorizontal), har bir kalit — bitta <b style={{ color: T.ink }}>ustun</b> (vertikal). Avval bitta <b style={{ color: T.ink }}>ustunni</b>, keyin bitta <b style={{ color: T.ink }}>qatorni</b> bosib farqini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">posts jadvali — har post bitta qator</p>
@@ -550,6 +573,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ma'lumotlar bazasi — shunaqa <b>jadvallar</b>dan iborat. Bir nechta JSON yig'ilib, bitta tartibli jadval bo'ladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -588,6 +612,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta jadval yetadimi? — Instagram'da <span className="italic" style={{ color: T.accent }}>nechta jadval bor</span>?</h2></div>
         <Mentor>Bitta jadval kamlik qiladi! Foydalanuvchilar — alohida, postlar — alohida, izohlar — alohida. Har bir <b style={{ color: T.ink }}>tur</b> uchun o'z jadvali. Uchala jadval kartochkasini bosib, ichidagi ustunlarni ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Jadvallar — bosib tanlang</p>
@@ -606,6 +631,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <p className="small" style={{ color: T.ink3, margin: 0, fontStyle: 'italic' }}>Sarg'ish ustunlar — bog'lovchi ustunlar (keyingi qadamda)</p>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -623,6 +649,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu post kimniki ekanini — <span className="italic" style={{ color: T.accent }}>qanday bilamiz</span>?</h2></div>
         <Mentor>Har bir foydalanuvchining <b style={{ color: T.ink }}>id</b> raqami bor (xuddi pasport raqami kabi). Postda esa to'liq ism emas, faqat <b style={{ color: T.ink }}>user_id</b> yoziladi — ya'ni "bu post kimnikiligini" ko'rsatuvchi raqam. Postni bosing — uning egasini <span className="mono">user_id</span> orqali topamiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">posts jadvali — postni bosing</p>
@@ -647,6 +674,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bu <b>bog'lovchi ustun</b> (foreign key): <span className="mono">user_id</span> bitta jadvalni ikkinchisiga ulaydi. Ismni qayta-qayta yozish shart emas — faqat raqam yetadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -664,6 +692,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta foydalanuvchida <span className="italic" style={{ color: T.accent }}>nechta post</span> bo'ladi?</h2></div>
         <Mentor>Bu eng muhim g'oya — <b style={{ color: T.ink }}>bog'lanish</b>. Bitta foydalanuvchi <b style={{ color: T.ink }}>ko'p post</b> joylashi mumkin, lekin har bir post faqat <b style={{ color: T.ink }}>bitta</b> egaga tegishli. Bunga "bitta → ko'p" deyiladi. Foydalanuvchini tanlang — uning barcha postlari yonadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Foydalanuvchini bosing</p>
@@ -694,6 +723,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>users → posts</b>: bitta foydalanuvchi, ko'p post. <span className="mono">posts.user_id</span> qaysi foydalanuvchiga tegishliligini ko'rsatadi. Mana shu — <b>bog'lanish</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -731,6 +761,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mana butun Instagram'ning <span className="italic" style={{ color: T.accent }}>ma'lumot xaritasi</span></h2></div>
         <Mentor>Real ilovada hamma jadvallar bir-biriga bog'langan — bu <b style={{ color: T.ink }}>sxema</b> (xarita). Pastdagi bog'lanishlarni bosib, har birini ko'ring. Yana bir tur ham bor: <span className="mono">likes</span> — bunda bitta foydalanuvchi ko'p postni, bitta postni ko'p foydalanuvchi yoqtiradi (<b style={{ color: T.ink }}>ko'pga-ko'p</b>).</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Bog'lanishlar — bosib ko'ring</p>
@@ -757,6 +788,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -783,6 +815,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yangi ilova uchun sxemani <span className="italic" style={{ color: T.accent }}>AI'ga buyurtma</span> qilsak-chi?</h2></div>
         <Mentor>Endi siz sxemani <b style={{ color: T.ink }}>o'qiy olasiz</b>! Qaysi ilova kerakligini ayting, AI <b style={{ color: T.ink }}>jadvallarni taklif qiladi</b> — siz esa tekshirasiz: jadvallar to'g'rimi, bog'lovchi ustunlar (<span className="mono">_id</span>) bormi. Boshliq — siz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. AI'ga ilovangizni ayting</p>
@@ -818,6 +851,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>AI tez yozadi, siz <b>tekshirasiz</b>: har jadvalda <span className="mono">id</span> bormi, bog'lanish uchun <span className="mono">_id</span> ustunlari to'g'rimi. Mana shu — sxemani o'qish mahorati.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -859,6 +893,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>comments</span> jadvaliga qaysi ustunlar <span className="italic" style={{ color: T.accent }}>kerak</span>?</h2></div>
         <Mentor>Endi o'zingiz qaror qiling! <span className="mono">comments</span> (izohlar) jadvalini quryapmiz. Quyidagi ustunlardan <b style={{ color: T.ink }}>shu jadvalga mosini</b> tanlang — keraksizlarini qoldiring. Esda tuting: izoh = matn + kim yozgani + qaysi postga.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Ustunlarni tanlang</p>
@@ -883,6 +918,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Izohda nima bo'lishi kerak? Yozuvning o'zi, kim yozgani, qaysi postga. Ortiqchasini olib tashlang.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -905,6 +941,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI sxema chizdi — bitta bog'lanish <span className="italic" style={{ color: T.accent }}>noto'g'ri</span>. Toping.</h2></div>
         <Mentor>AI sxemani tez chizib berdi, lekin <b style={{ color: T.ink }}>bitta bog'lanishda xato</b> bor. Eslang: <span className="mono">post_id</span> degan ustun nomidan o'zi aytib turibdi — u qaysi jadvalga ulanishi kerak? Xato qatorni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -944,6 +981,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1218,8 +1256,14 @@ export default function DataIntroLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // REACT MODULI · 6-DARS — API: POST/PUT/DELETE — SERVERGA YUBORISH — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -69,6 +70,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
@@ -188,11 +208,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -299,6 +315,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 800 }}>Siz o'yin yaratdingiz. Nega u katalogga <span className="italic" style={{ color: T.accent }}>chiqmayapti</span>?</h1>
         <Mentor>O'tgan darsda <b style={{ color: T.ink }}>katalogni</b> — robo-games sahifasidagi, hammaga ko'rinadigan o'yinlar ro'yxatini — serverdan <span className="mono">fetch</span> bilan oldik. Mana sizning yangi o'yiningiz — <b style={{ color: T.ink }}>Robo Race</b>, kompyuteringizda tayyor turibdi. GET so'rovini yuborib ko'ring — katalogga chiqarmikan?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -341,6 +358,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! GET — <b>faqat o'qiydi</b>: serverga boradi, bor narsani olib keladi. Sizning o'yiningiz esa hali serverga <b>yetib bormagan</b>. Bugun yuborishni o'rganamiz: <b>POST, PUT, DELETE</b>.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -387,7 +405,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Va'da beraman: dars oxirida <b style={{ color: T.ink }}>o'z o'yiningizni serverga joylaysiz</b> — u katalogda hammaga ko'rinadi. Yo'lda yana ikkita kuch olasiz: xatoni <b style={{ color: T.ink }}>tuzatish</b> (PUT) va keraksizini <b style={{ color: T.ink }}>o'chirish</b> (DELETE).</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -422,6 +440,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Serverga necha xil <span className="italic" style={{ color: T.accent }}>buyruq</span> berish mumkin?</h2></div>
         <Mentor>To'rtta! Har so'rovning <b style={{ color: T.ink }}>fe'li (method)</b> bor — server shu fe'lga qarab nima qilishni biladi. Hozirgacha bittasini bilardingiz: GET. <b style={{ color: T.ink }}>To'rtalasini bosib</b>, server jadvaliga nima bo'lishini kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -455,6 +474,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bular — <b>HTTP fe'llari</b>. Manzil bitta (<span className="mono">/games</span>), fe'l har xil — server har safar boshqa ish qiladi. Endi har birini alohida o'rganamiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -478,6 +498,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ma'lumot posilkasi endi <span className="italic" style={{ color: T.accent }}>qaysi tomonga</span> uchadi?</h2></div>
         <Mentor>O'tgan darsda <b style={{ color: T.ink }}>posilka</b> — ya'ni ma'lumot to'plami — <b style={{ color: T.ink }}>serverDAN sizga</b> kelardi. Endi teskarisi: o'yiningizni <b style={{ color: T.ink }}>SIZ serverga</b> yuborasiz! Buning uchun fetch'ga ikkinchi qism qo'shiladi — <b style={{ color: T.ink }}>sozlamalar qutisi</b>. Ichida fe'l: <span className="mono">method: 'POST'</span>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Taqqoslang</p>
@@ -516,6 +537,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <span className="tagpill fade-step" style={{ color: T.success }}>✓ POST — serverda YANGI qator paydo qildi</span>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -549,6 +571,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'yiningiz posilkaning <span className="italic" style={{ color: T.accent }}>qaysi qismiga</span> joylanadi?</h2></div>
         <Mentor>Sozlamalar qutisida yana bir xona bor: <b style={{ color: T.ink }}>body — posilka yuki</b>. Lekin server obyektni tushunmaydi — unga <b style={{ color: T.ink }}>JSON matn</b> kerak. Tarjimon: <span className="mono">JSON.stringify()</span>. <b style={{ color: T.ink }}>headers</b> esa serverga ma'lumot JSON ekanini aytadi. O'yiningizni tanlab, kod qanday yig'ilishini kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">name</p>
@@ -589,6 +612,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tanish ko'rinishmi? O'tgan darsda javob <b>shunday matn</b> bo'lib kelardi! Endi siz ham serverga <b>o'sha tilda</b> yozyapsiz. <span className="mono">stringify</span> = "matnga aylantir".</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -638,6 +662,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Posilka serverga yetib borganini <span className="italic" style={{ color: T.accent }}>qayerdan bilamiz</span>?</h2></div>
         <Mentor>Server javob qaytaradi! GET'da <b style={{ color: T.ink }}>200 OK</b> kelardi. POST muvaffaqiyatli bo'lsa — <b style={{ color: T.ink }}>201 Created</b>: "yangi yozuv yaratildi" degani. ▶ bosib, posilkaning to'liq parvozini kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run} disabled={running}>{running ? 'Parvozda…' : (done ? '↻ Yana kuzatish' : '▶ Posilkani uchirish')}</button>
@@ -674,6 +699,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -701,6 +727,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Server minglab o'yindan <span className="italic" style={{ color: T.accent }}>keraklisini</span> qanday topadi?</h2></div>
         <Mentor>Har yozuvning <b style={{ color: T.ink }}>ID</b>si bor — pasport raqami kabi. Bitta yozuv ustida ishlash uchun ID <b style={{ color: T.ink }}>manzilga qo'shiladi</b>: <span className="mono">/games/2</span>. Topshiriq: kerakli o'yinning manzilini toping.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">robo-api.uz — jadval</p>
@@ -723,6 +750,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <span className="tagpill fade-step" style={{ color: T.success }}>✓ 2/2 — manzil + ID = aniq nishon</span>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -748,6 +776,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Serverdagi xatoni qanday <span className="italic" style={{ color: T.accent }}>tuzatamiz</span>?</h2></div>
         <Mentor>Voy — o'yiningizni shoshilib yuboribsiz: nomida xato bor! O'chirib qayta qo'shish shartmas — <b style={{ color: T.ink }}>PUT</b> mavjud yozuvni yangisiga <b style={{ color: T.ink }}>almashtiradi</b>. Roblox o'yinlari har hafta UPDATE oladi — bu o'sha kuch. Avval xato yozuvni jadvaldan toping.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">robo-api.uz — jadval {found ? '' : '(xatoni bosing)'}</p>
@@ -785,6 +814,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -829,6 +859,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Like bosganingiz nega <span className="italic" style={{ color: T.accent }}>yo'qolib qolmaydi</span>?</h2></div>
         <Mentor>State darsini eslang: like faqat <b style={{ color: T.ink }}>xotirada</b> edi — sahifa yangilansa, yo'qolardi. Sirning yechimi: like bosilganda sayt <b style={{ color: T.ink }}>serverga PUT yuboradi</b>. Sinab ko'ring: kartochkadagi <b style={{ color: T.ink }}>👍 ni bosing</b>, keyin sahifani yangilang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
@@ -860,6 +891,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana farq! Avval: xotirada → yangilansa yo'q. Endi: <b>serverda</b> → istalgan qurilmada, istalgan vaqtda turibdi. Roblox'dagi millionlab like shunday yashaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -877,6 +909,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Keraksiz yozuvni qanday <span className="italic" style={{ color: T.accent }}>olib tashlaymiz</span>?</h2></div>
         <Mentor>Jadvalda eski sinov yozuvi qolib ketgan: <b style={{ color: T.ink }}>"test test"</b> (ID 5). Uni <b style={{ color: T.ink }}>DELETE</b> olib tashlaydi. E'tibor bering: body kerak emas — <b style={{ color: T.ink }}>faqat manzil + ID</b>. Lekin ehtiyot bo'ling: DELETE'ni <b style={{ color: T.ink }}>qaytarib bo'lmaydi</b>!</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">robo-api.uz — jadval</p>
@@ -915,6 +948,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -972,6 +1006,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">To'g'ri buyruqni <span className="italic" style={{ color: T.accent }}>o'zingiz tanlay olasizmi</span>?</h2></div>
         <Mentor>Mana sizning boshqaruv pultingiz! Har vaziyatga <b style={{ color: T.ink }}>to'g'ri buyruqni</b> tanlang — server darhol bajaradi. Xato buyruq — silkinadi. 3 ta vaziyat bor.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             {!done
@@ -1005,6 +1040,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Sezdingizmi — <b>kod deyarli bir xil</b>: fetch + manzil + fe'l. Faqat fe'l va ID o'zgaradi. Shu 4 tugma bilan istalgan ilovani boshqarasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1031,6 +1067,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">To'liq boshqaruvni <span className="italic" style={{ color: T.accent }}>AI bilan</span> saytga qo'shamizmi?</h2></div>
         <Mentor>Endi siz fe'llarni bilasiz — agent kodini <b style={{ color: T.ink }}>tekshira olasiz</b>: fe'l to'g'rimi, ID bormi, body kerak joyda stringify bormi, DELETE'dan oldin tasdiqlash so'ralganmi. Buyruq bering, rejani tasdiqlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. Agentga so'z bilan ayting</p>
@@ -1093,6 +1130,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Natija shu yerda paydo bo'ladi — keyin uni o'zingiz tekshirasiz.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1110,6 +1148,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — siz esa <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
         <Mentor>AI qo'shish kodini yozdi — hammasi joyidaday. Lekin o'yin <b style={{ color: T.ink }}>qo'shilmayapti</b>! Konsolga qarang: biz POST kutgandik, u yerda esa… <b style={{ color: T.ink }}>GET</b>?! Kodda nimadir <b style={{ color: T.ink }}>yetishmayapti</b>. Qaysi qatorda bo'lishi kerak edi?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-2">
@@ -1153,6 +1192,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1194,6 +1234,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Va'da qilingan daqiqa: <span className="italic" style={{ color: T.accent }}>o'z o'yiningizni</span> serverga qo'shing.</h2></div>
         <Mentor>Hammasi tayyor: manzil bor, body bor. Avval o'yiningizga <b style={{ color: T.ink }}>nom va emoji</b> bering, keyin VS Code'da yetishmayotgan qatorni yozing: <b style={{ color: T.ink }}>method: 'POST',</b> — fe'l qo'shtirnoqda, KATTA harflarda, oxirida vergul.</Mentor>
+        <Zoomable>
         <div className="split split-wide">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1262,6 +1303,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1406,8 +1448,14 @@ export default function ReactApiPostLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

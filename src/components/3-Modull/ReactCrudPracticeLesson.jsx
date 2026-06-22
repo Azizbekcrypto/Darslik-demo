@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // FRONTEND REACT MODULI · PRAKTIKA 1 — CRUD: TO'LIQ BOSHQARILADIGAN ILOVA (SERVERSIZ) — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -62,6 +63,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
@@ -189,11 +209,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -285,6 +301,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Ro'yxat ko'rinadi — lekin nega uni <span className="italic" style={{ color: T.accent }}>o'zgartirib bo'lmaydi</span>?</h1>
         <Mentor>Mana "Mening o'yinlarim" ro'yxati. Yangi o'yin <b style={{ color: T.ink }}>qo'shmoqchi</b> bo'ling yoki bittasini <b style={{ color: T.ink }}>o'chirmoqchi</b> bo'ling — tugmalarni bosib ko'ring. Nima sezdingiz?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -317,6 +334,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Ilova faqat <b>ko'rsata</b> oladi (Read). Lekin to'liq ilovaga yana 3 ta amal kerak: <b>qo'shish, o'zgartirish, o'chirish</b>. Bugun shularni qo'shib, <b>to'liq boshqariladigan ilova</b> quramiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -363,7 +381,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Va'da beraman: dars oxirida o'yinlarni <b style={{ color: T.ink }}>qo'sha, tahrirlay va o'chira</b> oladigan ilovangiz bo'ladi. Avval har amalni o'zingiz tushunasiz, keyin AI bilan birga loyihani <b style={{ color: T.ink }}>to'liq bitirasiz</b>.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -400,6 +418,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har ilova <span className="italic" style={{ color: T.accent }}>4 ta amal</span> ustida turadi.</h2></div>
         <Mentor>Instagram, Roblox, do'kon — hammasi shu 4 amalni bajaradi: <b style={{ color: T.ink }}>qo'shish, ko'rsatish, o'zgartirish, o'chirish</b>. Ularning nomi — <b style={{ color: T.ink }}>CRUD</b>. To'rttasini bosib, ro'yxatga nima bo'lishini kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -426,6 +445,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana ular — <b>CRUD</b>: <b>C</b>reate (qo'shish) · <b>R</b>ead (ko'rsatish) · <b>U</b>pdate (tahrirlash) · <b>D</b>elete (o'chirish). Bugun hammasini state bilan quramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -456,6 +476,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har amal <span className="italic" style={{ color: T.accent }}>ro'yxatni</span> qanday o'zgartiradi?</h2></div>
         <Mentor>AI kod yozishidan oldin <b style={{ color: T.ink }}>siz</b> rejani tuzasiz: ro'yxat (massiv) <span className="mono">games</span> — har amal unga nima qiladi? Har bir amal uchun to'g'ri natijani tanlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">CRUD amallari</p>
@@ -495,6 +516,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -529,6 +551,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yangi o'yin ro'yxatga <span className="italic" style={{ color: T.accent }}>qanday</span> qo'shiladi?</h2></div>
         <Mentor>Sir — uchta nuqtada: <span className="mono">[...games, yangi]</span>. Uch nuqta (<b style={{ color: T.ink }}>spread</b>) "eski ro'yxatning <b style={{ color: T.ink }}>hammasini ko'chir</b>" degani, keyin oxiriga <b style={{ color: T.ink }}>yangisini</b> qo'shamiz. O'yin tanlab, qo'shib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qo'shish uchun tanlang</p>
@@ -552,6 +575,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ro'yxat o'sdi! <span className="mono">[...games, yangi]</span> har safar yangi ro'yxat yasaydi: eskisi + yangisi. React buni ko'radi va kartochkani chizadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -585,6 +609,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta o'yin o'zgaradi — <span className="italic" style={{ color: T.accent }}>qolganlari joyida qoladimi</span>?</h2></div>
         <Mentor>Bu yerda <span className="mono">map</span> yana yordam beradi! U <b style={{ color: T.ink }}>har bir o'yindan o'tadi</b>: kerakligini topsa — o'zgartiradi, qolganini <b style={{ color: T.ink }}>o'sha holicha</b> qoldiradi. <span className="mono">{'{...g, top: !g.top}'}</span> — "o'yinni ko'chir, faqat top'ini o'zgartir". Kartochkalardagi 🔥 TOP ni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ lineHeight: 1.95 }}>
@@ -608,6 +633,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Sezdingizmi — faqat <b>siz bosgan</b> o'yin o'zgardi, qolganlari joyida. <span className="mono">map</span> shuning uchun ishonchli: u har birini ko'rib chiqadi, lekin faqat keraklisini almashtiradi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -627,6 +653,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Keraksiz o'yinni ro'yxatdan <span className="italic" style={{ color: T.accent }}>qanday</span> olib tashlaymiz?</h2></div>
         <Mentor>Bunga <span className="mono">filter</span> bor — "elak" kabi. U <b style={{ color: T.ink }}>shartga mos kelganlarni</b> o'tkazadi, qolganini tashlab yuboradi. <span className="mono">{'g.id !== id'}</span> = "o'chirilayotganidan <b style={{ color: T.ink }}>boshqa</b> hammasini saqla". Kartochkadagi ✕ ni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ lineHeight: 1.95 }}>
@@ -651,6 +678,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">filter</span> o'chirilgan o'yinsiz yangi ro'yxat yasadi. E'tibor bering: hech narsani "buzib" tashlamaydik — har safar <b>yangi ro'yxat</b> yasaymiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -697,6 +725,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Reja tayyor — endi loyihani <span className="italic" style={{ color: T.accent }}>AI bilan</span> quramiz.</h2></div>
         <Mentor>Siz har amal state'ni qanday o'zgartirishini bilasiz, demak agent kodini <b style={{ color: T.ink }}>tekshira olasiz</b>: qo'shishda <span className="mono">[...games]</span> bormi, o'chirishda <span className="mono">filter</span>mi. Buyruq bering, rejani <b style={{ color: T.ink }}>tasdiqlang</b>, natijani <b style={{ color: T.ink }}>o'zingiz sinang</b>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. Agentga so'z bilan ayting</p>
@@ -738,6 +767,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Natija shu yerda jonlanadi — keyin uni o'zingiz sinaysiz.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -756,6 +786,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Nega o'chirishdan oldin <span className="italic" style={{ color: T.accent }}>"Rostdan?"</span> deb so'raladi?</h2></div>
         <Mentor>O'chirishni <b style={{ color: T.ink }}>qaytarib bo'lmaydi</b> — bitta noto'g'ri bosish, o'yin yo'q. Shuning uchun yaxshi ilovalar avval <b style={{ color: T.ink }}>tasdiq</b> so'raydi. Kartochkadagi ✕ ni bosing — nima bo'lishini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Mening o'yinlarim</p>
@@ -785,6 +816,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana yaxshi ilova: avval <b>so'radi</b>, keyin <b>o'chirdi</b>. Bitta bosishda muhim narsa yo'qolmasin. Siz ham o'z ilovangizda shunday qilasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -810,6 +842,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi o'zingiz — loyihani <span className="italic" style={{ color: T.accent }}>to'liq boshqaring</span>.</h2></div>
         <Mentor>Mana sizning ilovangiz. Uchala amalni ham sinang: bitta o'yin <b style={{ color: T.ink }}>qo'shing</b>, bittasini <b style={{ color: T.ink }}>🔥 TOP</b> qiling, bittasini <b style={{ color: T.ink }}>✕ o'chiring</b>. Uchalasi bajarilsa — loyihangiz tayyor!</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qo'shish uchun</p>
@@ -830,6 +863,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 Loyihangiz tayyor! Siz to'liq CRUD ilovani boshqardingiz: qo'shdingiz, o'zgartirdingiz, o'chirdingiz — hammasi state bilan.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -866,6 +900,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — siz esa <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
         <Mentor>AI "Qo'shish"ni yozdi — lekin tugmani bosganda <b style={{ color: T.ink }}>hech narsa bo'lmayapti</b>! O'yin qo'shilmaydi. <b style={{ color: T.ink }}>State darsini</b> eslang: ro'yxatni to'g'ridan-to'g'ri o'zgartirsangiz, React buni <b style={{ color: T.ink }}>ko'rmaydi</b>. Qaysi qatorda shu xato?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-2">
@@ -900,6 +935,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && <div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Topdingiz va tuzatdingiz — bu debugging!</p><p className="ta-sub">AI tez yozadi, siz tekshirib tuzatasiz — zo'r jamoa</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -929,6 +965,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: <span className="italic" style={{ color: T.accent }}>qo'shish</span> kodini o'zingiz yozing.</h2></div>
         <Mentor>VS Code'da <span className="mono">App.jsx</span> ochiq: forma tayyor, yangi o'yin <span className="mono">yangi</span>'da turibdi — faqat <b style={{ color: T.ink }}>3-qator bo'sh</b>. Uni ro'yxatga qo'shing: <b style={{ color: T.ink }}>setGames(</b> + <b style={{ color: T.ink }}>[...games</b> (eski hammasi) + <b style={{ color: T.ink }}>, yangi]</b> (yangisi) + <b style={{ color: T.ink }}>)</b>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-2">
@@ -964,6 +1001,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1114,8 +1152,14 @@ export default function ReactCrudPracticeLesson({ lang: langProp, onFinished }) 
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

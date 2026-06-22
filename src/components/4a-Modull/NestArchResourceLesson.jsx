@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // NEST ARXITEKTURA MODULI · DARS 2 — BIRINCHI RESURSNI QO'LDA QO'SHISH — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -199,6 +200,26 @@ function ScoreRing({ correct, total }) {
   );
 }
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
   const enabled = !!ctx.enabled;
@@ -207,7 +228,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -293,6 +314,7 @@ const PickLines = ({ fileName, scaffoldTop, scaffoldBottom, candidates, agent, i
   };
   const pickedCorrect = correct.filter(c => picked.has(c.id));
   return (
+    <Zoomable>
     <div className="split">
       <Col>
         <p className="flow-label">{fileName}</p>
@@ -319,6 +341,7 @@ const PickLines = ({ fileName, scaffoldTop, scaffoldBottom, candidates, agent, i
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Fayl tayyor — har qator o'z joyida. Begona qatorlar boshqa qatlamga tegishli edi.</p></div>}
       </Col>
     </div>
+    </Zoomable>
   );
 };
 
@@ -351,6 +374,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Admin tizimi tayyor — lekin avtosalon <span className="italic" style={{ color: T.accent }}>mashinalarini</span> qayerda saqlaydi?</h1>
         <Mentor>Dars 1'da clone qilgan skeletda <b style={{ color: T.ink }}>admin</b> tizimi ishlayapti. Endi admin avtosalon mashinalarini boshqarishi kerak — lekin hozir mashinalar jadvali yo'q. Pastdagi <span className="mono">POST /car</span> ni bosib sinab ko'ring — nima bo'larkan?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label fade-up delay-1">Hozirgi holat — /car hali yo'q</p>
@@ -377,6 +401,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Admin faylini buzmaymiz. <b>Resurs</b> — bu ilovangiz boshqaradigan bir tur ma'lumot (admin, mashina, buyurtma...). Mashinalar — alohida resurs: <b>o'z papkasi</b>da, <b>o'z 5 qadami</b> bilan quriladi. Bugun mashinalarni noldan qo'shamiz — va <span className="mono">/car</span> tirik bo'ladi.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -421,6 +446,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kod yozishdan oldin: bitta mashina haqida <span className="italic" style={{ color: T.accent }}>nimani saqlaymiz</span>?</h2></div>
         <Mentor>Professional dasturchi avval <b style={{ color: T.ink }}>rejalashtiradi</b>: qanday ma'lumot kerak? Mashina uchun to'rtta ustun yetadi. Har birini bosib belgilang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">siz qo'shadigan ustunlar</p>
@@ -444,6 +470,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Reja tayyor: 4 ta o'z ustunimiz + 3 ta tekin. Endi buni 1-faylga — Entity'ga yozamiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -509,6 +536,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Noto'g'ri mashina ma'lumoti kelsa — <span className="italic" style={{ color: T.accent }}>kim to'xtatadi</span>?</h2></div>
         <Mentor><span className="mono">DTO</span> — buyurtma anketasi: <span className="mono">brand</span> matn va majburiy, <span className="mono">price</span> raqam bo'lishi shart. Qoidalarni <span className="mono">@IsString</span>, <span className="mono">@IsNotEmpty</span>, <span className="mono">@IsNumber</span> belgilaydi. Nazoratchi (ValidationPipe) tekshiradi. To'g'ri va xato so'rovni yuboring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="src/api/car/dto/create-car.dto.ts">
@@ -533,6 +561,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>DTO + nazoratchi ilovani ifloslangan ma'lumotdan himoya qiladi. Yomon ma'lumot bazaga umuman yetib bormaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -549,6 +578,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mashina narxini o'zgartirish uchun — anketani <span className="italic" style={{ color: T.accent }}>qaytadan yozamizmi</span>?</h2></div>
         <Mentor>Yo'q! Tahrirlashda faqat o'zgartirilgan maydon yuboriladi — hammasi ixtiyoriy bo'ladi. <span className="mono">PartialType(CreateCarDto)</span> create anketasini olib, hamma maydonini ixtiyoriy qiladi — <b style={{ color: T.ink }}>takrorlamaymiz</b> (DRY). Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="src/api/car/dto/update-car.dto.ts">
@@ -567,6 +597,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bitta qator — tahrirlash anketasi tayyor. Bir xil kodni ikki marta yozmaslik — professional odat (DRY).</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -599,6 +630,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mashina CRUD'ini kim yozadi — <span className="italic" style={{ color: T.accent }}>yana qo'ldami</span>?</h2></div>
         <Mentor>Yo'q! CarService <span className="mono">BaseService</span>'dan meros oladi — qo'shish/o'qish/o'zgartirish/o'chirish <b style={{ color: T.ink }}>tekin keladi</b>. Repozitoriyni inject qilib, <span className="mono">super(carRepo)</span> deymiz — tamom. Mashinada maxsus mantiq yo'q, shuning uchun boshqa hech narsa yozmaymiz. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="src/api/car/car.service.ts">
@@ -623,6 +655,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>5 ta CRUD metod — bittasini ham yozmadingiz, BaseService'dan keldi. O'ziga xos mantiq kerak bo'lsagina qo'shasiz (mashinada kerak emas).</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -735,6 +768,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">5 fayl tayyor — nega <span className="mono" style={{ color: T.accent }}>/car</span> hali ham <span className="italic" style={{ color: T.accent }}>404</span> qaytaradi?</h2></div>
         <Mentor>Chunki NestJS CarModule <b style={{ color: T.ink }}>borligini bilmaydi</b> — uni asosiy <span className="mono">AppModule</span>'ning imports'iga qo'shish kerak. Bu — eng ko'p unutiladigan qadam. Avval <span className="mono">POST /car</span> ni sinab ko'ring (hali 404), keyin ulang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="src/api/app.module.ts" minH={120}>
@@ -758,6 +792,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {step >= 2 && <div className="frame-success fade-step"><p className="note-h" style={{ color: T.success }}>✓ 201 — mashina qo'shildi</p><p className="body" style={{ margin: 0, color: T.ink }}>Ulagandan keyin <span className="mono">/car</span> tirik bo'ldi! Bitta qator hammasini ishga tushirdi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -791,6 +826,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Admin <span className="mono" style={{ color: T.accent }}>POST /car</span> bosdi — so'rov qanday <span className="italic" style={{ color: T.accent }}>sayohat</span> qiladi?</h2></div>
         <Mentor>Siz qurgan resurs orqali bitta so'rovni kuzatamiz. Har bekat — siz yozgan fayllardan biri. Tugmani bosib, oxirigacha boring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="flow-rail fade-up delay-1">
@@ -812,6 +848,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana butun yo'l — hammasi siz qurgan 5 fayl orqali o'tdi. Endi Swagger'da tirik ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -845,6 +882,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sekin qo'lda qildik — agent buni necha <span className="italic" style={{ color: T.accent }}>soniyada</span> quradi?</h2></div>
         <Mentor>Endi 5 qadamni tushunasiz — demak agentga ham aniq buyruq bera olasiz. Mana sizning <b style={{ color: T.ink }}>playbook</b>ingiz. Uni agentga yuboring — u fayllarni o'zi yozib beradi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="prompt-box fade-up delay-1">
@@ -873,6 +911,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Agent 5 qadamni soniyalarda bajardi! Lekin diqqat — agent ham shoshib xato qiladi. Keyingi ekranda uning kodini <b>tekshiramiz</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -897,6 +936,7 @@ const Screen17 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Agent yozdi — lekin <span className="mono" style={{ color: T.accent }}>/car</span> xato beryapti. <span className="italic" style={{ color: T.accent }}>Qayerda</span> adashgan?</h2></div>
         <Mentor>Agent shoshib, bitta qatorni <b style={{ color: T.ink }}>noto'g'ri faylga</b> qo'ygan. Siz — <b style={{ color: T.ink }}>NAZORATCHI</b>. <span className="mono">car.controller.ts</span> ni o'qing: controller'ga tegishli bo'lmagan begona qatorni bosib toping.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -923,6 +963,7 @@ const Screen17 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -948,6 +989,7 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: mashinaga <span className="italic" style={{ color: T.accent }}>yangi ustunni</span> o'zingiz qo'shing.</h2></div>
         <Mentor>Avtosalon mashinaning ishlab chiqarilgan <b style={{ color: T.ink }}>yilini</b> ham saqlamoqchi. <span className="mono">car.entity.ts</span> ga <span className="mono">year</span> ustunini <b style={{ color: T.ink }}>o'zingiz</b> yozing — raqam (number) bo'lsin. Namuna: <span className="mono">@Column() year: number;</span></Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">car.entity.ts — yangi qatorni yozing</p>
@@ -979,6 +1021,7 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>To'liq yozing: <span className="mono" style={{ fontStyle: 'normal' }}>@Column()</span> + <span className="mono" style={{ fontStyle: 'normal' }}>year</span> + <span className="mono" style={{ fontStyle: 'normal' }}>number</span>.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1114,7 +1157,15 @@ export default function NestArchResourceLesson({ lang: langProp, onFinished }) {
         .role-ico { font-size: 20px; flex-shrink: 0; } .role-r { font-size: 11.5px; color: ${T.ink2}; font-weight: 600; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

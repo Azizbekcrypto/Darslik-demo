@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // LOYIHANI TESTLASH MODULI · DARS 1 — UNIT-TEST: JEST — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -197,6 +198,26 @@ function ScoreRing({ correct, total }) {
   );
 }
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
   const enabled = !!ctx.enabled;
@@ -205,7 +226,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -274,6 +295,7 @@ const PickLines = ({ fileName, scaffoldTop, scaffoldBottom, candidates, agent, i
   };
   const pickedCorrect = correct.filter(c => picked.has(c.id));
   return (
+    <Zoomable>
     <div className="split">
       <Col>
         <p className="flow-label">{fileName}</p>
@@ -300,6 +322,7 @@ const PickLines = ({ fileName, scaffoldTop, scaffoldBottom, candidates, agent, i
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Test tayyor — chaqirdik va natijani tekshirdik.</p></div>}
       </Col>
     </div>
+    </Zoomable>
   );
 };
 
@@ -329,6 +352,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Narx kodini o'zgartirdingiz — biror narsa <span className="italic" style={{ color: T.accent }}>buzilib qolmadimi</span>? Qanday bilasiz?</h1>
         <Mentor>KitobShop'da buyurtma summasini hisoblovchi funksiya bor. Uni o'zgartirdingiz. <b style={{ color: T.ink }}>Hisob hali ham to'g'rimi?</b> Funksiyani bosib, javobni tekshirib ko'ring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <OrderFn />
@@ -347,6 +371,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Modul 05'da <b>o'zingiz</b> tekshirgansiz. Endi <b>test</b> yozasiz — kompyuter kodni <b>har o'zgarishda avtomatik</b> tekshiradi. Bugun shuni o'rganamiz: Jest.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -380,7 +405,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Kodni har safar qo'lda tekshiramizmi — yoki <span className="italic" style={{ color: T.accent }}>kompyuterga topshiramizmi</span>?</h2></div>
         <Mentor>Test — bu kodingizni avtomatik tekshiradigan boshqa bir kod. Bir marta yozasiz, u <b style={{ color: T.ink }}>har safar</b> tekshiradi. Mana natija va unga olib boradigan 4 qadam.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? <Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -406,6 +431,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Funksiya — bu <span className="italic" style={{ color: T.accent }}>mashina</span>. Kiritsangiz, to'g'ri chiqaryaptimi?</h2></div>
         <Mentor>Har funksiya bir mashina: <b style={{ color: T.ink }}>kirish</b> (price, quantity) berasiz, <b style={{ color: T.ink }}>chiqish</b> (summa) qaytaradi. Test — shu mashinani sinash: "shu kirishga shu chiqishni beradimi?". Misollarni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <OrderFn />
@@ -421,6 +447,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana mashina mantig'i: <b>kirish → chiqish</b>. Test aynan shuni yozib qo'yadi va har safar tekshiradi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -437,6 +464,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bir marta tekshirib bo'ldimi — yoki <span className="italic" style={{ color: T.accent }}>har o'zgarishda qaytamizmi</span>?</h2></div>
         <Mentor>Loyiha o'sganda kod tez-tez o'zgaradi. Bitta joyni tuzatsangiz, boshqasi buzilishi mumkin. Qo'lda tekshirish — sekin va unutiladi. Test — bir marta yoziladi, doim ishlaydi. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.danger}` }}><p className="note-h" style={{ color: T.danger }}>🐌 Qo'lda tekshirish</p><p className="body" style={{ margin: 0, color: T.ink }}>Har o'zgarishdan keyin o'zingiz hisoblaysiz. Sekin, zerikarli — va bir kuni <b>unutib qo'yasiz</b>. Xato sezilmay qoladi.</p></div>
@@ -449,6 +477,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Shuning uchun professional loyihalarda test yoziladi: <b>ishonch</b> va <b>tezlik</b>. Endi birinchi testni yozamiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -481,6 +510,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Test yozish uchun <span className="italic" style={{ color: T.accent }}>nima kerak</span>?</h2></div>
         <Mentor>Test asbobi kerak — <b style={{ color: T.ink }}>Jest</b>. Uni bir marta o'rnatamiz va <span className="mono">package.json</span>'ga <span className="mono">"test": "jest"</span> buyrug'ini yozamiz. Ikki qadamni bajaring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <Term title="bash" minH={130}>
@@ -496,6 +526,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Jest tayyor! Endi birinchi test faylini yozamiz.</p></div>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -521,6 +552,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Test fayli qanday <span className="italic" style={{ color: T.accent }}>ko'rinadi</span>?</h2></div>
         <Mentor>Test fayli <span className="mono">order.spec.ts</span> deb nomlanadi (<span className="mono">.spec.ts</span> — Jest shularni topadi). Uning 4 qismini bosib o'rganing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="order.spec.ts" minH={150}>
@@ -542,6 +574,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>4 qism: import → describe → it → expect. Eng muhimi — <b>expect</b>. Uni chuqurroq ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -603,6 +636,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta test <span className="italic" style={{ color: T.accent }}>nimani</span> tekshirishi kerak?</h2></div>
         <Mentor><span className="mono">it(...)</span> — bitta test, va u <b style={{ color: T.ink }}>bitta xatti-harakatni</b> tekshiradi. Nomi tushunarli bo'lsin: o'qigan odam nima sinalishini bilsin. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="order.spec.ts" minH={120}>
@@ -623,6 +657,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Test qizil bo'lganda, nomidan <b>nima buzilganini</b> darhol bilasiz. Shuning uchun nom tushunarli bo'lsin.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -639,6 +674,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">10 ta test — ularni qanday <span className="italic" style={{ color: T.accent }}>tartibga solamiz</span>?</h2></div>
         <Mentor><span className="mono">describe</span> — bog'liq testlarni bitta guruhga yig'adi (mas. hammasi <span className="mono">orderTotal</span> haqida). Ichida ko'p <span className="mono">it</span> bo'lishi mumkin. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="order.spec.ts" minH={160}>
@@ -659,6 +695,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bitta <span className="mono">describe</span> ichida nechta <span className="mono">it</span> bo'lsa ham — hammasi bir guruh. Tartibli va o'qish oson.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -675,6 +712,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Tugmani bosdik — kompyuter <span className="italic" style={{ color: T.accent }}>nima deydi</span>?</h2></div>
         <Mentor>Test yozildi. Endi <span className="mono">npm test</span> deb ishga tushiramiz — Jest barcha <span className="mono">.spec.ts</span> fayllarni topib, har testni tekshiradi. Yashil <b style={{ color: T.success }}>PASS</b> — hammasi to'g'ri. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <Term title="bash" minH={70}><TLine cmd="npm test" />{ran && <TLine out="jest ishga tushdi..." />}</Term>
@@ -688,6 +726,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 <b style={{ color: T.success }}>1 passed</b>! Kodingiz to'g'ri ishlayapti — va buni kompyuter tasdiqladi. Lekin test qachon <b>qizil</b> bo'ladi?</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -727,6 +766,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yaxshi test qanday <span className="italic" style={{ color: T.accent }}>yoziladi</span>?</h2></div>
         <Mentor>Har test 3 qadamdan iborat: <b style={{ color: T.ink }}>Tayyorla → Chaqir → Tekshir</b> (ingliz tilida AAA: Arrange-Act-Assert). Har qadamni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -747,6 +787,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyorla → Chaqir → Tekshir. Har testni shu tartibda yozsangiz — toza va tushunarli bo'ladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -763,6 +804,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kodni buzib qo'ysangiz — test buni <span className="italic" style={{ color: T.accent }}>sezadimi</span>?</h2></div>
         <Mentor>Mana testning eng katta foydasi. Funksiyada <span className="mono">*</span> (ko'paytirish) o'rniga xato bilan <span className="mono">+</span> yozildi deylik. Test buni darhol tutadimi? "Buzish" tugmasini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="order.ts" minH={90}>
@@ -780,6 +822,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? 10000 + 2 = 10002, lekin test <b>20000</b> kutgan. Jest darhol <b style={{ color: T.danger }}>qizil FAIL</b> berdi — xato sizgacha yetib keldi, mijozgacha emas. Mana shuning uchun test yoziladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -810,6 +853,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Hammasi birga — <span className="italic" style={{ color: T.accent }}>to'liq test fayli</span> qanday?</h2></div>
         <Mentor>Mana bugun o'rgangan hamma narsa bitta faylda: import, describe, ikkita it va expect. Ko'rib chiqing — har qatorni endi tushunasiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="order.spec.ts" minH={200}>
@@ -830,6 +874,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana professional test fayli. 2 ta test ham yashil. Endi buni AI bilan tezroq yozishni ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -848,6 +893,7 @@ const Screen17 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">AI test yozib bersa — <span className="italic" style={{ color: T.accent }}>unga ishonamizmi</span>?</h2></div>
         <Mentor>AI testni tez yozadi — siz uni tekshirasiz. AI ikkita variant berdi. Qaysi biri <b style={{ color: T.ink }}>haqiqatan</b> tekshiradi? (Diqqat: test <span className="mono">expect</span>siz bo'lsa, hech narsani tekshirmaydi.)</Mentor>
         <AgentCard>orderTotal funksiyasiga Jest test yoz: 10000 narx, 2 dona uchun.</AgentCard>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className={`vcard ${choice === 'a' ? 'shake' : ''}`} onClick={() => pick('a')} disabled={done} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6, boxShadow: choice === 'a' ? `inset 0 0 0 1.5px ${T.danger}` : undefined }}>
@@ -864,6 +910,7 @@ const Screen17 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ To'g'ri! B'da <span className="mono">expect(...).toBe(20000)</span> bor — u natijani haqiqatan tekshiradi. AI yozsa ham, <b>expect borligini</b> siz tekshirasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -889,6 +936,7 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: testni <span className="italic" style={{ color: T.accent }}>o'zingiz</span> yozing.</h2></div>
         <Mentor><span className="mono">orderTotal(5000, 3)</span> natijasi <b style={{ color: T.ink }}>15000</b> ekanini tekshiruvchi tasdiqni yozing. Namuna: <span className="mono">expect(orderTotal(5000, 3)).toBe(15000)</span></Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">order.spec.ts — tasdiq qatorini yozing</p>
@@ -914,6 +962,7 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Zo'r! Endi o'zingiz unit-test yoza olasiz. Kompyuter siz uchun tekshiradi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1047,7 +1096,15 @@ export default function JestUnitTestLesson({ lang: langProp, onFinished }) {
         .role-ico { font-size: 20px; flex-shrink: 0; } .role-r { font-size: 11.5px; color: ${T.ink2}; font-weight: 600; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

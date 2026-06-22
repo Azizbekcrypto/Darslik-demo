@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 
+
+
+
+
+import mentorImg from '../../assets/common/mentor.png';
+
 // ============================================================
 // CSS PRAKTIKA — PLATFORM STANDARD v15/v16  (v2 — noldan qayta qurilgan)
 // O'quvchi HTML praktikasida qurgan PORTFOLIO saytiga CSS bilan jon kiritadi.
@@ -9,6 +15,11 @@ import React, { useState, useEffect, useRef, useCallback, createContext, useCont
 //   + display:flex, gap, justify-content, align-items (CSS 2-dars).
 // :hover / transition / border-radius — DARS MAVZUSI EMAS (faqat oxirida bonus).
 // Murojaat: O'quvchiga "SIZ". Sarlavhalar — savol shaklida (metodika).
+
+
+
+
+
 // ============================================================
 
 const T = {
@@ -286,11 +297,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -360,6 +367,27 @@ const Chips = ({ options, correct, picked, solved, pick }) => (
   </div>
 );
 
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 // ===== SCREEN 0 — HOOK =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const audio = useAudio([{ id: 's0', text: `O'tgan darsda siz portfolio saytini HTML bilan qurdingiz — lekin u oddiy, bezaksiz edi. Bugun unga CSS bilan jon kiritamiz. Mana bir xil sayt, ikki xil ko'rinishda. Sizningcha, bu farqni nima qiladi?`, trigger: 'on_mount', waits_for: { type: 'option_picked' } }]);
@@ -383,6 +411,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <h1 className="title h-title fade-up" style={{ maxWidth: 800 }}>Bir xil sayt — nega biri <span className="italic" style={{ color: T.accent }}>chiroyli</span>?</h1>
         <Mentor>O'tgan darsda portfolioni HTML bilan qurdingiz — oddiy, bezaksiz. Bugun <b style={{ color: T.ink }}>CSS bilan jon kiritamiz!</b> Quyidagi ikkala saytning <b style={{ color: T.ink }}>HTML kodi bir xil</b> — lekin biri chiroyli. Buni nima qilyapti?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label">Hozir — CSS'siz (bezaksiz)</p>
@@ -396,6 +425,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             </div>
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -460,6 +490,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ismingizni bo'yash uchun nima <span className="italic" style={{ color: T.accent }}>yozamiz</span>?</h2></div>
         <Mentor>Bezashdan oldin bitta narsani bilamiz: CSS <b style={{ color: T.ink }}>buyrug'i</b> doim uch qismdan iborat — <b style={{ color: T.ink }}>selektor</b> (nimani), <b style={{ color: T.ink }}>xususiyat</b> (nimasini), <b style={{ color: T.ink }}>qiymat</b> (qanday). Pastdagi qoidaning uch qismini bosing — ismingiz jonlanadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(14px,2vw,18px)', textAlign: 'center', lineHeight: 2 }}>
@@ -476,6 +507,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana butun qoida: <span className="mono">{'h1 { color: #FF4F28; }'}</span> — "h1 ning rangini to'q sariq qil". Har CSS satri <b>nuqta-vergul</b> (;) bilan tugaydi.</p></div>}
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -491,6 +523,7 @@ const Screen3 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Saytimizga qanday <span className="italic" style={{ color: T.accent }}>fon</span> beramiz?</h2></div>
         <Mentor>Butun sahifaga <span className="mono">body</span> orqali fon rangi va shrift beramiz. Fon rangini beradigan xususiyat qaysi? Tanlang — bo'sh joy <span className="slot">?</span> to'ladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <pre className="code-box fade-up delay-2"><Se>body</Se> <Pr>{'{'}</Pr>{'\n  '}<span className={`slot ${solved ? 'filled' : ''}`}>{solved ? 'background-color' : '?'}</span><Pr>:</Pr> <Vl>#F6F4EF</Vl><Pr>;</Pr>{'\n  '}<Pp>font-family</Pp><Pr>:</Pr> <Vl>Manrope, sans-serif</Vl><Pr>;</Pr>{'\n'}<Pr>{'}'}</Pr></pre>
@@ -506,6 +539,7 @@ const Screen3 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =>
             <Preview title="portfolio.html" minH={150}><StyledSite name={pf.name} role={pf.role} parts={['header', 'about']} on={solved ? ['page'] : []} /></Preview>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -532,6 +566,7 @@ const Screen5 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ismingiz qanday <span className="italic" style={{ color: T.accent }}>ko'zga tashlansin</span>?</h2></div>
         <Mentor>Ismingiz — <span className="mono">h1</span> — eng avval ko'zga tashlanishi kerak. Buning uchun unga yorqin <b style={{ color: T.accent }}>rang</b> beramiz va <b style={{ color: T.ink }}>markazga</b> qo'yamiz. Matnni markazga qo'yadigan qiymat qaysi? Tanlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <pre className="code-box fade-up delay-2"><Se>h1</Se> <Pr>{'{'}</Pr>{'\n  '}<Pp>color</Pp><Pr>:</Pr> <Vl>#FF4F28</Vl><Pr>;</Pr>{'\n  '}<Pp>text-align</Pp><Pr>:</Pr> <span className={`slot ${solved ? 'filled' : ''}`}>{solved ? 'center' : '?'}</span><Pr>;</Pr>{'\n'}<Pr>{'}'}</Pr></pre>
@@ -547,6 +582,7 @@ const Screen5 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =>
             <Preview title="portfolio.html" minH={150}><StyledSite name={pf.name} role={pf.role} parts={['header', 'about']} on={solved ? ['page', 'head'] : ['page']} /></Preview>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -573,6 +609,7 @@ const Screen7 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Menyuni qanday <span className="italic" style={{ color: T.accent }}>bir qatorga</span> tizamiz?</h2></div>
         <Mentor>O'tgan darsdagi <b style={{ color: T.ink }}>flexbox</b> kerak bo'ladi! <span className="mono">nav</span> ga <span className="mono">display: flex</span> berib, <span className="mono">gap</span> bilan oraliq, <span className="mono">justify-content: center</span> bilan markazga qo'yamiz. Qator qiluvchi qiymat qaysi?</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <pre className="code-box fade-up delay-2"><Se>nav</Se> <Pr>{'{'}</Pr>{'\n  '}<Pp>display</Pp><Pr>:</Pr> <span className={`slot ${solved ? 'filled' : ''}`}>{solved ? 'flex' : '?'}</span><Pr>;</Pr>{'\n  '}<Pp>gap</Pp><Pr>:</Pr> <Vl>14px</Vl><Pr>;</Pr>{'\n  '}<Pp>justify-content</Pp><Pr>:</Pr> <Vl>center</Vl><Pr>;</Pr>{'\n'}<Pr>{'}'}</Pr></pre>
@@ -588,6 +625,7 @@ const Screen7 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =>
             <Preview title="portfolio.html" minH={150}><StyledSite name={pf.name} role={pf.role} parts={['header']} on={solved ? ['page', 'head', 'nav'] : ['page', 'head']} /></Preview>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -614,6 +652,7 @@ const Screen9 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">"Men haqimda"ni qanday <span className="italic" style={{ color: T.accent }}>joylashtiramiz</span>?</h2></div>
         <Mentor>"Men haqimda" matnini <b style={{ color: T.ink }}>markazga</b> qo'yamiz va bo'limga <b style={{ color: T.ink }}>ichki bo'shliq</b> beramiz — qisilib turmasin, nafas olsin. Ichkaridagi bo'shliqni qaysi xususiyat beradi? Tanlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <pre className="code-box fade-up delay-2"><Se>section</Se> <Pr>{'{'}</Pr>{'\n  '}<Pp>text-align</Pp><Pr>:</Pr> <Vl>center</Vl><Pr>;</Pr>{'\n  '}<span className={`slot ${solved ? 'filled' : ''}`}>{solved ? 'padding' : '?'}</span><Pr>:</Pr> <Vl>14px</Vl><Pr>;</Pr>{'\n'}<Pr>{'}'}</Pr></pre>
@@ -629,6 +668,7 @@ const Screen9 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =>
             <Preview title="portfolio.html" minH={150}><StyledSite name={pf.name} role={pf.role} parts={['about']} on={solved ? ['page', 'head', 'about'] : ['page', 'head']} /></Preview>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -644,6 +684,7 @@ const Screen10 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Loyihalarni qanday <span className="italic" style={{ color: T.accent }}>kartaga</span> aylantiramiz?</h2></div>
         <Mentor>Har bir loyihaga <b style={{ color: T.ink }}>oq fon</b> va ichki <span className="mono">padding</span> berib karta qilamiz. Kartalar yopishmasligi uchun orasiga <b style={{ color: T.ink }}>tashqi bo'shliq</b> kerak — qaysi xususiyat? Tanlang. <span className="small" style={{ color: T.ink2 }}>(ro'yxat nuqtalarini <span className="mono">list-style: none</span> oladi — kichik bonus.)</span></Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <pre className="code-box fade-up delay-2"><Se>li</Se> <Pr>{'{'}</Pr>{'\n  '}<Pp>background-color</Pp><Pr>:</Pr> <Vl>#fff</Vl><Pr>;</Pr>{'\n  '}<Pp>padding</Pp><Pr>:</Pr> <Vl>10px</Vl><Pr>;</Pr>{'\n  '}<span className={`slot ${solved ? 'filled' : ''}`}>{solved ? 'margin' : '?'}</span><Pr>:</Pr> <Vl>8px 0</Vl><Pr>;</Pr>{'\n'}<Pr>{'}'}</Pr></pre>
@@ -659,6 +700,7 @@ const Screen10 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =
             <Preview title="portfolio.html" minH={150}><StyledSite name={pf.name} role={pf.role} parts={['projects']} on={solved ? ['page', 'head', 'list'] : ['page', 'head']} /></Preview>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -685,6 +727,7 @@ const Screen12 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Havolani, tugmaga <span className="italic" style={{ color: T.accent }}>qanday</span> aylantiramiz?</h2></div>
         <Mentor>Email havolasiga <b style={{ color: T.accent }}>to'q sariq fon</b> (<span className="mono">background-color</span>) va <span className="mono">padding</span> berib tugma qilamiz. Endi matn ko'rinishi uchun <b style={{ color: T.ink }}>oq</b> bo'lishi kerak — matn rangini qaysi xususiyat beradi?</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <pre className="code-box fade-up delay-2"><Se>.pf-email</Se> <Pr>{'{'}</Pr>{'\n  '}<Pp>background-color</Pp><Pr>:</Pr> <Vl>#FF4F28</Vl><Pr>;</Pr>{'\n  '}<Pp>padding</Pp><Pr>:</Pr> <Vl>10px 20px</Vl><Pr>;</Pr>{'\n  '}<span className={`slot ${solved ? 'filled' : ''}`}>{solved ? 'color' : '?'}</span><Pr>:</Pr> <Vl>#fff</Vl><Pr>;</Pr>{'\n'}<Pr>{'}'}</Pr></pre>
@@ -700,6 +743,7 @@ const Screen12 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =
             <Preview title="portfolio.html" minH={150}><StyledSite name={pf.name} role={pf.role} parts={['contact']} on={solved ? ['page', 'head', 'btn'] : ['page', 'head']} /></Preview>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -718,6 +762,7 @@ const Screen13 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Butun saytni qanday <span className="italic" style={{ color: T.accent }}>markazga</span> qo'yamiz?</h2></div>
         <Mentor>Saytni oq kartaga solib, <span className="mono">max-width</span> bilan kengligini cheklaymiz, so'ng chap-o'ng tashqi bo'shliqni teng bo'lib markazga qo'yamiz. <span className="mono">margin</span> ning qaysi qiymati markazlaydi? Tanlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <pre className="code-box fade-up delay-2"><Se>.karta</Se> <Pr>{'{'}</Pr>{'\n  '}<Pp>max-width</Pp><Pr>:</Pr> <Vl>300px</Vl><Pr>;</Pr>{'\n  '}<Pp>margin</Pp><Pr>:</Pr> <Vl>0</Vl> <span className={`slot ${solved ? 'filled' : ''}`}>{solved ? 'auto' : '?'}</span><Pr>;</Pr>{'\n'}<Pr>{'}'}</Pr></pre>
@@ -733,6 +778,7 @@ const Screen13 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =
             <div ref={previewRef}><Preview title="portfolio.html" minH={160}><StyledSite name={pf.name} role={pf.role} parts={['header', 'about']} on={solved ? ['page', 'center', 'head', 'nav', 'about'] : ['page', 'head', 'nav', 'about']} /></Preview></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -783,6 +829,7 @@ const Screen15 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Hammasini birlashtirib, <span className="italic" style={{ color: T.accent }}>saytga</span> yig'amizmi?</h2></div>
         <Mentor>Mana eng zo'r qismi! Tugmani bosing — barcha bezaklar <b style={{ color: T.ink }}>birma-bir</b> qo'shilib, bezaksiz saytingiz chiroyli portfolioga aylanadi!</Mentor>
+        <Zoomable>
         <div className="split" style={{ alignItems: 'stretch' }}>
           <div className="col">
             <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={apply} disabled={running}>{running ? 'Bezatilmoqda…' : (done ? '↻ Yana ko\'rsatish' : '🎨 Saytni bezash')}</button>
@@ -797,6 +844,7 @@ const Screen15 = ({ screen, answers, storedAnswer, onAnswer, onNext, onPrev }) =
             <div ref={endRef} aria-hidden="true" />
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -830,6 +878,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi <span className="italic" style={{ color: T.accent }}>o'zingiz</span> CSS yozing.</h2></div>
         <Mentor>Mashq vaqti! Ismingizga — <span className="mono">h1</span> ga — <b style={{ color: T.ink }}>rang bering</b>. To'liq qoidani <b style={{ color: T.ink }}>o'zingiz qo'lda yozing</b>: <span className="mono">{'h1 { color: tomato; }'}</span>. To'g'ri yozsangiz, pastdagi belgilar yashil bo'lib, ism o'sha rangga bo'yaladi!</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <input ref={inputRef} className="text-input mono" value={val} placeholder="bu yerga yozing: h1 { color: tomato; }" onChange={e => setVal(e.target.value)} spellCheck={false} autoFocus />
@@ -844,6 +893,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {valid && <div className="frame-success fade-step"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ To'g'ri yozildi</p><p className="body" style={{ margin: 0, color: T.ink }}>Siz haqiqiy CSS qoidasini qo'lda yozdingiz — selektor, xususiyat, qiymat va nuqta-vergul bilan!</p></div>}
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -922,6 +972,12 @@ export default function CssPractice({ lang: langProp, onFinished }) {
         .fade-up { animation: fade-in-up 0.4s ease-out forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
 
@@ -952,8 +1008,8 @@ export default function CssPractice({ lang: langProp, onFinished }) {
         .chip:disabled { opacity: 0.55; cursor: not-allowed; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

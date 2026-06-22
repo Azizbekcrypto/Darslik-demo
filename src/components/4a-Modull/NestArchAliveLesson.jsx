@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // NEST ARXITEKTURA MODULI · DARS 1 — ARXITEKTURANI TIRIK KO'RISH — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -199,6 +200,26 @@ function ScoreRing({ correct, total }) {
   );
 }
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
   const enabled = !!ctx.enabled;
@@ -207,7 +228,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -319,7 +340,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Katta backend bitta faylga sig'adimi — uni <span className="italic" style={{ color: T.accent }}>boshqarib bo'ladimi</span>?</h1>
         <Mentor>Oldingi modulda hamma narsani bitta faylga yozar edingiz. Loyiha o'sganda u 1000+ qatorli chalkashlikka aylanadi. Quyidagi ulkan fayldan <b style={{ color: T.ink }}>"login" kodini toping</b> — bosib ko'ring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <p className="flow-label fade-up delay-1">server.js — 1240 qator 😵</p>
             <div className={`fade-up delay-1 ${shaking ? 'shake' : ''}`}>
@@ -345,7 +366,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval ulkan faylni bosib ko'ring ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! Professional jamoalar har narsani <b>o'z joyiga</b> qo'yadigan tartibli <b>arxitektura</b> ishlatadi (NestJS). Bugun tayyor shunday skeletni <b>clone qilib</b>, uni tirik ko'ramiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -378,7 +399,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Tayyor arxitektura qanday <span className="italic" style={{ color: T.accent }}>ishlaydi</span> — o'zimiz ko'ramiz?</h2></div>
         <Mentor>Bugun kod <b style={{ color: T.ink }}>yozmaymiz</b> — tayyor professional skeletni clone qilib, qanday ishlashini ko'ramiz. Yordamchi g'oya: arxitektura — bu bir <b style={{ color: T.ink }}>restoran</b>. Har bo'limning o'z vazifasi bor. Dars oxirida bitta so'rovning butun yo'lini tushuntira olasiz.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? <Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -398,7 +419,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yangi loyihani <span className="italic" style={{ color: T.accent }}>noldan</span> yozamizmi?</h2></div>
         <Mentor>Yo'q! Professional dasturchi tayyor, tekshirilgan <b style={{ color: T.ink }}>skeletni clone qiladi</b>. Ikki buyruq: <span className="mono">git clone</span> (yuklab oladi) va <span className="mono">npm install</span> (kerakli paketlarni o'rnatadi). Tugmani bosib bajaring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <Term title="bash" minH={150}>
               <TLine cmd={`git clone ${REPO}`} />
@@ -413,7 +434,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="sk-info"><p className="body" style={{ margin: 0, color: T.ink }}><b style={{ color: T.accent }}>npm install</b> — loyiha ishlashi uchun kerakli kutubxonalarni yuklaydi (NestJS, TypeORM...).</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Skelet tayyor! Endi bazaga ulab, serverni ishga tushiramiz.</p></div>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -431,7 +452,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Server qaysi <span className="italic" style={{ color: T.accent }}>bazaga</span> ulanishini qayerdan biladi?</h2></div>
         <Mentor>Maxfiy sozlamalar (baza manzili, kalitlar) kodga emas, <span className="mono">.env</span> fayliga yoziladi — bu xavfsiz. Keyin <span className="mono">npm run start:dev</span> serverni yoqadi. Ikki qadamni bajaring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             {step < 1
               ? <pre className="code-box" style={{ lineHeight: 1.9 }}><Cm>{'# .env  (maxfiy sozlamalar)'}</Cm>{'\n'}{'PORT='}<St>3000</St>{'\n'}{'DEV_DB_URL='}<St>postgres://localhost/nest_db</St>{'\n'}{'Access_Token_Key='}<St>maxfiy_kalit</St></pre>
@@ -443,7 +464,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="sk-info"><p className="body" style={{ margin: 0, color: T.ink }}><b style={{ color: T.accent }}>start:dev</b> — serverni yoqadi va o'zgarishlarni avtomatik kuzatadi.</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 Server tirik — <span className="mono">localhost:3000</span>! Hozircha bir qator ham yozmadingiz. Endi API'ni ko'ramiz.</p></div>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -478,7 +499,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Hech narsa yozmadik — <span className="italic" style={{ color: T.accent }}>API qayerda</span>?</h2></div>
         <Mentor><b style={{ color: T.ink }}>Swagger</b> — bu ishlaydigan API'ning avtomatik hujjati. <span className="mono">localhost:3000/api/v1</span> ni oching: barcha eshiklar (endpointlar) ko'rinadi. Bittasini ochib, <b style={{ color: T.ink }}>"Try it out"</b> bilan sinab ko'ring — javob keladi.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <Swagger openId={openId} onToggle={toggle} triedIds={tried} onTry={onTry} />
           </Col>
@@ -488,7 +509,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               ? <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? API <b>tirik</b> — bir qator ham yozmadingiz, lekin to'liq ishlaydigan admin tizimi bor. Bularning hammasini skelet bergan. Endi: bu qayerda turibdi?</p></div>
               : <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Endpointni bosib oching → "Try it out" → javobni ko'ring.</p></div>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -508,7 +529,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu papkalar nima — <span className="italic" style={{ color: T.accent }}>qayerda nima</span> turadi?</h2></div>
         <Mentor>Skeletning <span className="mono">src/</span> papkasi 4 ta asosiy qismga bo'lingan. Har birini bosing — ichida nima borligini va vazifasini ko'ring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="tree fade-up delay-1">
               <div className="tree-root">📁 src/</div>
@@ -528,7 +549,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Papkani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana xarita: <span className="mono">core</span> (model), <span className="mono">api</span> (domenlar), <span className="mono">infrastructure</span> (asboblar), <span className="mono">common</span> (yordamchilar). Endi bularni restoran bilan tushunamiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -548,7 +569,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Arxitektura — aslida bir <span className="italic" style={{ color: T.accent }}>restoran</span>.</h2></div>
         <Mentor>Har qatlam — restoranning bir bo'limi, har birining aniq vazifasi bor. Bularni bosib o'rganing — keyin so'rov yo'lini ko'rganda hammasi joyiga tushadi.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {ROLES.map(r => (
@@ -567,7 +588,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bo'limni bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Endi har "bo'lim"ni bilasiz. Keling, bitta so'rov shu restoran bo'ylab qanday sayohat qilishini ko'ramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -649,7 +670,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>Entity</span> — jadval <span className="italic" style={{ color: T.accent }}>shakli</span>. Nimani saqlaymiz?</h2></div>
         <Mentor>Entity — bazadagi jadval ko'rinishi (qaysi ustunlar bor). Eng zo'r joyi: har entity <span className="mono">BaseEntity</span>'dan meros oladi — <b style={{ color: T.ink }}>id, created_at, updated_at</b> tayyor keladi! Siz faqat o'ziga xos maydonlarni yozasiz.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">admin.entity.ts</p>
             <pre className="code-box" style={{ lineHeight: 1.85 }}>
@@ -671,7 +692,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana "siz yozasiz vs tayyor": har jadvalga kerakli <span className="mono">id</span> va vaqtlar avtomatik. Siz faqat o'ziga xosini qo'shasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -690,7 +711,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>DTO</span> — buyurtma <span className="italic" style={{ color: T.accent }}>anketasi</span>. Ma'lumot to'g'rimi?</h2></div>
         <Mentor>DTO — kelgan ma'lumot qanday bo'lishi <b style={{ color: T.ink }}>kerakligini</b> va qoidalarini belgilaydi (<span className="mono">@IsString</span>, <span className="mono">@IsStrongPassword</span>). Anketani <b style={{ color: T.ink }}>nazoratchi</b> (ValidationPipe) tekshiradi: noto'g'ri bo'lsa — ichkariga kiritmaydi (400). To'g'ri va xato so'rovni yuboring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">create-admin.dto.ts</p>
             <pre className="code-box" style={{ lineHeight: 1.8 }}>
@@ -711,7 +732,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {res === null && <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>So'rov yuboring ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>DTO + nazoratchi — ilovani ifloslangan ma'lumotdan himoya qiladi. Yomon ma'lumot service'gacha ham yetib bormaydi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -731,7 +752,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Admin CRUD'ni kim yozgan — <span className="italic" style={{ color: T.accent }}>tayyormi</span>?</h2></div>
         <Mentor>Mana arxitekturaning eng kuchli joyi: <span className="mono">BaseService</span> — bir marta yozilgan <b style={{ color: T.ink }}>tayyor retseptlar</b>. Har servis undan meros oladi va CRUD'ni <b style={{ color: T.ink }}>shu yerdan</b> oladi — qayta yozmaydi. Metodlarni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">BaseService — tayyor metodlar</p>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -750,7 +771,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </pre>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Demak har yangi resurs uchun CRUD <b>qayta yozilmaydi</b> — BaseService'dan keladi. Siz faqat o'ziga xos mantiqni qo'shasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -767,7 +788,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>Module</span> — hammasini <span className="italic" style={{ color: T.accent }}>bir joyga</span> ulaydi.</h2></div>
         <Mentor>Module — bir bo'limning hamma qismini (controller, service, repository) ro'yxatga oladi. Keyin NestJS ularni <b style={{ color: T.ink }}>avtomatik bir-biriga ulaydi</b> (Dependency Injection) — siz qo'lda ulamaysiz. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <pre className="code-box" style={{ lineHeight: 1.8 }}>
               <At>@Module</At>{'({'}{'\n'}
@@ -791,7 +812,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>NestJS module'dagi ro'yxatga qarab hammasini o'zi ulaydi. Siz <span className="mono">new AdminService()</span> qilmaysiz — Nest beradi. Bu — Dependency Injection.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -853,7 +874,7 @@ const Screen17 = ({ screen, onNext, onPrev }) => (
     <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
       <div className="head"><h2 className="title h-title fade-up">Bir qarashda: <span className="italic" style={{ color: T.accent }}>xarita + so'rov yo'li</span>.</h2></div>
       <Mentor>Bugun kod yozmasdan, professional arxitekturani tirik ko'rdingiz. Eng muhimi: har narsa o'z joyida, va har so'rov bir xil yo'ldan o'tadi.</Mentor>
-      <Split>
+      <Zoomable><Split>
         <Col>
           <p className="flow-label">4 qatlam (restoran)</p>
           <div className="roadmap">
@@ -868,7 +889,7 @@ const Screen17 = ({ screen, onNext, onPrev }) => (
           <div className="frame" style={{ padding: 14 }}><p className="body mono" style={{ margin: 0, color: T.ink, fontSize: 12.5, lineHeight: 1.9 }}>guard 🛡️ → controller 🤵 → DTO 📝 → service 👨‍🍳 → BaseService 📖 → DB 🗄️ → successRes 🎁 → javob ✅</p></div>
           <div className="frame-success"><p className="body" style={{ margin: 0, color: T.ink }}>Yangi resurs = <b>5 qadam</b>: Entity → DTO → Service → Controller → Module.</p></div>
         </Col>
-      </Split>
+      </Split></Zoomable>
     </div>
   </Stage>
 );
@@ -926,7 +947,7 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Buyruq bering — AI <span className="italic" style={{ color: T.accent }}>5 faylni o'zi yozadi</span>.</h2></div>
         <Mentor>Endi siklni sinaymiz. Yangi resurs kerakmi (masalan <span className="mono">Task</span>)? Nomini yozing va <b style={{ color: T.ink }}>"Yarat"</b> bosing — AI o'rgangan tartibimizda <b style={{ color: T.ink }}>Entity → DTO → Service → Controller → Module</b> fayllarini ketma-ket yozadi.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">Resurs nomini yozing</p>
             <div className="prompt-row">
@@ -960,7 +981,7 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               {building && built.length < BUILD_STEPS.length && <p className="gen-line">{BUILD_STEPS[built.length]?.step} yozilmoqda</p>}
             </div>
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -981,7 +1002,7 @@ const Screen19 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yozdi — endi siz <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
         <Mentor>AI tez yozadi, lekin ba'zan kichik xato qiladi. Mana, AI <span className="mono">task.module.ts</span> yozdi, ammo server ishga tushmayapti. Endi siz Module'ni bilasiz: <b style={{ color: T.ink }}>qaysi qator xato?</b> Bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="ai-card">
               <div className="ai-row"><span className="ai-badge">AI</span><span className="ai-bubble">Mana, Task moduli tayyor!</span></div>
@@ -1008,7 +1029,7 @@ const Screen19 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Topdingiz va tuzatdingiz — bu debugging!</p><p className="ta-sub">AI tez yozadi, siz tekshirib tuzatasiz — zo'r jamoa</p></div>
             </>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -1142,7 +1163,15 @@ export default function NestArchAliveLesson({ lang: langProp, onFinished }) {
         .role-ico { font-size: 20px; flex-shrink: 0; } .role-r { font-size: 11.5px; color: ${T.ink2}; font-weight: 600; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

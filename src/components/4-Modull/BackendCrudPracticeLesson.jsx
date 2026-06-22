@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // MA'LUMOT VA BACKEND MODULI · PRAKTIKA 1 — BACKEND CRUD: AVTOIJARA (Express + PostgreSQL) — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -60,6 +61,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
@@ -204,11 +224,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -321,6 +337,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 860 }}>Saytdagi mashinalar ro'yxatini nega <span className="italic" style={{ color: T.accent }}>o'zgartirib bo'lmaydi</span>?</h1>
         <Mentor>Mana Modul 3'da qurgan <b style={{ color: T.ink }}>AvtoIjara</b> saytingiz. Lekin mashinalar ro'yxati <span className="mono">App.jsx</span> faylining <b style={{ color: T.ink }}>ichiga to'g'ridan-to'g'ri yozib qo'yilgan</b> — hech qayerda saqlanmagan. Yangi mashina <b style={{ color: T.ink }}>qo'shmoqchi</b> bo'lib ko'ring yoki bittasini <b style={{ color: T.ink }}>o'chiring</b> — nima sezasiz?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -353,6 +370,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aniq! Mashinalar qo'lda yozilgan — yangisini qo'shish uchun har safar kodni ochish kerak, sahifani yangilasangiz o'zgarish yo'qoladi. Bugun ma'lumotni <b>doimiy bazada</b> saqlaydigan va <b>boshqariladigan</b> backend quramiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -394,7 +412,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Bu yo'lda siz <b style={{ color: T.ink }}>uchta rolni</b> o'ynaysiz. <b style={{ color: T.ink }}>ME'MOR</b> — me'mor binoni chizganidek, siz ma'lumot sxemasini chizasiz. <b style={{ color: T.ink }}>REJISSYOR</b> — rejissyor aktyorga ko'rsatma berganidek, siz AI'ga aniq buyruq berasiz. <b style={{ color: T.ink }}>NAZORATCHI</b> — natijani Postman bilan o'zingiz sinab tekshirasiz. Avval har qadamni tushunasiz, keyin loyihani bitirasiz.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -424,6 +442,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mashinalar haqida bazada <span className="italic" style={{ color: T.accent }}>qaysi ma'lumotni</span> saqlaymiz?</h2></div>
         <Mentor>AI kod yozishidan oldin <b style={{ color: T.ink }}>siz</b> qaror qilasiz: <span className="mono">cars</span> jadvalida qaysi ustunlar bo'ladi? Har ustun bitta narsani saqlaydi. Ustunlarni bosib, nima saqlashini ko'ring — pastda <span className="mono">CREATE TABLE</span> yig'iladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">cars jadvali — ustunlar</p>
@@ -455,6 +474,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Sxema tayyor! Har ustun aniq bitta narsani saqlaydi. <span className="mono">id SERIAL PRIMARY KEY</span> — har mashinaga takrorlanmas raqam beradi. Endi shu jadvalga Express'ni ulaymiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -472,6 +492,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Express baza bilan <span className="italic" style={{ color: T.accent }}>qanday</span> gaplashadi?</h2></div>
         <Mentor>SQL darsida so'rovlarni yozdingiz — lekin ularni kim yuboradi? <b style={{ color: T.ink }}>Express</b> server, <span className="mono">pg</span> kutubxonasi orqali. <span className="mono">pool</span> — server bilan baza orasidagi <b style={{ color: T.ink }}>ko'prik</b>: <span className="mono">pool.query('...')</span> SQL'ni bazaga olib boradi va javobni qaytaradi. So'rovni qadam-qadam kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ lineHeight: 1.9 }}>
@@ -498,6 +519,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana ko'prik! Front so'raydi → Express qabul qiladi → <span className="mono">pool.query</span> SQL'ni PostgreSQL'ga olib boradi → javob qaytadi. <span className="mono">pool.query</span> bo'lmasa, server baza bilan gaplasha olmaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -528,6 +550,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bazadagi mashinalarni frontga <span className="italic" style={{ color: T.accent }}>qanday chiqaramiz</span>?</h2></div>
         <Mentor>AI'ga buyruq berganda <b style={{ color: T.ink }}>aniq</b> bo'ling: method, path va nima qilishini ayting. Bu yerda: <i>"GET /api/cars — pool.query bilan barcha mashinalarni SELECT qilib JSON qaytar"</i>. Aniq buyruq — to'g'ri kod.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Aniq buyruq (prompt)</p>
@@ -556,6 +579,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>GET ishladi! <span className="mono">SELECT * FROM cars</span> bazadagi barcha qatorni oldi, <span className="mono">res.json</span> uni frontga JSON qilib qaytardi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -591,6 +615,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yangi mashina bazaga <span className="italic" style={{ color: T.accent }}>qanday</span> qo'shiladi?</h2></div>
         <Mentor><b style={{ color: T.ink }}>POST</b> so'rovi <span className="mono">body</span>'da ma'lumot yuboradi, server uni <span className="mono">INSERT</span> bilan bazaga yozadi. Qiymatlarni to'g'ridan-to'g'ri SQL'ga yopishtirmaymiz — o'rniga <span className="mono">$1, $2, $3</span> qo'yamiz va massivda beramiz. Bu — <b style={{ color: T.ink }}>xavfsiz</b> usul: foydalanuvchi yuborgan matn kod emas, faqat oddiy qiymat bo'lib qoladi. POST yuborib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Postman — POST so'rovi</p>
@@ -618,6 +643,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yangi qator paydo bo'ldi! Server <span className="mono">201 Created</span> qaytardi. <span className="mono">$1, $2, $3</span> body'dagi qiymatlar bilan to'ldirildi va bazaga yozildi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -639,6 +665,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta mashinani o'zgartirish — <span className="italic" style={{ color: T.accent }}>qaysi birini</span> server qayerdan biladi?</h2></div>
         <Mentor>Manzildagi <span className="mono">:id</span> — bu o'zgaruvchi (routing darsidan tanish). <span className="mono">PUT /api/cars/<b style={{ color: T.ink }}>2</b></span> — "2-raqamli mashinani o'zgartir" degani. SQL'da <span className="mono">WHERE id = $1</span> aynan o'shani topadi. Bitta mashina narxini tushiring, bittasini o'chiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ lineHeight: 1.85, padding: '11px 14px' }}>
@@ -673,6 +700,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana to'liq CRUD! <span className="mono">:id</span> + <span className="mono">WHERE id=$1</span> aniq bitta qatorni topib o'zgartiradi yoki o'chiradi — qolganlariga tegmaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -706,6 +734,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Server o'chsa — ma'lumot <span className="italic" style={{ color: T.accent }}>saqlanib qoladimi</span>?</h2></div>
         <Mentor>Eslang: Modul 3'da qo'shgan narsangiz sahifani yangilaganda yo'qolardi (faqat xotirada edi). Endi tekshiramiz: mashina <b style={{ color: T.ink }}>POST</b> qilamiz, keyin serverni <b style={{ color: T.ink }}>o'chirib-yoqamiz</b>, so'ng <b style={{ color: T.ink }}>GET</b> qilamiz — Spark hali ham bormi?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={done} onClick={() => setPhase(p => Math.min(p + 1, 3))}>{label}</button>
@@ -723,6 +752,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="takeaway fade-step"><div className="ta-bulb">💾</div><p className="ta-h">Ma'lumot saqlanib qoldi!</p><p className="ta-sub">Server o'chsa ham — baza yodida. S0'dagi muammo hal bo'ldi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -740,6 +770,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Server xato qaytardi — bu bizga <span className="italic" style={{ color: T.accent }}>nimani aytmoqchi</span>?</h2></div>
         <Mentor>POST yuborganda server <span className="mono" style={{ color: T.danger }}>500</span> qaytardi: <i>column "price" does not exist</i>. Bunday xatolar — kod yozishning <b style={{ color: T.ink }}>tabiiy qismi</b>; hatto AI ham adashishi mumkin, shuning uchun biz doim tekshiramiz. Eng yaxshisi: xato matni nima noto'g'ri ekanini <b style={{ color: T.ink }}>o'zi aytib beradi</b> — baza "price degan ustun yo'q" deyapti. Sxemamizda ustun nomi <span className="mono">narx</span> edi. Qaysi qatorda shu nom xato? Bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -775,6 +806,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && <div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Xatoni o'qib, tuzatdingiz — bu debugging!</p><p className="ta-sub">Xato matni — muammoni aytib beradi. AI yozadi, siz tekshirasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -805,6 +837,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi o'zingiz — <span className="italic" style={{ color: T.accent }}>to'rt amalni</span> ham yuboring.</h2></div>
         <Mentor>Har bosishda so'rov to'liq zanjirdan o'tadi: <b style={{ color: T.ink }}>Front → Express → pool.query → PostgreSQL → javob</b>. To'rttasini ham yuboring: <b style={{ color: T.ink }}>POST</b> (qo'shish), <b style={{ color: T.ink }}>GET</b> (o'qish), <b style={{ color: T.ink }}>PUT</b> (yangilash), <b style={{ color: T.ink }}>DELETE</b> (o'chirish).</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">So'rov yuborish</p>
@@ -836,6 +869,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 To'liq CRUD backend tayyor! Har so'rov front'dan bazaga borib-keldi. Keyingi praktikada Modul 3'dagi React frontni aynan shu serverga ulaymiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -863,6 +897,7 @@ const Screen13 = ({ screen, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mashinalar endi <span className="italic" style={{ color: T.accent }}>qayerda yashaydi</span> — kodda yoki bazada?</h2></div>
         <Mentor>Eng muhim o'zgarish shu: endi mashinalar <span className="mono">App.jsx</span>'da emas, <b style={{ color: T.ink }}>PostgreSQL</b>'da. Kod faqat so'rov yuboradi, ma'lumotni baza saqlaydi. Quyida butun ish bir qarashda.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label">CRUD ↔ HTTP ↔ SQL</p>
@@ -885,6 +920,7 @@ const Screen13 = ({ screen, onNext, onPrev }) => {
             <div className="frame-success"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'prik — <span className="mono">pool.query</span>. Aniq raqam — <span className="mono">:id</span> + <span className="mono">WHERE id=$1</span>. Xavfsizlik — <span className="mono">$1, $2</span> parametrlar.</p></div>
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1101,8 +1137,14 @@ export default function BackendCrudPracticeLesson({ lang: langProp, onFinished }
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); background: ${T.accentSoft}; }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

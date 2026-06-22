@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // MA'LUMOT VA BACKEND MODULI · PRAKTIKA 3 — LOYIHA KUNI: AVTOSTOYANKA (React + Node + PostgreSQL) — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -62,6 +63,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
@@ -209,11 +229,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -322,6 +338,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Qorovul qaysi joy bo'shligini <span className="italic" style={{ color: T.accent }}>qog'ozda</span> kuzatib bo'ladimi?</h1>
         <Mentor>Tasavvur qiling: siz <b style={{ color: T.ink }}>qorovulsiz</b>. Mashinalar kirib-chiqyapti, siz hammasini qog'ozga yozyapsiz. Ikki mashina bitta joyga, to'lov eslab qolinmaydi... Qog'ozni bosib ko'ring — yordam beradimi?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label fade-up delay-1">Qorovulning daftari</p>
@@ -353,6 +370,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Bugun <b>qorovul uchun</b> stoyanka ilovasini quramiz: bo'sh/band joylar rangda ko'rinadi, mashina kirsa bir bosishda band bo'ladi, chiqsa to'lov yoziladi. To'liq fullstack — front, server va baza birga.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -389,7 +407,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Qorovul uchun stoyanka ilovasini <span className="italic" style={{ color: T.accent }}>qanday</span> quramiz?</h2></div>
         <Mentor>Bu — <b style={{ color: T.ink }}>loyiha kuni</b>: AvtoIjara'da o'rgangan ko'nikmalarni (CRUD, fetch, baza) endi yangi loyiha — <b style={{ color: T.ink }}>AvtoStoyanka</b>'da qo'llaymiz va to'liq stackni o'zingiz yig'asiz. Yana o'sha uch rol — <b style={{ color: T.ink }}>ME'MOR</b> (sxema), <b style={{ color: T.ink }}>REJISSYOR</b> (AI'ga buyruq), <b style={{ color: T.ink }}>NAZORATCHI</b> (sinov).</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -425,6 +443,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu ilovani <span className="italic" style={{ color: T.accent }}>kim</span> ishlatadi — unga qanday ko'rinish kerak?</h2></div>
         <Mentor>PM darslarini eslang: avval <b style={{ color: T.ink }}>foydalanuvchi</b>ni o'ylaymiz. Bu yerda u — <b style={{ color: T.ink }}>qorovul</b>: kompyuter bilimi kam, shoshib turadi. Demak ekran <b style={{ color: T.ink }}>oddiy va tushunarli</b> bo'lishi shart. Uch tamoyilni bosib ko'ring — o'ngda natijasi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qorovul uchun UX tamoyillari</p>
@@ -444,6 +463,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana qorovulga mos panel: rang bilan holat, katta joylar, kam matn. Endi shu ko'rinish ortidagi ma'lumotni — bazani loyihalashtiramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -463,6 +483,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Birinchi jadval — <span className="italic" style={{ color: T.accent }}>joylar</span> haqida nimani saqlaymiz?</h2></div>
         <Mentor>Panel ortida ma'lumot turishi kerak. Birinchi jadval — <span className="mono">joylar</span>: har bir parking joyi bitta qator. Ustunlarni bosib, nima saqlashini ko'ring — pastda <span className="mono">CREATE TABLE</span> yig'iladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">joylar — ustunlar</p>
@@ -491,6 +512,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">bandmi BOOLEAN</span> — aynan shu ustun panel rangini boshqaradi: false 🟩, true 🟥. Endi kunlik tarix uchun 2-jadval quramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -525,6 +547,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bugungi kirish-chiqishlarni — <span className="italic" style={{ color: T.accent }}>kunlik tarix</span> uchun — qayerga yozamiz?</h2></div>
         <Mentor>Qorovulga <b style={{ color: T.ink }}>kunlik tarix</b> kerak: bugun qaysi joyda kim turdi va jami qancha pul yig'ildi. Buning uchun har bir kirish-chiqishni alohida yozadigan 2-jadval — <span className="mono">sessiyalar</span> — quramiz. Eng muhim ustun <b style={{ color: T.ink }}>joy_id</b>: u har yozuvni qaysi joyga tegishli ekanini <b style={{ color: T.ink }}>bog'laydi</b> (joylar.id ga). Bu — <b style={{ color: T.ink }}>foreign key</b>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">sessiyalar — ustunlar</p>
@@ -549,6 +572,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono" style={{ color: T.blue }}>joy_id</span> — ko'prik: har yozuvni joyga ulaydi. Endi kunlik tarix saqlanadi: qaysi joy, qaysi mashina, qancha to'lov.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -570,6 +594,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta joyda ko'p marta mashina turadi — ularni <span className="italic" style={{ color: T.accent }}>qanday bog'laymiz</span>?</h2></div>
         <Mentor>Kunlik tarixda bitta joy ko'p marta band qilinadi — turli mashinalar, turli vaqtda. Bu — <b style={{ color: T.ink }}>"bitta → ko'p"</b> bog'lanish. Joyni tanlang: o'sha joyga tegishli barcha sessiyalar (<span className="mono" style={{ color: T.blue }}>joy_id</span> bir xil) yonib chiqadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Joyni tanlang</p>
@@ -582,6 +607,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? Bir joyga (mas. A2) bir nechta sessiya <span className="mono" style={{ color: T.blue }}>joy_id</span> orqali bog'langan. Mana shu — ikki jadval bog'lanishi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -615,6 +641,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Backendni AI'ga <span className="italic" style={{ color: T.accent }}>qanday</span> yozdiramiz?</h2></div>
         <Mentor>Sir — <b style={{ color: T.ink }}>aniq va qisqa prompt</b>da. Nima, qaysi yo'l (path), nima qilsin — shuni yozsangiz, AI'ga berib qo'ysangiz, u shu ko'rsatma asosida kodni yozadi. Mana backend uchun tayyor prompt.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Agentga prompt — backend</p>
@@ -631,6 +658,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Prompt aniq bo'lgani uchun AI to'g'ri yozdi. Endi shu API'ni ishlatadigan <b>frontni</b> yozdiramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -649,6 +677,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endpointlar joyni <span className="italic" style={{ color: T.accent }}>qanday</span> o'zgartiradi?</h2></div>
         <Mentor>Backend yozildi — endi tekshiramiz: har endpoint <span className="mono">joylar</span> jadvalini va panel rangini qanday o'zgartiradi. Tugmani bosib, kirish va chiqishni kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="code-box fade-up delay-1" style={{ minHeight: 70 }}>
@@ -664,6 +693,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <GuardPanel spots={shown} tushum={step >= 2 ? FEE : 0} flashId={step === 1 ? 4 : (step >= 2 ? 2 : null)} />
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -683,6 +713,7 @@ const Screen9b = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi qorovul <span className="italic" style={{ color: T.accent }}>panelini</span> (front) yozdiramiz.</h2></div>
         <Mentor>Backend tayyor, lekin qorovul kod ko'rmaydi — unga <b style={{ color: T.ink }}>panel</b> kerak. Frontga ham aniq prompt beramiz: nimani ko'rsatsin, qaysi API'ni chaqirsin. Shu prompt AI'ga berilsa — panelni o'zi quradi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Agentga prompt — frontend</p>
@@ -699,6 +730,7 @@ const Screen9b = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana panel! Front + backend tayyor. Endi NAZORATCHI sifatida o'zimiz sinab ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -739,6 +771,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi sinaymiz — panel <span className="italic" style={{ color: T.accent }}>jonlanadimi</span>?</h2></div>
         <Mentor>Mana qorovul paneli, ma'lumot serverdan. <b style={{ color: T.ink }}>Bo'sh joyni</b> bosing → mashina kirgizing (POST) → 🟥. <b style={{ color: T.ink }}>Band joyni</b> bosing → chiqaring (PUT) → 🟩 va 10 000 yoziladi. Ikkalasini ham sinang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Amal paneli</p>
@@ -769,6 +802,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="takeaway fade-step"><div className="ta-bulb">🎉</div><p className="ta-h">Panel ishlayapti!</p><p className="ta-sub">Kirish 🟥, chiqish 🟩 + tushum. Front, server, baza — birga.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -787,6 +821,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qorovul <span className="italic" style={{ color: T.accent }}>kunlik tarix</span>ni ochdi — lekin joy "2" deb chiqyapti, A2 qayerda?</h2></div>
         <Mentor>Qorovul kunlik tarixni ko'rmoqchi: kim, qaysi joy, qancha. Lekin sessiyalarda faqat <span className="mono" style={{ color: T.blue }}>joy_id</span> bor (mas. 2) — joy belgisi (<b style={{ color: T.ink }}>A2</b>) esa <span className="mono">joylar</span> jadvalida. <b style={{ color: T.ink }}>JOIN</b> ikki jadvalni <span className="mono">joy_id = id</span> bo'yicha birlashtiradi — shunda tarix o'qiladigan bo'ladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">{joined ? 'JOIN natijasi — o\'qiladi' : 'sessiyalar — joy_id raqam'}</p>
@@ -806,6 +841,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Endi <b>A2</b> ko'rinadi! JOIN <span className="mono" style={{ color: T.blue }}>joy_id</span> va <span className="mono">id</span> ni moslab, ikki jadvaldan birga ma'lumot oldi. Bog'lanish shuning uchun kerak edi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -846,6 +882,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Stoyanka boshqaruv paneli — <span className="italic" style={{ color: T.accent }}>hammasi joyidami</span>?</h2></div>
         <Mentor>Endi to'liq panel sizniki. Bir nechta mashinani <b style={{ color: T.ink }}>kirgizing</b> va <b style={{ color: T.ink }}>chiqaring</b> — bo'sh/band soni, tushum va tarix jonli yangilanishini kuzating. Qorovul aynan shunday ishlatadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Amal</p>
@@ -873,6 +910,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 To'liq ishlaydigan panel! Bo'sh/band, tushum, tarix — hammasi jonli. Mana — sizning fullstack loyihangiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -884,6 +922,7 @@ const Screen15 = ({ screen, onNext, onPrev }) => (
     <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
       <div className="head"><h2 className="title h-title fade-up">Fullstack loyiha — <span className="italic" style={{ color: T.accent }}>bir qarashda</span> nima?</h2></div>
       <Mentor>Siz bugun to'liq stackni yig'dingiz: front (panel) + server (kirish/chiqish) + baza (2 jadval). Eng muhim yangilik — <b style={{ color: T.ink }}>ikki jadval bog'lanishi</b> (joy_id ↔ id, JOIN).</Mentor>
+      <Zoomable>
       <Split>
         <Col>
           <p className="flow-label">Loyiha qismlari</p>
@@ -900,6 +939,7 @@ const Screen15 = ({ screen, onNext, onPrev }) => (
           <div className="frame" style={{ padding: 14 }}><p className="body" style={{ margin: 0, color: T.ink2 }}>PM darsidan: avval <b style={{ color: T.ink }}>foydalanuvchi</b>ni (qorovul) o'ylang. Rollar: <b style={{ color: T.ink }}>ME'MOR</b> (loyihachi), <b style={{ color: T.ink }}>REJISSYOR</b> (buyruq beruvchi), <b style={{ color: T.ink }}>NAZORATCHI</b> (sinovchi).</p></div>
         </Col>
       </Split>
+      </Zoomable>
     </div>
   </Stage>
 );
@@ -924,6 +964,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: <span className="italic" style={{ color: T.accent }}>bog'lanish</span> shartini o'zingiz yozing.</h2></div>
         <Mentor>Tarixni o'qiladigan qilish uchun JOIN kerak — ikki jadval <b style={{ color: T.ink }}>qaysi ustunlar bo'yicha</b> bog'lanadi? <span className="mono">ON</span> dan keyin yozing: <span className="mono">sessiyalar.joy_id = joylar.id</span>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-2">
@@ -952,6 +993,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0, textAlign: 'center' }}>ON sharti yozilmaguncha jadvallar bog'lanmaydi…</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1097,8 +1139,14 @@ export default function FullstackProjectDayLesson({ lang: langProp, onFinished }
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

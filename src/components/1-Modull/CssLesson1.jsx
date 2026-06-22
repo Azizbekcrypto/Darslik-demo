@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // HTML 1-DARS — PLATFORM STANDARD v15 (Notion: design_system + platform_contract + infrastructure_v1)
@@ -291,11 +292,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -305,17 +302,55 @@ const Mentor = ({ children }) => {
   );
 };
 
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 // ===== DEMO KARTA (CSS bor/yo'q solishtirish) =====
-const DemoCard = ({ on }) => (
-  <div style={on
-    ? { background: '#fff', borderRadius: 14, padding: 18, boxShadow: `0 8px 22px -8px rgba(${T.shadowBase},0.18)`, textAlign: 'center' }
-    : { background: 'transparent', padding: 4, textAlign: 'left' }}>
-    <div style={{ width: 50, height: 50, borderRadius: on ? '50%' : 0, background: on ? T.accent : '#bbb', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 22, fontFamily: on ? "'Manrope', sans-serif" : "'Times New Roman', serif", margin: on ? '0 auto 8px' : '0 0 4px', transition: 'all 0.3s' }}>A</div>
-    <h1 style={on ? { fontFamily: "'Manrope', sans-serif", fontSize: 22, color: T.ink, margin: '0 0 2px' } : { fontFamily: "'Times New Roman', serif", fontSize: 30, color: '#000', margin: '0 0 2px' }}>Aziza</h1>
-    <p style={on ? { fontFamily: "'Manrope', sans-serif", color: T.accent, fontWeight: 600, fontSize: 13, margin: '0 0 12px' } : { fontFamily: "'Times New Roman', serif", color: '#000', fontSize: 16, margin: '0 0 8px' }}>Web-dasturchi</p>
-    <span style={on ? { display: 'inline-block', background: T.accent, color: '#fff', borderRadius: 8, padding: '8px 18px', fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: 13 } : { fontFamily: "'Times New Roman', serif", color: '#0000ee', fontSize: 16, textDecoration: 'underline' }}>Obuna</span>
-  </div>
-);
+// off — brauzerning xom (CSS'siz) ko'rinishi; on — bezatilgan zamonaviy karta.
+// Farq ataylab keskin: o'quvchi "vauv" desin.
+const DemoCard = ({ on }) => {
+  if (!on) {
+    // Xom HTML — brauzer standartlari: serif shrift, chapga tekis, ko'k tagchizilgan havola
+    return (
+      <div style={{ background: 'transparent', textAlign: 'left', width: '100%', maxWidth: 230, lineHeight: 1.15 }}>
+        <div style={{ width: 54, height: 54, background: '#e7e7e7', border: '1px solid #b3b3b3', color: '#8a8a8a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Times New Roman', serif", fontSize: 12, marginBottom: 7 }}>rasm</div>
+        <h1 style={{ fontFamily: "'Times New Roman', serif", fontSize: 32, fontWeight: 700, color: '#000', margin: '0 0 3px' }}>Aziza</h1>
+        <p style={{ fontFamily: "'Times New Roman', serif", fontSize: 16, color: '#000', margin: '0 0 7px' }}>Web-dasturchi</p>
+        <span style={{ fontFamily: "'Times New Roman', serif", fontSize: 16, color: '#0000ee', textDecoration: 'underline' }}>Obuna</span>
+      </div>
+    );
+  }
+  // Bezatilgan — gradient banner, yumaloq avatar, pill tugma, soya
+  return (
+    <div className="democard-on" style={{ width: 232, background: '#fff', borderRadius: 18, overflow: 'hidden', textAlign: 'center', fontFamily: "'Manrope', sans-serif", boxShadow: `0 20px 44px -16px rgba(${T.shadowBase},0.38)` }}>
+      <div style={{ height: 48, background: `linear-gradient(120deg, ${T.accent}, #ff9166)` }} />
+      <div style={{ marginTop: -32, padding: '0 18px 20px' }}>
+        <div style={{ width: 64, height: 64, borderRadius: '50%', background: `linear-gradient(135deg, ${T.accent}, #ff9166)`, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 27, border: '3px solid #fff', boxShadow: `0 8px 18px -6px rgba(255,79,40,0.6)` }}>A</div>
+        <h1 style={{ fontSize: 21, color: T.ink, margin: '10px 0 1px', fontWeight: 800 }}>Aziza</h1>
+        <p style={{ color: T.accent, fontWeight: 700, fontSize: 12.5, letterSpacing: '0.03em', margin: '0 0 14px' }}>Web-dasturchi</p>
+        <span style={{ display: 'inline-block', background: T.accent, color: '#fff', borderRadius: 10, padding: '9px 24px', fontWeight: 700, fontSize: 13, boxShadow: `0 8px 18px -6px rgba(255,79,40,0.5)` }}>Obuna</span>
+      </div>
+    </div>
+  );
+};
 
 // ===== SCREEN 0 — HOOK =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
@@ -333,6 +368,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 760 }}>Bir xil matn — nega biri <span className="italic" style={{ color: T.accent }}>chiroyli</span>?</h1>
         <Mentor>Mana ikkita sahifa. Ichidagi matn — <b style={{ color: T.ink }}>bir xil</b>, bitta harf ham farq qilmaydi. Lekin biri oddiy, biri chiroyli. Tugmani bosib, farqni ko'ring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -350,6 +386,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! HTML — skelet, CSS esa uni bezaydi: ranglar, shriftlar, bo'shliqlar.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -402,7 +439,8 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="CSS nima" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "CSS'ni yoqing"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">HTML va CSS — <span className="italic" style={{ color: T.accent }}>vazifasi</span> nimada?</h2></div>
-        <Mentor>Yaxshi taqqoslash: <b style={{ color: T.ink }}>HTML</b> — uyning skeleti (devorlar, xonalar). <b style={{ color: T.ink }}>CSS</b> — bo'yoq, mebel, pardalar. Skelet bo'lmasa uy qulaydi, bezak bo'lmasa uy quruq. Tugmani bosib, CSS'ni yoqing.</Mentor>
+        <Mentor>Buni shunday tasavvur qiling: <b style={{ color: T.ink }}>HTML</b> — uyning skeleti (devorlar, xonalar). <b style={{ color: T.ink }}>CSS</b> — bo'yoq, mebel, pardalar. Skelet bo'lmasa uy qulaydi, bezak bo'lmasa uy quruq. Tugmani bosib, CSS'ni yoqing.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="flow-label">{on ? 'HTML + CSS' : 'Faqat HTML'}</div>
@@ -414,6 +452,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className={on ? 'frame-success fade-step' : 'hint'}><p className="body" style={{ margin: 0, color: T.ink }}>{on ? <>✓ Bir xil HTML, lekin CSS qo'shildi — va sahifa <b>jonlandi</b>. Kontent o'zgarmadi, faqat <b>ko'rinishi</b> o'zgardi.</> : <>Hozir faqat HTML — brauzerning quruq ko'rinishi. CSS qo'shilsa, sahifa chiroyli bo'ladi.</>}</p></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -438,6 +477,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">CSS qoidasi qanday <span className="italic" style={{ color: T.accent }}>yoziladi</span>?</h2></div>
         <Mentor>CSS qoidasi 3 qismdan iborat: <b style={{ color: T.ink }}>selektor</b> (qaysi element), <b style={{ color: T.ink }}>xususiyat</b> (nima), <b style={{ color: T.ink }}>qiymat</b> (qanday). Har bir qismni bosib, vazifasini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(16px,2.6vw,22px)', textAlign: 'center', lineHeight: 2 }}>
@@ -462,6 +502,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}><b>Eslatma:</b> har bir qator <span className="mono">;</span> (nuqta-vergul) bilan tugaydi — bu juda muhim!</p></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -493,6 +534,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Matn va fonni qanday <span className="italic" style={{ color: T.accent }}>bo'yaymiz</span>?</h2></div>
         <Mentor>Ikki xususiyat: <span className="mono">color</span> — matn rangi, <span className="mono">background-color</span> — fon rangi. Pastdagi ranglardan tanlab, kartani bo'yang.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="fade-up delay-2"><p className="flow-label" style={{ marginBottom: 6 }}>color — matn rangi</p><div className="swatches">{TEXTC.map(c => (<button key={c.v} className={`swatch ${tc === c.v ? 'on' : ''}`} onClick={() => set('tc', c.v)} style={{ background: c.v }} title={c.n}>{tc === c.v && <span style={{ color: c.v === '#FFFFFF' ? '#000' : '#fff' }}>✓</span>}</button>))}</div></div>
@@ -504,6 +546,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <Preview title="karta.html" minH={150}><div style={{ background: bg, color: tc, borderRadius: 12, padding: 20, textAlign: 'center', transition: 'all 0.3s', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.06)' }}><h1 style={{ fontFamily: 'Georgia, serif', fontSize: 24, margin: '0 0 6px', color: tc }}>Salom! 👋</h1><p style={{ fontFamily: 'Georgia, serif', fontSize: 15, margin: 0, color: tc, opacity: 0.85 }}>Bu mening kartam.</p></div></Preview>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -531,7 +574,8 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Rang formatlari" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Rangni tanlang"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Rang nomini <span className="italic" style={{ color: T.accent }}>raqamda</span> qanday yozamiz?</h2></div>
-        <Mentor>Rangni ikki xil yozish mumkin: <b style={{ color: T.ink }}>nom</b> bilan (<span className="mono">red</span>) yoki <b style={{ color: T.ink }}>hex kod</b> bilan (<span className="mono">#FF4F28</span>). Nomlar oddiy, lekin kam. Hex esa millionlab rangni aniq beradi. Rangni bosing.</Mentor>
+        <Mentor>Rangni ikki xil yozish mumkin: <b style={{ color: T.ink }}>nom</b> bilan (<span className="mono">red</span>) yoki <b style={{ color: T.ink }}>hex kod</b> (rang raqami) bilan (<span className="mono">#FF4F28</span>). Nomlar oddiy, lekin kam. Hex esa millionlab rangni aniq beradi. Rangni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <p className="eyebrow fade-up delay-2" style={{ color: T.ink2, margin: 0 }}>Rang tanlang</p>
@@ -548,6 +592,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             ) : (<div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Rangni bosing — nom va hex kodi chiqadi</p></div>)}
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -569,6 +614,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Matnning <span className="italic" style={{ color: T.accent }}>turini</span> qanday tanlaymiz?</h2></div>
         <Mentor>Shrift — sahifaning ovozi. <span className="mono">font-family</span> shrift turini, <span className="mono">font-size</span> o'lchamini belgilaydi. Turini va o'lchamini almashtiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="fade-up delay-2"><p className="flow-label" style={{ marginBottom: 6 }}>font-family — turi</p><div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{FONTS.map(f => (<button key={f.k} className={`chip ${font === f.k ? 'chip-on' : ''}`} onClick={() => change('f', f.k)} style={{ fontFamily: f.ff }}>{f.l}</button>))}</div></div>
@@ -580,6 +626,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <Preview title="matn.html" minH={150}><div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 120 }}><h1 key={font + size} className="fade-step" style={{ fontFamily: cur.ff, fontSize: size, color: T.ink, margin: 0, textAlign: 'center', transition: 'font-size 0.2s' }}>Salom, dunyo!</h1></div></Preview>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -600,6 +647,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Matnni <span className="italic" style={{ color: T.accent }}>qalin</span> va joyiga qanday qo'yamiz?</h2></div>
         <Mentor><span className="mono">font-weight: bold</span> — matnni qalin qiladi. <span className="mono">text-align</span> — matnni joylashtiradi: chap, markaz yoki o'ng. Ikkalasini sinang.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="fade-up delay-2"><p className="flow-label" style={{ marginBottom: 6 }}>font-weight</p><button className={`chip ${bold ? 'chip-on' : ''}`} onClick={() => { setBold(b => !b); setBt(true); }}><b>B</b> {bold ? 'bold ✓' : 'normal'}</button></div>
@@ -611,6 +659,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <Preview title="matn.html" minH={130}><p style={{ fontFamily: 'Georgia, serif', fontSize: 18, color: T.ink, margin: 0, fontWeight: bold ? 700 : 400, textAlign: align, transition: 'all 0.2s' }}>Men CSS o'rganyapman!</p></Preview>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -638,7 +687,8 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="padding" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Bo'shliqni o'zgartiring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kontent ichida <span className="italic" style={{ color: T.accent }}>bo'shliq</span> qanday beriladi?</h2></div>
-        <Mentor><span className="mono">padding</span> — <b style={{ color: T.ink }}>ichki bo'shliq</b>: kontent bilan elementning cheti orasidagi joy. Xuddi ramka ichidagi hoshiya kabi. Qiymatni o'zgartiring.</Mentor>
+        <Mentor><span className="mono">padding</span> — <b style={{ color: T.ink }}>ichki bo'shliq</b>: kontent bilan elementning cheti orasidagi joy. Xuddi rasm bilan ramka orasidagi bo'shliq kabi. Qiymatni o'zgartiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <p className="eyebrow fade-up delay-2" style={{ color: T.ink2, margin: 0 }}>padding qiymati</p>
@@ -651,6 +701,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}>Sariq zona — <b>padding</b>. Qancha katta bo'lsa, kontent chetdan shuncha uzoq turadi.</p></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -670,6 +721,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Elementlar <span className="italic" style={{ color: T.accent }}>orasidagi</span> masofa-chi?</h2></div>
         <Mentor><span className="mono">margin</span> — <b style={{ color: T.ink }}>tashqi bo'shliq</b>: element bilan qo'shnilari orasidagi masofa. Xuddi odamlar orasidagi shaxsiy joy kabi. Qiymatni o'zgartiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <p className="eyebrow fade-up delay-2" style={{ color: T.ink2, margin: 0 }}>margin qiymati</p>
@@ -678,10 +730,19 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </div>
           <div className="col">
             <div className="flow-label">Natija (ko'k — tashqi bo'shliq)</div>
-            <Preview title="margin.html" minH={150}><div style={{ background: '#D0EBFF', borderRadius: 12, padding: 12 }}><div style={{ ...box, marginBottom: mar, transition: 'margin 0.25s' }}>Karta 1</div><div style={box}>Karta 2</div></div></Preview>
+            <Preview title="margin.html" minH={150}>
+              <div style={{ background: '#D0EBFF', borderRadius: 12, padding: 12 }}>
+                <div style={box}>Karta 1</div>
+                <div style={{ height: mar, transition: 'height 0.34s cubic-bezier(.34,1.25,.5,1)', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  {mar > 0 && <span className="margin-tag" style={{ opacity: mar >= 22 ? 1 : 0 }}>↕ margin {mar}px</span>}
+                </div>
+                <div style={box}>Karta 2</div>
+              </div>
+            </Preview>
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'k zona — <b>margin</b>: kartalar orasini ochadi. <b>padding</b> ichkarida, <b>margin</b> tashqarida.</p></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -728,6 +789,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.4vw,14px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'zingiz <span className="italic" style={{ color: T.accent }}>karta bezang</span>.</h2></div>
         <Mentor>Quyidagi xususiyatlarni yoqib, kartani jonlantiring. <b style={{ color: T.ink }}>Kamida 3 ta</b> xususiyat qo'shing — CSS kodi o'zi yoziladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <p className="flow-label">Xususiyatlarni yoqing</p>
@@ -741,6 +803,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <pre className="code-box" style={{ fontSize: 'clamp(11.5px,1.6vw,13px)' }}><span style={{ color: CODE.tag }}>.karta</span> {'{'}{'\n'}{count === 0 && <><span style={{ color: CODE.comment }}>{'  /* xususiyat yoqing */'}</span>{'\n'}</>}{PROPS.filter(pr => P(pr.k)).map(pr => (<React.Fragment key={pr.k}>{'  '}<span style={{ color: CODE.attr }}>{pr.css}</span>: <span style={{ color: CODE.str }}>{pr.val}</span>;{'\n'}</React.Fragment>))}{'}'}</pre>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -957,8 +1020,8 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }
@@ -1045,7 +1108,15 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
         .pr-answer { animation: fade-step 0.4s ease-out; }
 
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .demo-swap { animation: fade-step 0.3s ease-out; }
+        .democard-on { animation: democard-pop 0.5s cubic-bezier(.34,1.4,.5,1); }
+        @keyframes democard-pop { 0% { opacity: 0; transform: scale(0.84) translateY(10px); } 60% { opacity: 1; } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
         /* === ROADMAP === */
         .roadmap { display: flex; flex-direction: column; gap: 8px; list-style: none; }
@@ -1104,7 +1175,7 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .sk-info { background: ${T.paper}; border-radius: 12px; padding: 15px 17px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.16); animation: fade-step 0.3s; }
         .sk-tagbig { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
         .sk-chip { font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 600; color: ${CODE.tag}; background: ${CODE.bg}; padding: 4px 9px; border-radius: 6px; }
-        .sk-wordbadge { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; background: ${T.accentSoft}; padding: 4px 10px; border-radius: 6px; }
+        .sk-wordbadge { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; background: ${T.accentSoft}; padding: 4px 10px; border-radius: 6px; display: inline-block; animation: pop 0.42s cubic-bezier(.34,1.5,.5,1); }
 
         /* === HUG (teg o'raydi) === */
         .hug-wrap { display: flex; justify-content: center; padding: 10px 0; }
@@ -1290,9 +1361,13 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .ana2-tag.ana2-css { color: #fff; background: ${T.accent}; }
         .ana2-txt { font-family: 'Manrope'; font-size: 13.5px; color: ${T.ink}; }
         .csspart { cursor: pointer; border-radius: 6px; padding: 2px 5px; transition: all 0.15s; }
+        .csspart:not(.seen) { animation: csshint 1.9s ease-in-out infinite; }
         .csspart:hover { background: rgba(255,255,255,0.08); }
-        .csspart.on { box-shadow: 0 0 0 2px ${T.accent}; background: rgba(255,79,40,0.14); }
+        .csspart.on { box-shadow: 0 0 0 2px ${T.accent}; background: rgba(255,79,40,0.14); animation: csstap 0.45s cubic-bezier(.34,1.5,.5,1); }
         .csspart.seen { text-decoration: underline; text-decoration-color: rgba(255,255,255,0.3); text-underline-offset: 4px; }
+        @keyframes csshint { 0%,100% { box-shadow: 0 0 0 0 rgba(255,79,40,0); } 50% { box-shadow: 0 0 0 2px rgba(255,79,40,0.4); } }
+        @keyframes csstap { 0% { transform: scale(1); } 42% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .margin-tag { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 11px; color: ${T.blue}; background: #fff; padding: 3px 10px; border-radius: 99px; white-space: nowrap; box-shadow: 0 3px 9px -4px rgba(${T.shadowBase},0.3); transition: opacity 0.25s ease; }
         .csslegend { display: flex; gap: 8px; flex-wrap: wrap; }
         .csstab { font-family: 'Manrope'; font-weight: 600; font-size: 12.5px; padding: 7px 13px; border-radius: 99px; background: ${T.paper}; color: ${T.ink2}; cursor: pointer; transition: all 0.18s; box-shadow: 0 3px 10px -5px rgba(${T.shadowBase},0.2); border: none; }
         .csstab.seen { color: ${T.success}; }

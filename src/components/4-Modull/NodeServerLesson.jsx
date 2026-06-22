@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BACKEND MODULI (4-MODUL) · 3-DARS — NODE.JS: BIRINCHI SERVER — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -64,6 +65,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
@@ -183,11 +203,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -240,6 +256,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 840 }}><span className="mono" style={{ color: T.accent }}>fetch</span> yozganingizda — narigi tomonda <span className="italic" style={{ color: T.accent }}>kim javob beradi</span>?</h1>
         <Mentor>React darsida <span className="mono">fetch('.../games')</span> yozib, serverdan ma'lumot oldingiz. Lekin so'rovga <b style={{ color: T.ink }}>kim javob berdi</b>? Bugun siz o'sha <b style={{ color: T.ink }}>javob beruvchini</b> — serverni — o'zingiz quradigan bo'lasiz. Avval tugmani bosib, server <b style={{ color: T.ink }}>yoniq</b> va <b style={{ color: T.ink }}>o'chiq</b> bo'lganda nima bo'lishini ko'ring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={toggle}><ServerDot on={on} /> &nbsp;{on ? "Serverni o'chirish" : 'Serverni yoqish'}</button>
@@ -268,6 +285,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! fetch'ga <b>server dasturi</b> javob beradi — o'sha o'chsa, hech kim javob bermaydi (ECONNREFUSED). Bugun shu serverni Node.js bilan o'zingiz yozasiz va yoqasiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -308,7 +326,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Birinchi serveringizni <span className="italic" style={{ color: T.accent }}>5 qadamda</span> quramiz</h2></div>
         <Mentor>Va'da: dars oxirida <b style={{ color: T.ink }}>haqiqiy serverni</b> o'zingiz yozib, ishga tushirasiz — va brauzerda uning javobini ko'rasiz. Eng zo'r tomoni: server ham <b style={{ color: T.ink }}>JavaScript</b>'da yoziladi — siz buni allaqachon bilasiz!</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -337,6 +355,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Server <span className="italic" style={{ color: T.accent }}>aslida nima</span> — maxsus mashinami?</h2></div>
         <Mentor>Ko'pchilik "server" deganda alohida kompyuter tasavvur qiladi. Aslida server — bu <b style={{ color: T.ink }}>dastur</b>! U <b style={{ color: T.ink }}>doim ishlab turadi</b>, eshigi ochiq do'kon kabi: kimdir so'rov yuborsa — javob beradi. Serverni yoqing, keyin "so'rov" yuborib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={() => setOn(v => !v)}><ServerDot on={on} /> &nbsp;{on ? 'Server YONIQ' : 'Serverni yoqish'}</button>
@@ -358,6 +377,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana shu — server. So'rov kutadi, javob beradi. Endi savol: bunday dasturni qaysi tilda yozamiz? Javob — <b>JavaScript</b> (Node.js bilan)!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -373,6 +393,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">JavaScript faqat <span className="italic" style={{ color: T.accent }}>brauzerda yashaydimi</span>?</h2></div>
         <Mentor>Ilgari JavaScript faqat brauzer ichida ishlardi. <b style={{ color: T.ink }}>Node.js</b> buni o'zgartirdi: endi JS <b style={{ color: T.ink }}>serverda ham</b> ishlaydi — bir til, ikki dunyo! Demak siz bilgan JavaScript bilan backend ham yozasiz. Tugmani bosing — bir xil kod ikki joyda ishlaydi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1"><Jx>{'console'}</Jx>{'.'}<Jx>{'log'}</Jx>{'('}<St>{"'Salom!'"}</St>{')'}</pre>
@@ -386,6 +407,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir xil JS kodi — brauzerda ham, Node.js bilan serverda ham ishladi! Mana shu Node'ning kuchi: <b>siz bilgan til endi backend uchun ham</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -419,6 +441,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har narsani <span className="italic" style={{ color: T.accent }}>noldan yozish</span> shartmi?</h2></div>
         <Mentor>Yo'q! <b style={{ color: T.ink }}>npm</b> — bu tayyor asboblar do'koni (millionlab paketlar). Bitta buyruq bilan kerakli vositani o'rnatasiz: <span className="mono">npm install express</span>. Buni React darsida ham ko'rgansiz (<span className="mono">npm create vite</span>)! Tugmani bosib, express'ni o'rnating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Terminal</p>
@@ -436,6 +459,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>express o'rnatildi va <span className="mono">package.json</span>'ga yozildi. Endi uni kodimizda ishlatsak bo'ladi. npm — sizning <b>asboblar do'koningiz</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -476,6 +500,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Butun serverni <span className="italic" style={{ color: T.accent }}>5 qatorda</span> yozsa bo'ladimi?</h2></div>
         <Mentor>Ha! <b style={{ color: T.ink }}>Express</b> — serverni juda osonlashtiradi. Mana mashhur "Salom, dunyo" serveri — bor-yo'g'i bir necha qator. Har bir rangli qismni bosib, nima qilishini o'rganing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ lineHeight: 2 }}>
@@ -497,6 +522,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana butun server! Asbobni chaqir → app yarat → endpoint och → javob ber → yoq. Endi <b>endpoint</b>ni chuqurroq ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -520,6 +546,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta server <span className="italic" style={{ color: T.accent }}>nechta so'rovga</span> javob bera oladi?</h2></div>
         <Mentor>Istalgancha! Har bir <b style={{ color: T.ink }}>endpoint</b> — alohida <b style={{ color: T.ink }}>eshik (manzil)</b>, har biri bitta ishni qiladi. <span className="mono">/salom</span> salom beradi, <span className="mono">/vaqt</span> vaqtni, <span className="mono">/games</span> o'yinlarni qaytaradi. Frontend aynan shu manzillarga <span className="mono">fetch</span> qiladi. Har eshikni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Server eshiklari — bosing</p>
@@ -536,6 +563,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har endpoint — bitta manzil, bitta javob. Kodda har biri <span className="mono">app.get('/manzil', ...)</span> bilan ochiladi. Frontend shu manzillarga so'rov yuboradi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -560,6 +588,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Loyiha kattalashsa — <span className="italic" style={{ color: T.accent }}>Express yetadimi</span>?</h2></div>
         <Mentor>Express oson va tez — boshlash uchun ideal. Lekin loyiha <b style={{ color: T.ink }}>kattalashganda</b> tartib kerak bo'ladi. Aynan shu yerda <b style={{ color: T.accent }}>NestJS</b> keladi: u Express ustiga qurilgan, lekin <b style={{ color: T.ink }}>ancha tartibli va kuchli</b> — yirik, professional backendlar uchun. Bugun Express bilan boshlaymiz; lekin jiddiy loyiha = Nest. Ustunliklarini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -577,6 +606,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yodda tuting: <b>Express = birinchi qadam</b> (oson), <b>NestJS = professional daraja</b> (tartibli, kuchli). Keyingi modulda Nest bilan jiddiy backend quramiz. Bugun esa — birinchi Express serverni!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -610,6 +640,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Serveringizni qanday <span className="italic" style={{ color: T.accent }}>"yoqasiz"</span>?</h2></div>
         <Mentor>Serverni ishga tushirish uchun terminalga bitta buyruq: <span className="mono">node server.js</span>. U yonadi va <span className="mono">localhost:3000</span> manzilida so'rov kuta boshlaydi. <b style={{ color: T.ink }}>localhost</b> = sizning o'z kompyuteringiz server bo'lib turibdi! Tugmani bosib, serverni yoqing va brauzerda ochib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Terminal</p>
@@ -630,6 +661,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Server yoqildi! Brauzerda <span className="mono">localhost:3000/salom</span> ochilsa — sizning serveringiz javob beryapti. <b>localhost = o'z kompyuteringiz</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -656,6 +688,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yangi endpoint kerakmi? <span className="italic" style={{ color: T.accent }}>AI'ga buyuring</span> — siz tekshiring.</h2></div>
         <Mentor>Endi siz Express kodini <b style={{ color: T.ink }}>o'qiy olasiz</b>! Buyruq bering, AI <span className="mono">app.get(...)</span> yozadi — siz tekshirasiz: manzil to'g'rimi, <span className="mono">res.send</span> bormi. Keyin natijani brauzerda ko'rasiz. Boshliq — siz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. AI'ga buyuring</p>
@@ -681,6 +714,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>AI endpoint yozdi, siz <b>kodni o'qib tekshirdingiz</b> va brauzerda sinadingiz. <span className="mono">app.get</span> + <span className="mono">res.send</span> — hammasi joyida!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -725,6 +759,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Server qismlarini <span className="italic" style={{ color: T.accent }}>to'g'ri tartibda</span> yig'a olasizmi?</h2></div>
         <Mentor>Server kodi aniq tartibda yoziladi: avval asbobni <b style={{ color: T.ink }}>chaqir</b>, keyin serverni <b style={{ color: T.ink }}>yarat</b>, so'ng <b style={{ color: T.ink }}>endpoint</b> och, oxirida serverni <b style={{ color: T.ink }}>yoq</b>. Pastdagi bo'laklarni to'g'ri ketma-ketlikda bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Bo'laklar — to'g'ri tartibda bosing</p>
@@ -746,6 +781,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>To'g'ri tartib! Chaqir → yarat → endpoint → yoq. Mana to'liq serverning skeleti. Endi oxirgi qadam — o'zingiz yozasiz!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -768,6 +804,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI server yozdi, lekin brauzer <span className="italic" style={{ color: T.accent }}>"ulanib bo'lmadi"</span> deyapti. Nega?</h2></div>
         <Mentor>AI kodni tez yozdi, lekin brauzerda <span className="mono">localhost:3000</span> ochilmayapti — "ulanib bo'lmadi". Demak server <b style={{ color: T.ink }}>umuman yoqilmagan</b>. Kodga qarang: qaysi muhim qator yetishmayapti?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -794,6 +831,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && <div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Topdingiz va tuzatdingiz — bu debugging!</p><p className="ta-sub">AI tez yozadi, siz tekshirib to'g'irlaysiz</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -822,6 +860,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Birinchi serveringizni <span className="italic" style={{ color: T.accent }}>javob berdiring</span>.</h2></div>
         <Mentor>VS Code'da <span className="mono">server.js</span> ochiq — faqat <b style={{ color: T.ink }}>endpoint qatori yetishmayapti</b>! 4-qatorga yozing: <b style={{ color: T.ink }}>app.get('/salom', (req, res) =&gt; res.send('Salom, dunyo!'))</b>. Yozib bo'lgach <b style={{ color: T.ink }}>▶ Run</b> bosing — serveringiz brauzerda javob beradi!</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-1">
@@ -853,6 +892,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {ran && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 Tabriklaymiz! Sizning birinchi serveringiz ishga tushdi va <b>"{reply}"</b> deb javob berdi. Siz endi backend yoza olasiz!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -993,8 +1033,14 @@ export default function NodeServerLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

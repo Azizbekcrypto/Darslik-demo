@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // NEST ARXITEKTURA MODULI · PRAKTIKA — "KitobShop" MINI-LOYIHA — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -199,6 +200,26 @@ function ScoreRing({ correct, total }) {
   );
 }
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
   const enabled = !!ctx.enabled;
@@ -207,7 +228,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -290,6 +311,7 @@ const PickLines = ({ fileName, scaffoldTop, scaffoldBottom, candidates, agent, i
   };
   const pickedCorrect = correct.filter(c => picked.has(c.id));
   return (
+    <Zoomable>
     <div className="split">
       <Col>
         <p className="flow-label">{fileName}</p>
@@ -316,6 +338,7 @@ const PickLines = ({ fileName, scaffoldTop, scaffoldBottom, candidates, agent, i
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Fayl tayyor — har qator o'z joyida.</p></div>}
       </Col>
     </div>
+    </Zoomable>
   );
 };
 
@@ -404,6 +427,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Mana siz quradigan narsa — haqiqiy <span className="italic" style={{ color: T.accent }}>onlayn kitob do'koni</span>.</h1>
         <Mentor>Bu — <b style={{ color: T.ink }}>KitobShop</b>: admin kitob qo'shadi, mijozlar ko'radi, "Top kitoblar"ni ko'zdan kechiradi va buyurtma beradi. 🔒 — faqat admin, 🌐 — hamma uchun. Bittasini ochib <b style={{ color: T.ink }}>"Try it out"</b> bilan sinab ko'ring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <ShopSwagger openId={openId} onToggle={toggle} triedIds={tried} onTry={onTry} />
@@ -420,6 +444,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Har resurs — o'sha 5 qadam sikli. Bugun <b>3 resursni</b> (Kategoriya, Kitob, Buyurtma) <b>AI yordamchi bilan</b> qurasiz: siz <b>rejalashtirasiz</b>, AI'ni <b>yo'naltirasiz</b> va natijani <b>tekshirasiz</b>.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -444,6 +469,7 @@ const Screen1 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bugun ko'p kod yozmaysiz — siz <span className="italic" style={{ color: T.accent }}>bosh dasturchisiz</span>.</h2></div>
         <Mentor>AI yordamchingiz kodni soniyalarda yozadi — siz uni <b style={{ color: T.ink }}>yo'naltirasiz</b> va natijani <b style={{ color: T.ink }}>tekshirasiz</b>. Bosh dasturchi shu uchta ishni qiladi. Har birini bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -463,6 +489,7 @@ const Screen1 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Sikl: <b>Rejalashtir → Yo'naltir → Tekshir</b>. Har resurs uchun shu uch qadam. Boshlaymiz — avval reja.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -487,6 +514,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kitob do'koni qanday <span className="italic" style={{ color: T.accent }}>ma'lumotlarni</span> saqlaydi — va ular bir-biriga qanday <span className="italic" style={{ color: T.accent }}>ulanadi</span>?</h2></div>
         <Mentor>AI'ga buyruq berishdan oldin <b style={{ color: T.ink }}>reja</b> tuzamiz: do'konda 3 turdagi ma'lumot bor — kategoriyalar, kitoblar va buyurtmalar. Ular bir-biriga bog'lanadi. Har birini bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -508,6 +536,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Reja tayyor: <b>Category ← Book ← Order</b>. Endi har birini agent bilan quramiz — Category'dan boshlaymiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -528,6 +557,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Agentga qanday buyruq bersangiz — shunday <span className="italic" style={{ color: T.accent }}>natija</span> olasiz.</h2></div>
         <Mentor>Birinchi resurs — <b style={{ color: T.ink }}>Category</b>. Quyidagi ikki promptdan qaysi biri agentga aniqroq? To'g'risini tanlasangiz, agent 5 faylni yozib beradi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className={`vcard ${choice === 'vague' ? 'shake' : ''}`} onClick={pickVague} disabled={done} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 4, boxShadow: choice === 'vague' ? `inset 0 0 0 1.5px ${T.danger}` : undefined }}>
@@ -548,6 +578,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Category tayyor! Aniq buyruq = aniq natija. Endi tekshiruvchi bo'lib ko'rib chiqamiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -567,6 +598,7 @@ const Screen4 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yozib berdi — endi uni qanday <span className="italic" style={{ color: T.accent }}>tekshiramiz</span>?</h2></div>
         <Mentor>Natijani tekshirish — bosh dasturchining doimiy odati (AI yomon bo'lgani uchun emas, shunchaki professional ish shunaqa). Mana tekshiruv ro'yxati — har bandni bosib tasdiqlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <Checklist items={ITEMS} doneInit={!!storedAnswer} onComplete={() => { setDone(true); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }} />
@@ -576,6 +608,7 @@ const Screen4 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Category ✓ tasdiqlandi. 1-resurs tayyor! Endi muhim savol: <b>har kim kitob qo'sha olishi kerakmi?</b></p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -610,6 +643,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har kim kitob qo'sha olsa — do'kon <span className="italic" style={{ color: T.accent }}>nima bo'ladi</span>?</h2></div>
         <Mentor>Kitob qo'shish — faqat <b style={{ color: T.ink }}>admin</b> ishi. Hozir himoya yo'q: istalgan odam <span className="mono">POST /book</span> qila oladi. Avval "hujum"ni sinab ko'ring, keyin qo'riqchi (<span className="mono">guard</span>) qo'ying.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="book.controller.ts" minH={110}>
@@ -631,6 +665,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {guard && <div className="frame-success fade-step"><p className="note-h" style={{ color: T.success }}>✓ Endi faqat admin</p><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">AuthGuard</span> tokenni tekshiradi, <span className="mono">@Roles(ADMIN)</span> rolni. Begona odam — 401/403. Bu — Dars 1'dagi "qo'riqchi"!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -708,6 +743,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har kitob qaysi kategoriyaga tegishli — qanday <span className="italic" style={{ color: T.accent }}>bog'laymiz</span>?</h2></div>
         <Mentor>Kitob bitta kategoriyaga tegishli (ko'p kitob — bitta kategoriya). Buni <span className="mono">@ManyToOne</span> bog'lanishi bilan ifodalaymiz. Entity ichida bitta qator — va kitob kategoriyaga ulanadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="book.entity.ts">
@@ -729,6 +765,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Endi har kitobning <span className="mono">category</span> si bor. <span className="mono">findAll({'{ relations: { category: true } }'})</span> bilan kategoriya nomini ham qaytarish — BaseService'da tekin.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -778,6 +815,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">"Top kitoblar" bo'limi — yangi metod <span className="italic" style={{ color: T.accent }}>yozamizmi</span>?</h2></div>
         <Mentor>Bosh sahifada faqat <span className="mono">is_featured: true</span> kitoblar chiqsin. Yangi CRUD yozmaymiz — controller'ga bitta maxsus eshik qo'shamiz va <b style={{ color: T.ink }}>BaseService'ning findAll</b>'iga shart beramiz. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="book.controller.ts" minH={120}>
@@ -800,6 +838,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Maxsus endpoint — lekin yangi CRUD kodi yo'q! <span className="mono">findAll</span> BaseService'dan, siz faqat <span className="mono">where</span> shartini berdingiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -833,6 +872,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi resurs — <span className="italic" style={{ color: T.accent }}>Buyurtma</span>. Qaysi kitobga bog'lanadi?</h2></div>
         <Mentor>Order <span className="mono">@ManyToOne</span> bilan Book'ga bog'lanadi (har buyurtma — bitta kitob). Buyurtma berish — <b style={{ color: T.ink }}>public</b> (mijoz), ko'rish — admin. Playbookni agentga yuboring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="prompt-box fade-up delay-1"><span className="agent-lbl">💬 Agentga playbook</span><p className="agent-msg" style={{ marginBottom: 0 }}>"Order resursini qo'sh: Entity (customer_name, quantity + @ManyToOne Book) → DTO (bookId, quantity) → BaseService service → controller (POST public, GET admin) → module va AppModule'ga ula."</p></div>
@@ -844,6 +884,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>AI Order'ni yozdi. Lekin... mijoz buyurtma bera olmayapti! Keyingi ekranda tekshiruvchi bo'lib sababini topamiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -868,6 +909,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mijoz buyurtma bera olmayapti — <span className="mono" style={{ color: T.accent }}>POST /order</span> 403. <span className="italic" style={{ color: T.accent }}>Nega</span>?</h2></div>
         <Mentor>Bunday bo'lishi mumkin — ruxsat bittasi noto'g'ri qo'yilgan. Endi <b style={{ color: T.ink }}>yo'l-ko'rsatmasiz</b>, o'zingiz tekshirasiz. <span className="mono">order.controller.ts</span> ni o'qing: buyurtma berish <b style={{ color: T.ink }}>public</b> bo'lishi kerak edi. Xato qatorni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -893,6 +935,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -926,6 +969,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Hammasi birga: bitta haqiqiy <span className="italic" style={{ color: T.accent }}>xarid</span> qanday kechadi?</h2></div>
         <Mentor>3 resurs, auth va bog'lanish — endi birga ishlaydi. Admin kitob qo'shadi, mijoz top kitoblarni ko'rib buyurtma beradi, admin buyurtmani ko'radi. Tugmani bosib kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="flow-rail fade-up delay-1">
@@ -947,6 +991,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana to'liq do'kon oqimi! Auth, bog'lanish, maxsus endpoint — hammasi birga ishlayapti.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -966,6 +1011,7 @@ const Screen17 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sizning <span className="italic" style={{ color: T.accent }}>KitobShop</span>'ingiz — to'liq tirik!</h2></div>
         <Mentor>3 resurs, 7 endpoint, auth himoyasi, bog'lanish — hammasi siz boshqarib qurildi. Kamida 2 ta endpointni <b style={{ color: T.ink }}>"Try it out"</b> bilan sinab ko'ring (🔒 admin, 🌐 ochiq).</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <ShopSwagger openId={openId} onToggle={toggle} triedIds={tried} onTry={onTry} />
@@ -977,6 +1023,7 @@ const Screen17 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Endpointni oching → "Try it out" → javobni ko'ring.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1002,6 +1049,7 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: kitobni kategoriyaga <span className="italic" style={{ color: T.accent }}>o'zingiz</span> bog'lang.</h2></div>
         <Mentor>Eng muhim yangi ko'nikma — bog'lanish. <span className="mono">book.entity.ts</span> ga Book → Category bog'lanishini <b style={{ color: T.ink }}>o'zingiz</b> yozing. Namuna: <span className="mono">@ManyToOne(() =&gt; CategoryEntity)</span></Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">book.entity.ts — bog'lanish qatorini yozing</p>
@@ -1031,6 +1079,7 @@ const Screen18 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>To'liq yozing: <span className="mono" style={{ fontStyle: 'normal' }}>@ManyToOne</span> + <span className="mono" style={{ fontStyle: 'normal' }}>() =&gt;</span> + <span className="mono" style={{ fontStyle: 'normal' }}>CategoryEntity</span>.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1051,6 +1100,7 @@ const Screen19 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Backend tayyormi? <span className="italic" style={{ color: T.accent }}>Yakuniy tekshiruv</span>.</h2></div>
         <Mentor>Loyihani topshirishdan oldin — oxirgi tekshiruv ro'yxati. Har bandni bosib tasdiqlang: hammasi joyidami?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <Checklist items={ITEMS} doneInit={!!storedAnswer} onComplete={() => { setDone(true); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }} />
@@ -1060,6 +1110,7 @@ const Screen19 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ KitobShop tayyor va tekshirildi — topshirishga shay!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1193,7 +1244,15 @@ export default function NestArchPracticeLesson({ lang: langProp, onFinished }) {
         .role-ico { font-size: 20px; flex-shrink: 0; } .role-r { font-size: 11.5px; color: ${T.ink2}; font-weight: 600; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

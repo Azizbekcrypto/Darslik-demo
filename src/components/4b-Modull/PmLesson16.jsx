@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // PM 16-DARS (Modul 06 · Testlash · PM) — SIFAT = MAHSULOT QIYMATI — PLATFORM STANDARD v16
@@ -229,6 +230,26 @@ function ScoreRing({ correct, total }) {
   );
 }
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
   const enabled = !!ctx.enabled;
@@ -237,11 +258,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -286,6 +303,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Bitta bug — bitta <span className="italic" style={{ color: T.accent }}>yo'qolgan mijoz</span>. Nega?</h1>
         <Mentor>KitobShop oddiy holatda ishladi, lekin foydalanuvchi g'alati narsa qildi va bug chiqdi. Har birini bosing.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -305,6 +323,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Bug — faqat texnik xato emas. U <b>ishonchni buzadi</b>, foydalanuvchi ketadi (<b>retention</b> tushadi). Sifat = mahsulot qiymati. Bugun PM ko'zi bilan testni ko'ramiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -337,7 +356,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Nega test — mahsulot masalasi?</span></h2></div>
         <Mentor>1-darsda test yozdingiz. Bu PM darsi: <b style={{ color: T.ink }}>nimani</b> va <b style={{ color: T.ink }}>nega</b> test qilish kerakligini ko'ramiz — keyin 2-darsda uni texnik qilamiz.</Mentor>
-        {!isNarrow ? (<Split>{IdeaBlock}{StepsBlock}</Split>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
+        {!isNarrow ? (<Zoomable><Split>{IdeaBlock}{StepsBlock}</Split></Zoomable>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>
   );
@@ -357,6 +376,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bug va <span className="italic" style={{ color: T.accent }}>retention</span> bog'liq</h2></div>
         <Mentor><b style={{ color: T.ink }}>Retention</b> — foydalanuvchi qaytib kelishi. Bug uni to'g'ridan-to'g'ri kamaytiradi. Ikki holatni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -374,6 +394,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Test — bug'lardan himoya. Demak test = retention himoyasi = mahsulot qiymati.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -393,6 +414,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Test — bu <span className="italic" style={{ color: T.accent }}>talablar hujjati</span></h2></div>
         <Mentor>Test nomi mahsulot talabini aytadi: "<span className="mono">bo'sh savat 0 qaytaradi</span>" — bu AYNAN talab. Testni o'qigan odam mahsulot nima qilishini biladi. Har testni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -404,6 +426,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Testlar = jonli hujjat. Ular har doim kod bilan mos (eskirmaydi). Yangi a'zo testdan mahsulotni o'rganadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -433,6 +456,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.success }}>Happy path</span> vs <span className="italic" style={{ color: T.accent }}>edge case</span> — PM fikrlashi</h2></div>
         <Mentor>Dasturchi <b style={{ color: T.ink }}>happy path</b>ni sinaydi (hammasi to'g'ri). PM <b style={{ color: T.ink }}>edge case</b>ni o'ylaydi — real foydalanuvchi nima qiladi. Ikkalasini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -450,6 +474,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>PM savoli: "<b>Foydalanuvchi nima noto'g'ri qilishi mumkin?</b>" — javoblar = edge case ro'yxati.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -481,6 +506,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bugli reliz — mijozlar <span className="italic" style={{ color: T.accent }}>ketadi</span></h2></div>
         <Mentor>10 ta xursand mijoz bor. "Bug bilan reliz"ni bosing — nima bo'lishini ko'ring. Keyin tuzatib qayta reliz qiling.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="churn-box">
@@ -505,6 +531,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {phase === 'fixed' && <div className="takeaway fade-step"><div className="ta-bulb" style={{ fontSize: 30 }}>🛡️</div><p className="ta-h">Tuzatildi — 100%</p><p className="ta-sub">Test bug'ni foydalanuvchidan OLDIN ushlaydi. Shuning uchun test = retention himoyasi</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -522,6 +549,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Test — <span className="italic" style={{ color: T.accent }}>xavfsizlik to'ri</span></h2></div>
         <Mentor>Yangi fycha qo'shganda eski narsa buzilishi mumkin (<b style={{ color: T.ink }}>regressiya</b>). Test buni ushlaydi. Ikki holatni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -542,6 +570,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Test = tez va xavfsiz o'sish. PM15 "masshtablanuvchanlik"ka bevosita bog'liq.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -561,6 +590,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent, fontSize: '0.8em' }}>orderTotal()</span> uchun <span className="italic" style={{ color: T.accent }}>edge case</span>'larni toping</h2></div>
         <Mentor>Quyidagi kirishlardan qaysilari <b style={{ color: T.ink }}>edge case</b> (chekka holat)? Hammasini tanlang. Oddiy (happy) tanlasangiz, ogohlantiraman.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -582,6 +612,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>4 edge case topildi! Endi har biri uchun NEGA muhimligini ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -618,6 +649,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har edge case — <span className="italic" style={{ color: T.accent }}>nega muhim</span> (mahsulot asosi)</h2></div>
         <Mentor>Edge case shunchaki "texnik" emas — har birining mahsulot sababi bor. Avval <b style={{ color: T.ink }}>edge case</b>ni, keyin uning <b style={{ color: T.ink }}>mahsulot asosini</b> bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Edge case</p>
@@ -634,6 +666,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana — mahsulot asosi bilan edge case'lar. Aynan shu yakuniy ishingiz bo'ladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -651,6 +684,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Hammasini emas — <span className="italic" style={{ color: T.accent }}>kritik yo'lni</span> test qil</h2></div>
         <Mentor>Vaqt cheklangan. PM <b style={{ color: T.ink }}>kritik yo'l</b>ni (pul, ishonch) birinchi test qiladi. Ikkalasini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -668,6 +702,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>PM qarori: cheklangan vaqtni kritik yo'lga sarflang.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -697,6 +732,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">To'liq hikoya: <span className="italic" style={{ color: T.accent }}>edge bug</span> retention'ni tushirdi</h2></div>
         <Mentor>KitobShop jamoasining yo'li — 4 qadam. Har qatorni bosib, sifat qanday mahsulotga ta'sir qilganini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="checklist fade-up delay-1">
@@ -709,6 +745,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Happy-only → edge bug → churn → edge testlar. Endi o'zingiz edge case ro'yxatini yozasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -720,6 +757,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
     <div className="screen">
       <div className="head"><h2 className="title h-title fade-up">Sifatni <span className="italic" style={{ color: T.accent }}>mahsulot</span> kabi o'yla</h2></div>
       <Mentor>Yodda tuting: bug retention'ni tushiradi, test = talablar hujjati, edge case'larni mahsulot asosi bilan o'ylash — PM ishi.</Mentor>
+      <Zoomable>
       <div className="split">
         <Col>
           <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 'clamp(18px,2.6vw,26px)' }}>
@@ -734,6 +772,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
           </div>
         </Col>
       </div>
+      </Zoomable>
     </div>
   </Stage>
 );
@@ -764,6 +803,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Edge case ro'yxati — <span className="italic" style={{ color: T.accent }}>mahsulot asosi bilan</span></h2></div>
         <Mentor>O'z loyihangiz (yoki orderTotal) uchun: <b style={{ color: T.ink }}>edge case + nega muhim</b>. Kamida 2 ta. Bu ro'yxat keyingi darsda test qilinadi!</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
+        <Zoomable>
         <div className="split" ref={workRef}>
           <Col>
             {lines.map((f, i) => { const ok = isComplete(f); return (
@@ -781,6 +821,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! Keyingi darsda aynan shularni <span className="mono">toThrow</span> bilan test qilasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -937,8 +978,15 @@ export default function PmLesson16({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -7px rgba(${T.shadowBase},0.16); }

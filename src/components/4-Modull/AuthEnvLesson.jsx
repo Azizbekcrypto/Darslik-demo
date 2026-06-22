@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BACKEND MODULI (4-MODUL) · 7-DARS — AUTENTIFIKATSIYA + .env — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -176,6 +177,26 @@ function ScoreRing({ correct, total }) {
   );
 }
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
   const enabled = !!ctx.enabled;
@@ -184,11 +205,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -277,6 +294,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Do'koningizga <span className="italic" style={{ color: T.accent }}>begona</span> kirib, hammasini o'chirib tashlasa-chi?</h1>
         <Mentor>O'tgan darsda <span className="mono">POST /api/products</span> bilan mahsulot qo'shdik — lekin buni <b style={{ color: T.danger }}>HAR KIM</b> qila oladi! Tugmani bosing: begona kelib mahsulotlarni o'chirib ketadi. Bunday bo'lmasligi uchun nima qilamiz?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <Win title="zakaz-shop.uz — himoyasiz" minH={150} hotTitle={phase === 'done'}>
@@ -307,6 +325,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">{picked === correct ? <>To'g'ri! <b>Autentifikatsiya</b> qo'shamiz: faqat login qilgan (tokeni bor) odam o'zgartira oladi.</> : <>To'g'ri yo'l — <b>login (autentifikatsiya)</b> qo'shish: faqat tokeni borlar o'zgartira oladi. Bugun shuni o'rganamiz.</>}</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -348,7 +367,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Saytni <span className="italic" style={{ color: T.accent }}>himoyalashni</span> o'rganamiz</h2></div>
         <Mentor>Va'da: dars oxirida siz saytga <b style={{ color: T.ink }}>login</b> qo'sha olasiz va maxfiy kalitlarni <b style={{ color: T.ink }}>.env</b>'ga yashira olasiz — GitHub'da hech kim ko'rmaydi. Asosiy g'oya: <b style={{ color: T.accent }}>bilaguzuk (token)</b>.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -383,6 +402,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sayt sizni <span className="italic" style={{ color: T.accent }}>qanday tanidi?</span></h2></div>
         <Mentor><b style={{ color: T.ink }}>Autentifikatsiya</b> = "siz kimsiz?" degan savolga javob. Xuddi konsertga kirish kabi: hujjat ko'rsatasiz → bilaguzuk olasiz → har joyda shuni ko'rsatasiz. (Eslatma: "kim NIMA qila oladi" — bu <b style={{ color: T.purple }}>avtorizatsiya</b>, keyingi modulda.) Qadamlarni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="authsteps">
@@ -398,6 +418,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 130 }}><p className="small" style={{ color: T.ink3, fontStyle: 'italic', textAlign: 'center', margin: 0 }}>← Qadamlarni bosib o'rganing</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -415,6 +436,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Parolni <span className="italic" style={{ color: T.accent }}>har safar</span> yuborasizmi?</h2></div>
         <Mentor>Yo'q — bir marta login qilasiz, server sizga <b style={{ color: T.accent }}>token (bilaguzuk)</b> beradi. So'rov: <span className="mono">POST /api/login</span> {'{ email, parol }'}. Server tekshiradi va <span className="mono">jwt.sign</span> bilan token yasab qaytaradi. Pastdagi formani to'ldirib, Kirish bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="loginform fade-up">
@@ -432,6 +454,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done2 && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">jwt.sign</span> ikki narsadan token yasaydi: <b>kim</b> (userId) + <b>maxfiy imzo</b> (SECRET). Endi parol kerak emas — token yetarli.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -469,6 +492,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bilaguzuk (token) ichida <span className="italic" style={{ color: T.accent }}>nima bor?</span></h2></div>
         <Mentor>JWT token uchta qismdan iborat, nuqta bilan ajratilgan: <span className="mono">header.payload.signature</span>. Eng muhimi — <b style={{ color: T.success }}>imzo (signature)</b>: u maxfiy kalit bilan yasaladi, shuning uchun soxta token yasab bo'lmaydi. Qismlarni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <TokenCard active={active} onPart={tap} />
@@ -485,6 +509,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Payload o'qiladi (kim), lekin imzo tufayli <b>o'zgartirib bo'lmaydi</b>. Birov "men adminman" deb yozsa — imzo buziladi, server rad etadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -524,6 +549,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mahsulot qo'shish uchun <span className="italic" style={{ color: T.accent }}>bilaguzuk kerak</span></h2></div>
         <Mentor>Endi <span className="mono">POST /api/products</span> himoyalangan. Har so'rovda bilaguzukni <b style={{ color: T.ink }}>Authorization: Bearer {'<token>'}</b> sarlavhasida yuborasiz. <b style={{ color: T.danger }}>Tokensiz</b> → 401. Avval tokensiz sinab ko'ring, keyin tokenni yoqib qayta yuboring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <Postman method="POST" url="/api/products" sending={sending} sent={sent} status={status} onSend={send} sendLabel="Send"
@@ -545,6 +571,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {sentYes && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>201 Created</b> — bilaguzuk haqiqiy, mahsulot qo'shildi! Endi begona hech narsa qila olmaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -567,6 +594,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Server bilaguzukni <span className="italic" style={{ color: T.accent }}>qanday tekshiradi?</span></h2></div>
         <Mentor>Himoyalangan route oldida <b style={{ color: T.ink }}>qo'riqchi (guard)</b> turadi. U <span className="mono">jwt.verify</span> bilan imzoni maxfiy kalit orqali tekshiradi. Koddagi har qatorni bosib, vazifasini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box clickable">
@@ -583,6 +611,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qo'riqchi: token bormi → imzo to'g'rimi → kim ekani aniq. Hammasi maxfiy kalitga (SECRET) bog'liq.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -598,6 +627,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Maxfiy kalit kodda tursa — <span className="italic" style={{ color: T.danger }}>nima bo'ladi?</span></h2></div>
         <Mentor>Butun himoya <b style={{ color: T.ink }}>JWT_SECRET</b>ga bog'liq — u "imzo muhri". Agar SECRET kodda yozilgan bo'lsa va kodni <b style={{ color: T.danger }}>GitHub'ga</b> yuklasangiz — har kim uni ko'radi va soxta token yasay oladi! Kodni GitHub'ga "push" qilib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">server.js</p>
@@ -611,6 +641,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 110 }}><p className="small" style={{ color: T.ink3, fontStyle: 'italic', textAlign: 'center', margin: 0 }}>Push qiling — GitHub'da nima ko'rinishini ko'ring</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -649,6 +680,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Maxfiy kalitni qayerda <span className="italic" style={{ color: T.success }}>yashiramiz?</span></h2></div>
         <Mentor>Yechim — <b style={{ color: T.ink }}>.env</b> fayli: maxfiy kalitlar uchun yashirin tortma. Kod undan <span className="mono">process.env</span> orqali o'qiydi, fayl esa <span className="mono">.gitignore</span> tufayli GitHub'ga ketmaydi. Uch qismni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">.env (yashirin)</p>
@@ -664,6 +696,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="ghub safe fade-step"><div className="gh-row"><span className="gh-eye">🔒</span><span className="mono small">JWT_SECRET endi GitHub'da ko'rinmaydi</span></div></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -751,6 +784,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">To'liq aylanani <span className="italic" style={{ color: T.accent }}>o'zingiz sinab ko'ring</span></h2></div>
         <Mentor>Haqiqiy himoya aylanasini bajaring: tokensiz urinib ko'ring (401), keyin login qiling (token oling), so'ng token bilan qayta yuboring (201). Mana shu — har kuni ishlatiladigan auth jarayoni.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="stepbar">
@@ -767,6 +801,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>{cur.hint}</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -788,6 +823,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI kod yozdi — lekin bitta qator <span className="italic" style={{ color: T.danger }}>xavfli</span></h2></div>
         <Mentor>AI server kodini yozdi va GitHub'ga yuklamoqchi. Lekin bir qatorda <b style={{ color: T.danger }}>maxfiy kalit ochiq</b> turibdi — bu GitHub'da hammaga ko'rinadi! Xavfli qatorni toping va tuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -810,6 +846,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 : <div className="takeaway fade-step"><div className="ta-bulb">🔒</div><p className="ta-h">Maxfiy kalit endi .env'da</p><p className="ta-sub">Kodda hech qachon ochiq secret qoldirmang</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -831,6 +868,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Maxfiy kalitni <span className="italic" style={{ color: T.success }}>.env'ga ko'chiring</span></h2></div>
         <Mentor>Kodda <span className="mono">JWT_SECRET</span> ochiq turibdi (chapda). Uni xavfsiz qiling: <b style={{ color: T.ink }}>.env</b> fayliga <span className="mono">JWT_SECRET=super-secret-key-123</span> deb yozing. Yozishingiz bilan kod avtomatik <span className="mono">process.env</span> orqali o'qishga o'tadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-1">
@@ -858,6 +896,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>.env qatorini yozing: <span className="mono">KALIT=qiymat</span> ko'rinishida. Masalan <span className="mono">JWT_SECRET=super-secret-key-123</span>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -991,8 +1030,15 @@ export default function AuthEnvLesson({ lang: langProp, onFinished }) {
         .tagpill { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; background: ${T.paper}; color: ${T.ink}; box-shadow: 0 3px 10px -5px rgba(${T.shadowBase},0.18); transition: opacity 0.2s; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

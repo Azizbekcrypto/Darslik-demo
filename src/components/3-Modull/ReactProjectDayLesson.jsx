@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // FRONTEND REACT MODULI · PRAKTIKA 3 — LOYIHA KUNI: "AvtoIjara" (React + API + CRUD + Router) — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -62,6 +63,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
@@ -187,11 +207,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -321,6 +337,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>4 ta alohida kuchni <span className="italic" style={{ color: T.accent }}>bitta ilovaga</span> birlashtira olamizmi?</h1>
         <Mentor>Bu modulda 4 ta kuch o'rgandingiz — har biri alohida. Bugun ularni <b style={{ color: T.ink }}>bitta haqiqiy ilovaga</b> qo'shamiz: <b style={{ color: T.ink }}>AvtoIjara</b> (mashina ijara sayti). To'rttala kuchni bosib eslang.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -350,6 +367,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Har bir kuch — ilovaning bir qismi. Bugun siz <b>loyiha boshlig'i</b>siz: rejani tuzasiz, <b>AI'ga buyurib</b> qurasiz, kodini tekshirasiz. Bo'sh sahifadan — to'liq AvtoIjara ilovasigacha.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -394,7 +412,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Sir shu: yaxshi dasturchi har qatorni o'zi yozmaydi — u <b style={{ color: T.ink }}>aniq buyuradi</b> va <b style={{ color: T.ink }}>natijani tekshiradi</b>. Bugun shuni mashq qilamiz: aniq prompt → agent quradi → siz tekshirasiz va tuzatasiz. Oxirida to'liq <b style={{ color: T.ink }}>AvtoIjara</b> ilovasi.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -442,6 +460,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Quruvchidan oldin — <span className="italic" style={{ color: T.accent }}>chizma</span>. Har sahifa nima qiladi?</h2></div>
         <Mentor>Loyiha boshlig'i avval ilovani <b style={{ color: T.ink }}>bo'laklaydi</b>: 4 sahifa, har biri bitta vazifa. Mana AvtoIjara sahifalari — har biriga to'g'ri vazifani biriktiring. Shu — sizning loyiha chizmangiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Sahifalar</p>
@@ -478,6 +497,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -495,6 +515,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bir xil ish — <span className="italic" style={{ color: T.accent }}>ikki xil prompt</span>. Farqi katta.</h2></div>
         <Mentor>Agent siz nima desangiz — shuni qiladi. Yaxshi prompt 3 narsani aytadi: <b style={{ color: T.ink }}>Nima</b> kerak · <b style={{ color: T.ink }}>Qanday</b> ishlasin · <b style={{ color: T.ink }}>Qayerda</b> bo'lsin. Ikkala tugmani bosib, farqni ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 9 }}>
@@ -519,6 +540,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qoida: <b>aniq prompt — aniq natija</b>. Bugun har buyruqni shu 3 qism bilan yig'asiz — agent adashmaydi, siz tezroq quradigan bo'lasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -548,6 +570,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">1-qism: <span className="italic" style={{ color: T.accent }}>Katalog</span>ni agentga qurdiring.</h2></div>
         <Mentor>Birinchi sahifa — Bosh: mashinalar katalogi. Promptga <b style={{ color: T.ink }}>aniqlik qo'shing</b> (qaysi ma'lumot, qayerdan), so'ng agentga yuboring. Reja kelganda — tasdiqlang, kodni o'qing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <AgentBuild
@@ -569,6 +592,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Katalog tayyor! Kodni tekshirdingiz: <span className="mono">fetch</span> serverdan oladi, <span className="mono">map</span> har biriga kartochka chizadi. 1-qism bajarildi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -599,6 +623,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">2-qism: har mashinaga <span className="italic" style={{ color: T.accent }}>alohida sahifa</span>.</h2></div>
         <Mentor>Endi kartochka bosilganda mashina sahifasi (<span className="mono">/car/:id</span>) ochilsin — qayta yuklanmay. Promptga aniqlik qo'shing, agentga yuboring. Tayyor bo'lgach, natijada kartochkani bosib sinab ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <AgentBuild
@@ -622,6 +647,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ishladi! Kartochka → <span className="mono">/car/:id</span> sahifasi, qayta yuklanmay. <span className="mono">useParams</span> qaysi mashina ekanini biladi. 2-qism bajarildi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -640,6 +666,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">3-qism: <span className="italic" style={{ color: T.accent }}>ijara + jami narx</span> — ilovaning yuragi.</h2></div>
         <Mentor>Eng qiziq qism: mashinani ijaraga olib, <b style={{ color: T.ink }}>necha kun</b>ga tanlash — jami narx <b style={{ color: T.ink }}>o'zi hisoblanadi</b>. Bu — state ishi. Promptni yig'ing, agentga yuboring, keyin natijada ijaraga olib sinang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <AgentBuild
@@ -680,6 +707,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yuragi tayyor! Kun o'zgarsa — jami <b>o'zi qayta hisoblanadi</b> (state). <span className="mono">kun × narx</span> — ilovaning asosiy mantiqi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -717,6 +745,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">4-qism: <span className="italic" style={{ color: T.accent }}>mashina qo'shish</span> — va agentni sayqallash.</h2></div>
         <Mentor>Sotuvchi yangi mashina qo'shsin (POST). Lekin diqqat: agent <b style={{ color: T.ink }}>birinchi urinishda</b> ko'pincha to'liq qilmaydi — siz natijani ko'rib, <b style={{ color: T.ink }}>aniqlashtiruvchi prompt</b> berasiz. Mana shu — haqiqiy agent boshqaruvi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             {!built ? (
@@ -757,6 +786,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana agent boshqaruvi: birinchi natija to'liq emasdi — siz ko'rdingiz, <b>aniqlashtiruvchi prompt</b> berdingiz, AI tuzatdi. Birinchi javobni ko'r-ko'rona qabul qilmang!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -782,6 +812,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi <span className="italic" style={{ color: T.accent }}>to'liq ilovani</span> o'zingiz ishlating.</h2></div>
         <Mentor>Mana yig'ilgan AvtoIjara! Sinab ko'ring: mashinani <b style={{ color: T.ink }}>oching</b> → <b style={{ color: T.ink }}>ijaraga oling</b> → kunni o'zgartirib <b style={{ color: T.ink }}>jami narx</b>ni kuzating. Uchalasi bajarilsa — ilova ishlaydi!</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <Win title="AvtoIjara — localhost:5173" minH={180}>
@@ -817,6 +848,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 To'liq ishlaydi! Katalog (GET) → mashina sahifasi (Router) → ijara + jami (state) — hammasi bitta ilovada. Siz bularni <b>AI bilan birga qurdingiz</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -837,6 +869,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — siz esa <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
         <Mentor>Mijoz shikoyat qildi: <b style={{ color: T.ink }}>jami narx noto'g'ri</b>! Lamborghini 3 kun ($200) + Tesla 2 kun ($80) — jami $760 bo'lishi kerak, lekin $280 chiqyapti. Agent qaysidir qatorda <b style={{ color: T.ink }}>kun</b>ni unutgan. Toping.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-2">
@@ -876,6 +909,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && <div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Topdingiz va tuzatdingiz — bu debugging!</p><p className="ta-sub">AI tez yozadi, siz tekshirib tuzatasiz — zo'r jamoa</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -912,6 +946,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu mashina edi — lekin <span className="italic" style={{ color: T.accent }}>istalgan saytni</span> shu yo'l bilan.</h2></div>
         <Mentor>Eng muhim narsani anglang: siz mashina ilovasini emas, <b style={{ color: T.ink }}>5 qadamli usulni</b> o'rgandingiz — rejala → aniq prompt → agent quradi → tekshir → tuzat. Shu usul bilan <b style={{ color: T.ink }}>istalgan saytni</b> qurasiz. Quyidagi g'oyani tanlang — ko'ring: xuddi shu qadamlar.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">G'oyani tanlang</p>
@@ -938,6 +973,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             ) : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Chapdan g'oya tanlang</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -966,6 +1002,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: ilovaning <span className="italic" style={{ color: T.accent }}>yuragini</span> o'zingiz yozing.</h2></div>
         <Mentor>VS Code'da jami narx hisobi ochiq — faqat <b style={{ color: T.ink }}>3-qator bo'sh</b>. Har ijara uchun <b style={{ color: T.ink }}>narx × kun</b> ni yozing: <span className="mono">b.price</span> <b style={{ color: T.ink }}>*</b> <span className="mono">b.days</span>. Mana shu — AvtoIjara'ning asosiy mantiqi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-2">
@@ -1000,6 +1037,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1143,8 +1181,14 @@ export default function ReactProjectDayLesson({ lang: langProp, onFinished }) {
         .vseen { margin-left: auto; font-weight: 700; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); background: ${T.accentSoft}; }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

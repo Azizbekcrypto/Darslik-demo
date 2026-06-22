@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // MA'LUMOT VA BACKEND MODULI · PRAKTIKA 4 — FEEDBACK BILAN YAXSHILASH: AVTOSTOYANKA UPGRADE — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -61,6 +62,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
@@ -207,11 +227,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -335,6 +351,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Siz qurdingiz — lekin u boshqaga <span className="italic" style={{ color: T.accent }}>qulaymi</span>?</h1>
         <Mentor>Demo Day: sinfdoshingiz <b style={{ color: T.ink }}>Aziz</b> panelni sinab ko'ryapti. Band joyni bossa nima bo'larkin? Bitta <b style={{ color: T.ink }}>band (🟥)</b> joyni bosib ko'ring — Azizning o'rnida.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label fade-up delay-1">Aziz panelni sinayapti</p>
@@ -358,6 +375,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">To'g'ri! Biz o'z ishimizga juda yaqinmiz — kamchilikni ko'rmaymiz. Aziz bir bosishda topdi. Bugun <b>sinfdoshlardan fikr yig'ib</b>, panelni tartib bilan <b>yaxshilaymiz</b> (upgrade).</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -394,7 +412,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Tayyor ilovani <span className="italic" style={{ color: T.accent }}>qanday</span> yaxshilaymiz?</h2></div>
         <Mentor>Yaxshi dasturchi shunchaki qurmaydi — <b style={{ color: T.ink }}>ko'rsatadi, fikr oladi va yaxshilaydi</b>. Bugun aynan shu siklni o'tamiz: panelni Demo qilamiz, sinfdosh fikrlarini yig'amiz, eng muhimini tanlaymiz va AI bilan upgrade qilamiz.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -429,6 +447,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qanday fikr foydali — <span className="italic" style={{ color: T.accent }}>"zo'r"</span>mi yoki aniqmi?</h2></div>
         <Mentor>"Zo'r ekan!" — yoqimli, lekin <b style={{ color: T.ink }}>nima qilishni</b> aytmaydi. Foydali fikr — <b style={{ color: T.ink }}>aniq</b> va <b style={{ color: T.ink }}>amalga oshsa bo'ladigan</b>. Har fikrni baholang: foydalimi yoki umumiy?</Mentor>
+        <Zoomable>
         <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
           {SAMPLES.map(s => {
             const a = ans[s.id];
@@ -446,6 +465,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           })}
         </div>
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Endi bilasiz: foydali fikr — aniq muammoni ko'rsatadi. Shunday fikrlarni yig'amiz.</p></div>}
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -465,6 +485,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sinfdoshlar <span className="italic" style={{ color: T.accent }}>nima dedi</span>?</h2></div>
         <Mentor>Demo Day'da to'rt kishi panelni sinadi va aniq fikr berdi. Har birini bosib o'qing — bular bizning <b style={{ color: T.ink }}>yaxshilash ro'yxatimiz</b>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -479,6 +500,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>4 ta aniq fikr yig'ildi. Lekin hammasini birdan qilib bo'lmaydi — qaysi birini avval qilamiz? Saralaymiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -512,6 +534,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Avval <span className="italic" style={{ color: T.accent }}>qaysi birini</span> qilamiz?</h2></div>
         <Mentor>Hammasini birdan qilib bo'lmaydi. PM hiylasi — <b style={{ color: T.ink }}>Foyda / Mehnat</b> jadvali: ko'p foyda beradigan, kam mehnat talab qiladiganini <b style={{ color: T.ink }}>avval</b> qilamiz. Har fikrni bosing — o'z katagiga joylashadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Joylanmagan fikrlar</p>
@@ -540,6 +563,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -576,6 +600,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Tasodifiy chiqarishni qanday <span className="italic" style={{ color: T.accent }}>to'xtatamiz</span>?</h2></div>
         <Mentor>Birinchi upgrade — <b style={{ color: T.ink }}>chiqishda tasdiq</b>. Endi chiqarishdan oldin "Rostdan chiqarilsinmi?" deb so'raydi. AI'ga buyruq beramiz, keyin o'zingiz sinaysiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Agentga prompt</p>
@@ -603,6 +628,7 @@ Bekor bo'lsa hech narsa o'zgarmasin.`}</pre>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Endi tasodifiy chiqarish yo'q — panel avval so'raydi. Aziz topgan muammo hal bo'ldi!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -619,6 +645,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qorovul holatni <span className="italic" style={{ color: T.accent }}>bir qarashda</span> ko'rsinmi?</h2></div>
         <Mentor>Laylo: "nechta bo'sh, nechta band — darrov ko'rinmadi". Yechim — <b style={{ color: T.ink }}>dashboard</b>: yuqorida yirik raqamlar bilan bo'sh, band va kunlik tushum. Tugmani bosib, eski va yangi ko'rinishni solishtiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">{on ? 'Yangi — dashboard bilan' : 'Eski — kichik sanagich'}</p>
@@ -631,6 +658,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Endi qorovul boshini ko'tarib, bir soniyada hammasini ko'radi. Laylo ham mamnun!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -657,6 +685,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qorovul nimani istasa <span className="italic" style={{ color: T.accent }}>o'zi sozlasin</span> — qanday qilamiz?</h2></div>
         <Mentor>Bek va Diana: narx va joylar soni qotib qolgan. Yechim — <b style={{ color: T.ink }}>yonda ochiladigan Sozlamalar paneli</b>: qorovul narx va joylar sonini o'zi o'zgartiradi. Buni AI'ga aniq prompt berib qo'shamiz — keyin o'zingiz ochib ko'rasiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Agentga prompt</p>
@@ -676,6 +705,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana yonda ochiladigan Sozlamalar! Endi narx va joylar sonini shu panelda boshqarasiz — keyingi qadamda sinab ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -716,6 +746,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi o'zingiz — narx va joylarni <span className="italic" style={{ color: T.accent }}>sozlang</span>.</h2></div>
         <Mentor>Paneldagi <b style={{ color: T.ink }}>⚙</b> ni bosing — yondan Sozlamalar ochiladi. <b style={{ color: T.ink }}>Narxni</b> o'zgartiring (mas. 15 000), <b style={{ color: T.ink }}>joylar sonini</b> ko'paytiring (12), so'ng <b style={{ color: T.ink }}>Saqlash</b>. Panel darrov yangilanadi — bu bazada <span className="mono">UPDATE</span>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Joriy sozlamalar</p>
@@ -738,6 +769,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {!drawer && !done && <p className="small" style={{ color: T.accent, fontStyle: 'italic', margin: 0 }}>Yuqori o'ngdagi ⚙ ni bosing →</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -759,6 +791,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yangilangan panel — endi <span className="italic" style={{ color: T.accent }}>qanday ishlaydi</span>?</h2></div>
         <Mentor>Hamma upgrade bir joyda: <b style={{ color: T.ink }}>dashboard</b>, <b style={{ color: T.ink }}>12 joy</b>, narx <b style={{ color: T.ink }}>15 000</b>, va <b style={{ color: T.ink }}>tasdiq</b>. Band joylarni chiqarib ko'ring — endi avval so'raydi, tushum yangi narxda o'sadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Yangilangan qorovul paneli</p>
@@ -781,6 +814,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="takeaway fade-step"><div className="ta-bulb">🎉</div><p className="ta-h">Panel yaxshilandi!</p><p className="ta-sub">4 fikr → 4 upgrade. Foydalanuvchi mamnun.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1047,8 +1081,14 @@ export default function FullstackFeedbackLesson({ lang: langProp, onFinished }) 
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

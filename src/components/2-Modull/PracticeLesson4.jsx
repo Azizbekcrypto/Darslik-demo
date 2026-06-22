@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // PRAKTIKA 4-DARS — MVP TAYYOR (mini-do'kon, 2-qism) — PLATFORM STANDARD v16
@@ -184,11 +185,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -294,6 +291,27 @@ const InteractiveShop = ({ cart = [], onAdd, showCart = true, showTotal = true, 
   );
 };
 
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 // ===== SCREEN 0 — HOOK (o'zak bor, lekin sotib bo'lmaydi) =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const [tries, setTries] = useState(0);
@@ -309,6 +327,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Do'kon ko'rinadi, lekin <span className="italic" style={{ color: T.accent }}>sotib olib</span> bo'lmaydi 🤔</h1>
         <Mentor>3-darsda do'konning <b style={{ color: T.ink }}>o'zagini</b> qurdik — mahsulotlar va narxlar bor. Lekin bu hali haqiqiy do'kon emas: <b style={{ color: T.ink }}>"Sotib olish"</b> tugmasini bosib ko'ring — biror narsa bo'ladimi?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label">3-darsdagi o'zak (katalog)</p>
@@ -335,6 +354,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             )}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -374,7 +394,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Do'konni <span className="italic" style={{ color: T.accent }}>oxiriga</span> yetkazamiz</h2></div>
         <Mentor>Reja bizda bor: o'zakka savat va jami narxni qo'shamiz, buglarni tuzatamiz, jilolaymiz va <b style={{ color: T.ink }}>deploy</b> qilamiz. Dars oxirida sizda haqiqiy, ulashiladigan do'kon bo'ladi. Mana yo'l — 5 qadam.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{PreviewBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>
         ) : (
@@ -403,6 +423,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Avval — <span className="italic" style={{ color: T.accent }}>savatga qo'shish</span></h2></div>
         <Mentor>Birinchi xususiyat: har mahsulotga <b style={{ color: T.ink }}>"+"</b> tugmasi va <b style={{ color: T.ink }}>savat sanagichi</b>. AI'ga aniq buyruq beramiz, u rejani ko'rsatadi, tasdiqlaymiz — keyin "+" ni bosib, savat to'lishini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="promptbox">Har mahsulotga <span className="pb-slot">"+ savatga"</span> tugmasi va <span className="pb-slot">savat sanagichi</span> qo'sh.</div>
@@ -426,6 +447,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ishladi! Endi "+" bosilsa, savat sanagichi oshyapti. Bu — haqiqiy interaktivlik (1-darsdan eslang: hodisa → reaksiya → o'zgarish).</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -448,6 +470,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi — <span className="italic" style={{ color: T.accent }}>jami narx</span> avtomatik hisoblanadi</h2></div>
         <Mentor>Savat bor, lekin xaridor qancha to'lashini bilishi kerak. <b style={{ color: T.ink }}>Jami narx</b> — qo'shilgan mahsulotlar narxining yig'indisi (10-darsdagi sikl/qo'shish esingizdami?). AI'ga qo'shtiramiz, keyin mahsulot qo'shib, jami o'zgarishini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="promptbox">Savatga qo'shilgan mahsulotlarning <span className="pb-slot">jami narxini</span> avtomatik hisoblab ko'rsat.</div>
@@ -464,6 +487,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Zo'r! Har qo'shilganda jami narx avtomatik yangilanyapti. Endi bu — haqiqiy, ishlaydigan do'kon. MVP deyarli tayyor!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -495,6 +519,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mana — sizning <span className="italic" style={{ color: T.accent }}>ishlaydigan</span> do'koningiz!</h2></div>
         <Mentor>Hammasi birlashdi: katalog, savat va jami narx. Bu endi to'laqonli MVP. Bir necha mahsulot qo'shing — savat va jami narx birga o'zgarishini his qiling. Bu — siz qurgan haqiqiy do'kon!</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Do'kon — sinab ko'ring</p>
@@ -512,6 +537,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Siz haqiqiy, ishlaydigan do'kon qurdingiz! Boshidagi "sotib bo'lmaydigan" katalogni eslang — qancha yo'l bosib o'tdingiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -532,6 +558,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Diqqat — bu yerda bir narsa <span className="italic" style={{ color: T.accent }}>noto'g'ri</span></h2></div>
         <Mentor>AI ba'zan kichik xato qiladi — bu mutlaqo normal. Do'konga mahsulot qo'shing va <b style={{ color: T.ink }}>jami narxni diqqat bilan</b> tekshiring: u to'g'ri hisoblanyaptimi? (Maslahat: bitta narxni hisobda ushlab, jamiga solishtiring.)</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Do'kon (mahsulot qo'shing)</p>
@@ -547,6 +574,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {isFound && <div className="takeaway fade-step"><div className="ta-bulb" style={{ fontSize: 24, fontWeight: 800, color: T.accent }}>!</div><p className="ta-h">Topdingiz — jami narx noto'g'ri!</p><p className="ta-sub">Har mahsulot ikki marta hisoblanyapti. AI adashibdi — endi aniq qilib qayta so'raymiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -571,6 +599,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bugni AI'ga <span className="italic" style={{ color: T.accent }}>aniq tushuntiramiz</span></h2></div>
         <Mentor>Bugni tuzatish uchun AI'ga <b style={{ color: T.ink }}>aniq</b> aytish kerak: nima noto'g'ri va qanday bo'lishi kerak. "Tuzat" — kam; "jami ikki barobar ko'p, bir marta hisoblansin" — aniq. Qaysi tushuntirish eng aniq?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">AI'ga qanday aytamiz?</p>
@@ -587,6 +616,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Hozircha jami narx ikki barobar (xato). Aniq buyruq tanlang — tuzatamiz.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -624,6 +654,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">MVP ishlayapti — endi <span className="italic" style={{ color: T.accent }}>jilolaymiz</span></h2></div>
         <Mentor>Asosiy ish tugadi. Endi do'konni <b style={{ color: T.ink }}>yanada qulay</b> qiladigan kichik pardoz qo'shamiz. Bu shart emas, lekin foydalanuvchiga yoqadi. Bitta pardozni tanlang — natijada qanday ko'rinishini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qaysi pardozni qo'shamiz?</p>
@@ -644,6 +675,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana shu kichik pardoz do'konni professional ko'rsatadi. Endi MVP to'liq jilolangan — chiqarishga tayyor!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -679,6 +711,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">MVP tayyor — <span className="italic" style={{ color: T.accent }}>dunyoga</span> chiqaramiz!</h2></div>
         <Mentor>Do'kon kompyuteringizda ishlayapti. Lekin haqiqiy loyiha — boshqalar ham ko'ra oladigan loyiha. <b style={{ color: T.ink }}>Deploy</b> — saytni internetga chiqarish (6-darsdagi Netlify esingizdami?). Tugmani bosing va havola oling.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Saytni internetga chiqarish</p>
@@ -699,6 +732,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -721,6 +755,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mana — <span className="italic" style={{ color: T.accent }}>siz</span> qurgan do'kon!</h2></div>
         <Mentor>To'xtab, bir nazar tashlang: nolingdan boshlab, haqiqiy, internetda ishlaydigan do'kon qurdingiz. Quyidagi yutuqlarning har birini bosib, "o'zimniki" deb belgilang — bularning hammasini <b style={{ color: T.ink }}>siz</b> qildingiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Tayyor do'kon</p>
@@ -742,6 +777,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>To'rttala yutuq — sizniki! Bu bir kichik sahifa emas, to'laqonli, ishlaydigan, chiqarilgan loyiha. Haqiqiy dasturchi ishi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -765,6 +801,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qarang — qancha <span className="italic" style={{ color: T.accent }}>yo'l bosib o'tdingiz</span></h2></div>
         <Mentor>Bu 4 ta praktikada siz bir necha kichik tugmadan to'laqonli, chiqarilgan ilovagacha keldingiz. Har bir darsni bosib, nimani egallaganingizni eslang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -787,6 +824,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bularning hammasi — bitta katta mahorat: <b>g'oyani real, chiqarilgan loyihaga aylantirish</b>. Endi bu sizda bor.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -811,6 +849,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Antigravity'da <span className="italic" style={{ color: T.accent }}>to'liq loyiha</span> shunday quriladi</h2></div>
         <Mentor>Bugun o'rgangan hamma narsa haqiqiy <b style={{ color: T.ink }}>Antigravity</b>da bitta oqimga birlashadi. Quyidagi qadamlarni ketma-ket ochib chiqing — uyga vazifada aynan shu yo'l bilan o'z loyihangizni qurasiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -830,6 +869,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -859,6 +899,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi sinov: <span className="italic" style={{ color: T.accent }}>istalgan</span> loyiha yo'li</h2></div>
         <Mentor>Mana — butun modulning sirri bitta ketma-ketlikda. Endi siz <b style={{ color: T.ink }}>istalgan</b> loyihani shu yo'l bilan qura olasiz. Qadamlarni to'g'ri tartibga qo'ying.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qadamlar (bosib tartibga qo'ying)</p>
@@ -876,6 +917,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {passed && <div ref={passedRef} className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mukammal! Reja → MVP → qur → tekshir → deploy. Bu — istalgan loyihaning universal yo'li. Siz uni egalladingiz!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -956,6 +998,12 @@ export default function PracticeLesson4({ lang: langProp, onFinished }) {
         .fade-up { animation: fade-in-up 0.4s ease-out forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
@@ -992,7 +1040,7 @@ export default function PracticeLesson4({ lang: langProp, onFinished }) {
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
         .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // HTML 1-DARS — PLATFORM STANDARD v15 (Notion: design_system + platform_contract + infrastructure_v1)
@@ -291,17 +292,34 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
         <div className="mentor-msg body">{children}</div>
       </div>
     </div>
+  );
+};
+
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
   );
 };
 
@@ -365,9 +383,11 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   const PreviewBlock = (
     <Col>
       <p className="flow-label">Dars oxirida bilasiz — bu yo'lni</p>
+      <Zoomable>
       <div className="jmini fade-up delay-1">
-        {JOURNEY.map((j, i) => (<React.Fragment key={i}><div className="jmini-node"><span className="jmini-ic">{j.ic}</span><span className="jmini-l">{j.l}</span></div>{i < JOURNEY.length - 1 && <span className="jmini-arr">→</span>}</React.Fragment>))}
+        {JOURNEY.map((j, i) => (<React.Fragment key={i}><div className="jmini-node" style={{ animationDelay: `${i * 0.1}s` }}><span className="jmini-ic">{j.ic}</span><span className="jmini-l">{j.l}</span></div>{i < JOURNEY.length - 1 && <span className="jmini-arr" style={{ animationDelay: `${i * 0.18}s` }}>→</span>}</React.Fragment>))}
       </div>
+      </Zoomable>
       <p className="body" style={{ margin: 0, color: T.ink2 }}>…va kodingiz <b style={{ color: T.ink }}>hech qachon</b> yo'qolmaydi.</p>
     </Col>
   );
@@ -380,7 +400,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Reja" screen={screen} audioState={audio} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
-        <div className="head"><h2 className="title h-title fade-up">Kodingiz uchun <span className="italic" style={{ color: T.accent }}>vaqt mashinasi</span> quramiz</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Kodingiz uchun <span className="italic" style={{ color: T.accent }}>vaqt mashinasi</span> quramiz</h2><p className="body fade-up delay-1" style={{ margin: '6px 0 0', color: T.ink2, maxWidth: 580 }}><b style={{ color: T.ink }}>«Vaqt mashinasi»</b> — bu istalgan paytda kodning <b style={{ color: T.ink }}>eski holatiga qaytish</b> imkoni. Xato qilsangiz ham, kechagi (yoki bir haftalik) kodga bemalol qaytasiz. Git aynan shuni beradi.</p></div>
         <Mentor>Bugun <b style={{ color: T.ink }}>Git</b> va <b style={{ color: T.ink }}>GitHub</b> bilan tanishamiz — dasturchining eng muhim quroli. <b style={{ color: T.ink }}>5 qadamda</b> kodni saqlash, orqaga qaytish va bulutga yuborishni o'rganamiz.</Mentor>
         {!isNarrow ? (<Split>{PreviewBlock}{StepsBlock}</Split>)
           : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{PreviewBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>📋 5 qadamni ko'rish</button></div>)
@@ -406,6 +426,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Git aslida <span className="italic" style={{ color: T.accent }}>nima</span>?</h2></div>
         <Mentor>Git — <b style={{ color: T.ink }}>versiya nazorati</b> tizimi. Kompyuter o'yinini eslang: qiyin joyga yetganda <b style={{ color: T.ink }}>checkpoint</b> qo'yasiz. O'lib qolsangiz — boshidan emas, o'sha nuqtadan davom etasiz. Git kodingiz uchun shunday ishlaydi.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="flow-label">O'yin bosqichi</div>
@@ -427,6 +448,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}><b>Git</b> — kodning har bir holatini eslab qoladigan dastur. Checkpoint = <span className="mono">commit</span>.</p></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -451,6 +473,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Git o'zgarishni qanday <span className="italic" style={{ color: T.accent }}>eslab qoladi</span>?</h2></div>
         <Mentor>Git'da har bir saqlash — <b style={{ color: T.ink }}>commit</b>. Bu kodingizning o'sha lahzadagi <b style={{ color: T.ink }}>surati</b> 📸, qisqa izoh bilan. Rangni o'zgartirib, surat oling.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="flow-label">Kodingiz</div>
@@ -479,6 +502,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har commit — alohida surat: <b>izoh</b> + <b>vaqt</b> + maxsus raqam (<span className="mono">hash</span>). Tarix saqlanib qoladi.</p></div>}
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -510,6 +534,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Saqlashdan oldin <span className="italic" style={{ color: T.accent }}>nima bo'ladi</span>?</h2></div>
         <Mentor>Avval <span className="mono">git add</span> — qaysi fayllarni saqlashni tanlaysiz (xuddi savatga solganday). Keyin <span className="mono">git commit</span> — ularni <b style={{ color: T.ink }}>izoh bilan</b> saqlaysiz. Tugmalarni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="flow-label">Fayl holati</div>
@@ -531,6 +556,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && (<div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>add</b> faylni tanladi, <b>commit</b> uni izoh bilan saqladi. Checkpoint tayyor!</p></div>)}
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -564,6 +590,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bir hafta oldingi kodga <span className="italic" style={{ color: T.accent }}>qaytib bo'ladimi</span>?</h2></div>
         <Mentor>Har commit tarixda saqlanadi. Istalgan <b style={{ color: T.ink }}>eski commit</b>'ni tanlasangiz, kod aynan o'sha holatga qaytadi — xuddi <b style={{ color: T.ink }}>vaqt mashinasi</b>. Eski commit'ni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="flow-label">commit tarixi (yangidan eskiga)</div>
@@ -578,11 +605,12 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </div>
           <div className="col">
             <div className="flow-label">{sel === 0 ? 'Hozirgi kod' : `Kod o'sha paytda · ${cur.hash}`}</div>
-            <pre className="code-box fade-up delay-2" key={cur.hash} style={{ minHeight: 90 }}>{cur.code.join('\n')}</pre>
+            <pre className="code-box gcode-rewind" key={cur.hash} style={{ minHeight: 90 }}>{cur.code.join('\n')}</pre>
             {done && sel !== 0 && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Kod <b>{cur.hash}</b> holatiga qaytdi! Hech narsa yo'qolmadi — istalgan paytga sayohat qilsangiz bo'ladi.</p></div>}
             {done && sel === 0 && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yana <b>hozirgi</b> holatga qaytdingiz. Git hammasini eslab turadi.</p></div>}
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -600,11 +628,12 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kompyuter buzilsa, kod <span className="italic" style={{ color: T.accent }}>yo'qoladimi</span>?</h2></div>
         <Mentor>Git faqat <b style={{ color: T.ink }}>kompyuteringizda</b> ishlaydi. Lekin kompyuter buzilsa yoki yo'qolsa — kod ham ketadimi? Yo'q! <b style={{ color: T.ink }}>GitHub</b> bor — kodning <b style={{ color: T.ink }}>bulutdagi nusxasi</b>. Tugmani bosib, loyihani bulutga joylang.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="cs fade-up delay-2">
               <div className="cs-node"><span className="cs-ic">💻</span><span className="cs-l">Git<br />(kompyuteringiz)</span></div>
-              <div className="cs-wire"><div className={`cs-msg cs-req ${uploaded ? 'on' : ''}`}>⬆️ push</div></div>
+              <div className="cs-wire"><div className={`cs-msg cs-req ${uploaded ? 'on' : ''}`}>⬆️ push</div>{uploaded && <span className="cs-fly cs-fly-r">📦</span>}</div>
               <div className={`cs-node ${uploaded ? 'cs-active' : ''}`}><span className="cs-ic">☁️</span><span className="cs-l">GitHub<br />(bulut)</span></div>
             </div>
             {!uploaded ? <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setUploaded(true)}>☁️ GitHub'ga joylash</button>
@@ -619,6 +648,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             ) : (<div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Chapdagi tugmani bosing — kod kompyuterdan bulutga (GitHub) ko'chadi.</p></div>)}
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -645,6 +675,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kodni bulut bilan qanday <span className="italic" style={{ color: T.accent }}>almashasiz</span>?</h2></div>
         <Mentor>Kodingiz ikki joyda: kompyuter va bulut. <b style={{ color: T.ink }}>push</b> — sizdagini bulutga yuboradi, <b style={{ color: T.ink }}>pull</b> — bulutdagini sizga oladi. Erkin sinang: commit qo'shib push qiling, do'st commit qo'shsa pull qiling — qayta-qayta.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="cs fade-up delay-2">
@@ -652,6 +683,8 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <div className="cs-wire">
                 <div className={`cs-msg cs-req ${anim === 'push' ? 'on' : ''}`}>⬆️ push</div>
                 <div className={`cs-msg cs-res ${anim === 'pull' ? 'on' : ''}`}>⬇️ pull</div>
+                {anim === 'push' && <span className="cs-fly cs-fly-r">📦</span>}
+                {anim === 'pull' && <span className="cs-fly cs-fly-l">📦</span>}
               </div>
               <div className={`cs-node ${cloud >= local ? 'cs-active' : ''}`}><span className="cs-ic">☁️</span><span className="cs-l">GitHub<br /><b>{cloud} commit</b></span></div>
             </div>
@@ -676,6 +709,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -710,6 +744,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Loyihaning hamma narsasi <span className="italic" style={{ color: T.accent }}>qayerda turadi</span>?</h2></div>
         <Mentor>Loyihangizning fayllari, commit tarixi va tavsifi — hammasi qayerda? <b style={{ color: T.ink }}>Repository</b>'da (qisqacha <b style={{ color: T.ink }}>repo</b>) — Git kuzatadigan loyiha papkasi. GitHub'dagi repo qismlarini bosib o'rganing.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="repo fade-up delay-2">
@@ -728,6 +763,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Repo — bitta loyiha uchun bitta uy: fayllar + tarix + tavsif, hammasi birga.</p></div>}
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -744,11 +780,12 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Boshqaning loyihasini qanday <span className="italic" style={{ color: T.accent }}>olasiz</span>?</h2></div>
         <Mentor>GitHub'ning eng kuchli tomoni — <b style={{ color: T.ink }}>birga ishlash</b>. Boshqaning loyihasini <b style={{ color: T.ink }}>clone</b> qilib, butun repo'ni kompyuteringizga nusxalaysiz. Keyin o'zgartirib, push qilasiz. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="cs fade-up delay-2">
               <div className="cs-node cs-active"><span className="cs-ic">☁️</span><span className="cs-l">GitHub repo<br />(jamoaniki)</span></div>
-              <div className="cs-wire"><div className={`cs-msg cs-res ${cloned ? 'on' : ''}`}>⬇️ clone</div></div>
+              <div className="cs-wire"><div className={`cs-msg cs-res ${cloned ? 'on' : ''}`}>⬇️ clone</div>{cloned && <span className="cs-fly cs-fly-r">📦</span>}</div>
               <div className={`cs-node ${cloned ? 'cs-active' : ''}`}><span className="cs-ic">💻</span><span className="cs-l">Sizning<br />kompyuter</span></div>
             </div>
             {!cloned ? <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setCloned(true)}>⬇️ git clone</button>
@@ -761,6 +798,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}>Millionlab dasturchilar shunday ishlaydi: <b>clone</b> → o'zgartir → <b>push</b>. Bitta loyiha — ko'p odam.</p></div>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -789,13 +827,13 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const done = step >= CMDS.length;
   const run = (i) => { if (i !== step) return; const ns = step + 1; setStep(ns); if (ns >= CMDS.length && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); };
   return (
-    <Stage eyebrow="Amaliyot · workflow" screen={screen} narrow audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Aylanani bajaring"} onClick={onNext} /></>}>
+    <Stage eyebrow="Amaliyot · workflow" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Aylanani bajaring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">To'liq aylana — <span className="italic" style={{ color: T.accent }}>o'zingiz bajaring</span></h2></div>
         <Mentor>Faylni o'zgartirdingiz. Endi uchta buyruqni <b style={{ color: T.ink }}>tartib bilan</b> bosing: <span className="mono">add</span> → <span className="mono">commit</span> → <span className="mono">push</span>. Tartib muhim!</Mentor>
         <div className="frame frame-col fade-up delay-2">
           <div className="pz-flow">{NODES.map((s, i) => (<React.Fragment key={i}><div className={`pz-step ${i === 0 || step >= i ? 'on' : ''} ${i > 0 && step + 1 === i ? 'active' : ''}`}><span className="pz-ic">{i === 0 ? '✏️' : (step >= i ? '✓' : s.ic)}</span><span className="pz-lbl">{s.l}</span></div>{i < NODES.length - 1 && <span className={`pz-arrow ${step >= i ? 'on' : ''}`}>→</span>}</React.Fragment>))}</div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
             {CMDS.map((c, i) => (<button key={i} className={`chip ${step === i ? 'chip-on' : ''}`} disabled={step !== i} onClick={() => run(i)}>{c.ic} git {c.l}</button>))}
           </div>
         </div>
@@ -970,6 +1008,12 @@ export default function GitLesson({ lang: langProp, onFinished }) {
         .fade-up { animation: fade-in-up 0.4s ease-out forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
 
@@ -1003,8 +1047,8 @@ export default function GitLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }
@@ -1274,7 +1318,7 @@ export default function GitLesson({ lang: langProp, onFinished }) {
         .pz-emoji { font-size: 26px; line-height: 1; flex-shrink: 0; }
         .pz-title { font-family: 'Manrope'; font-weight: 700; font-size: 14px; color: ${T.accent}; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 3px; }
         .pz-sub { font-size: clamp(13px,1.6vw,15px); color: ${T.ink2}; line-height: 1.45; margin: 0; }
-        .pz-flow { display: flex; align-items: flex-start; gap: 4px; overflow-x: auto; padding: 4px 2px 2px; }
+        .pz-flow { display: flex; align-items: flex-start; justify-content: center; gap: 4px; overflow-x: auto; padding: 4px 2px 2px; }
         .pz-step { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 88px; flex: 0 0 auto; padding: 10px 6px; border-radius: 12px; transition: background 0.3s; }
         .pz-step.on { background: ${T.successSoft}; }
         .pz-step.active { background: ${T.accentSoft}; }
@@ -1353,16 +1397,24 @@ export default function GitLesson({ lang: langProp, onFinished }) {
         .dns-head { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.ink}; }
         .dns-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .dns-arr { font-family: 'JetBrains Mono'; font-weight: 700; color: ${T.accent}; }
-        .cs { display: flex; align-items: center; gap: 8px; background: ${T.paper}; border-radius: 14px; padding: 16px 12px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); }
-        .cs-node { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; padding: 8px; border-radius: 10px; transition: all 0.3s; min-width: 76px; }
-        .cs-node.cs-active { background: ${T.accentSoft}; }
+        .cs { position: relative; display: flex; align-items: stretch; gap: 8px; background: ${T.paper}; border-radius: 14px; padding: 16px 12px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); }
+        .cs-node { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0; padding: 10px; border-radius: 12px; transition: all 0.3s; min-width: 80px; }
+        .cs-node.cs-active { background: ${T.accentSoft}; box-shadow: inset 0 0 0 2px ${T.accent}; }
+        .cs-node.cs-active .cs-ic { animation: csPop 0.45s cubic-bezier(.34,1.5,.5,1); }
         .cs-ic { font-size: 30px; }
         .cs-l { font-family: 'Manrope'; font-size: 11px; font-weight: 600; color: ${T.ink2}; text-align: center; line-height: 1.2; }
-        .cs-wire { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-        .cs-msg { font-family: 'JetBrains Mono'; font-size: 11px; padding: 5px 8px; border-radius: 7px; text-align: center; opacity: 0; transform: translateX(-8px); transition: all 0.4s; }
+        @keyframes csPop { 0% { transform: scale(1); } 45% { transform: scale(1.28); } 100% { transform: scale(1); } }
+        .cs-wire { position: relative; flex: 1; align-self: stretch; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; min-height: 70px; }
+        .cs-wire::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 3px; transform: translateY(-50%); border-radius: 2px; background: repeating-linear-gradient(90deg, rgba(167,166,162,0.55) 0 7px, transparent 7px 14px); }
+        .cs-msg { position: relative; z-index: 2; font-family: 'JetBrains Mono'; font-size: 11px; padding: 5px 9px; border-radius: 7px; text-align: center; opacity: 0; transform: translateY(5px); transition: all 0.3s; box-shadow: 0 3px 9px -4px rgba(${T.shadowBase},0.3); }
         .cs-req { background: ${T.accentSoft}; color: ${T.accent}; }
-        .cs-res { background: ${T.successSoft}; color: ${T.success}; transform: translateX(8px); }
+        .cs-res { background: ${T.successSoft}; color: ${T.success}; }
         .cs-msg.on { opacity: 1; transform: none; }
+        .cs-fly { position: absolute; z-index: 3; top: 50%; margin-top: -14px; width: 28px; height: 28px; border-radius: 8px; background: ${T.paper}; display: flex; align-items: center; justify-content: center; font-size: 15px; box-shadow: 0 5px 14px -3px rgba(${T.shadowBase},0.45), inset 0 0 0 1.5px ${T.accent}; }
+        .cs-fly-r { animation: csFlyR 0.72s cubic-bezier(.5,0,.4,1) both; }
+        .cs-fly-l { animation: csFlyL 0.72s cubic-bezier(.5,0,.4,1) both; }
+        @keyframes csFlyR { 0% { left: 0; opacity: 0; transform: scale(0.5); } 18% { opacity: 1; transform: scale(1); } 82% { opacity: 1; transform: scale(1); } 100% { left: calc(100% - 28px); opacity: 0; transform: scale(0.5); } }
+        @keyframes csFlyL { 0% { left: calc(100% - 28px); opacity: 0; transform: scale(0.5); } 18% { opacity: 1; transform: scale(1); } 82% { opacity: 1; transform: scale(1); } 100% { left: 0; opacity: 0; transform: scale(0.5); } }
         .jmini { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: ${T.paper}; border-radius: 12px; padding: 14px 12px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); }
         .jmini-node { display: flex; flex-direction: column; align-items: center; gap: 3px; }
         .jmini-ic { font-size: 22px; }
@@ -1400,7 +1452,22 @@ export default function GitLesson({ lang: langProp, onFinished }) {
         .repo-top { display: flex; align-items: center; gap: 8px; padding: 12px 15px; border-bottom: 1px solid rgba(167,166,162,0.25); font-family: 'JetBrains Mono'; font-size: 13px; color: ${T.ink}; }
         .repo-row { display: flex; align-items: center; gap: 10px; padding: 11px 15px; cursor: pointer; transition: background 0.2s; font-family: 'JetBrains Mono'; font-size: 13px; color: ${T.ink2}; }
         .repo-row:hover { background: ${T.bg}; }
-        .repo-row.on { background: ${T.accentSoft}; color: ${T.accent}; }
+        .repo-row.on { background: ${T.accentSoft}; color: ${T.accent}; box-shadow: inset 3px 0 0 ${T.accent}; }
+        /* === animatsiya yaxshilashlari (page 2,3,4,8,12) === */
+        .jmini-node { animation: jpop 0.45s backwards cubic-bezier(.34,1.5,.5,1); }
+        .jmini-arr { animation: jflow 1.8s ease-in-out infinite; }
+        @keyframes jpop { from { opacity: 0; transform: scale(0.55); } to { opacity: 1; transform: scale(1); } }
+        @keyframes jflow { 0%,100% { opacity: 0.4; transform: translateX(0); } 50% { opacity: 1; transform: translateX(2px); } }
+        .lvl-cell.here { animation: lvlHop 0.42s cubic-bezier(.34,1.55,.5,1); }
+        @keyframes lvlHop { 0% { transform: translateY(-9px) scale(0.85); } 55% { transform: translateY(2px) scale(1.12); } 100% { transform: translateY(0) scale(1); } }
+        .lvl-cell.cp { animation: lvlFlag 0.45s cubic-bezier(.34,1.5,.5,1); }
+        @keyframes lvlFlag { 0% { transform: scale(0.5) rotate(-10deg); } 60% { transform: scale(1.2) rotate(5deg); } 100% { transform: scale(1) rotate(0); } }
+        .gcommit-dot { animation: snapPop 0.5s cubic-bezier(.34,1.5,.5,1); }
+        @keyframes snapPop { 0% { transform: scale(0); } 55% { transform: scale(1.3); box-shadow: 0 0 0 6px rgba(255,79,40,0.18); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,79,40,0); } }
+        .gtl-node.on .gtl-dot { animation: dotPulse 0.55s cubic-bezier(.34,1.5,.5,1); }
+        @keyframes dotPulse { 0% { transform: scale(1); } 50% { transform: scale(1.45); } 100% { transform: scale(1); } }
+        .gcode-rewind { animation: gRewind 0.5s ease-out; }
+        @keyframes gRewind { 0% { opacity: 0; transform: translateX(-12px); filter: blur(1.5px); } 100% { opacity: 1; transform: none; filter: none; } }
 
       `}</style>
       <div className="lesson-root">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // PRAKTIKA 1-DARS — SAYTNI JONLANTIRAMIZ (interaktivlik) — PLATFORM STANDARD v16
@@ -185,11 +186,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -241,6 +238,27 @@ const SiteCard = ({ name = 'Akmal', role = 'Veb-dasturchi · 14 yosh', children 
   </div>
 );
 
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 // ===== SCREEN 0 — HOOK (o'lik sayt) =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const [dead, setDead] = useState(0);
@@ -260,6 +278,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Chiroyli sayt, lekin tugma <span className="italic" style={{ color: T.accent }}>bosilsa</span> — hech nima bo'lmaydi</h1>
         <Mentor>Mana siz qurgan sayt — chiroyli ko'rinadi. Pastdagi <b style={{ color: T.ink }}>Like</b> tugmasini bir necha marta bosing va diqqat qiling: nima o'zgaryapti? Hozircha bu sayt emas — sayt <b style={{ color: T.ink }}>rasmi</b>, chunki u <b style={{ color: T.ink }}>reaksiya qilmaydi</b>.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label">Sizning saytingiz</p>
@@ -295,6 +314,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             )}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -344,7 +364,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Bugun saytimizni <span className="italic" style={{ color: T.accent }}>jonlantiramiz</span></h2></div>
         <Mentor>Sayt jonlanishi uchun bitta oddiy qoidani bilish kifoya: <b style={{ color: T.ink }}>HODISA → REAKSIYA → O'ZGARISH</b>. Kimdir tugmani bosadi (hodisa), JavaScript javob beradi (reaksiya), sahifa o'zgaradi. Bugun shu qoida bilan saytimizga <b style={{ color: T.ink }}>5 ta vosita</b> qo'shamiz.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -386,6 +406,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Tugma bosilganda <span className="italic" style={{ color: T.accent }}>aslida</span> nima sodir bo'ladi?</h2></div>
         <Mentor>Biz tugmaga JavaScript "uladik". Endi uni bosing va <b style={{ color: T.ink }}>3 bosqichni</b> kuzating: <b style={{ color: T.accent }}>Hodisa</b> (bosish sezildi) → <b style={{ color: T.accent }}>Reaksiya</b> (funksiya ishladi) → <b style={{ color: T.accent }}>O'zgarish</b> (sahifa o'zgardi). Mana shu — jonlantirish.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Saytingiz — endi reaksiya qiladi</p>
@@ -408,6 +429,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Sezdingizmi? Bir bosish — uchta narsa: sayt hodisani <b>eshitdi</b>, JavaScript <b>javob berdi</b>, ekran <b>o'zgardi</b>. Statik rasm jonli sahifaga aylandi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -434,6 +456,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sayt foydalanuvchining qaysi <span className="italic" style={{ color: T.accent }}>harakatlarini</span> sezadi?</h2></div>
         <Mentor>"Hodisa" — bu foydalanuvchining harakati. Eng ko'p uchraydigani uchta: <b style={{ color: T.ink }}>bosish</b>, <b style={{ color: T.ink }}>ustiga olib borish</b> va <b style={{ color: T.ink }}>yozish</b>. Har birini tanlab, o'ngdagi saytda jonli sinab ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -477,6 +500,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har xil hodisa — har xil reaksiya. Sayt foydalanuvchini "eshitadi" va javob beradi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -511,6 +535,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Necha marta bosilganini sayt qanday <span className="italic" style={{ color: T.accent }}>eslab qoladi?</span></h2></div>
         <Mentor>Hookdagi jonsiz tugma esingizdami? Endi unga jon kiritamiz. Sir — <b style={{ color: T.ink }}>o'zgaruvchi</b>da (<span className="mono">son</span>) yashiringan. Har bosishda funksiya <span className="mono">son = son + 1</span> qiladi va ekranni yangilaydi. Like bosing va sonni kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Saytingiz</p>
@@ -537,6 +562,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har bosish — funksiya ishladi, son oshdi, ekran yangilandi. Mana o'zgaruvchi va hodisa birga ishlagani.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -554,6 +580,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta tugma butun sayt ko'rinishini qanday <span className="italic" style={{ color: T.accent }}>o'zgartiradi?</span></h2></div>
         <Mentor>Bu yerda <b style={{ color: T.ink }}>shart</b> (if/else) ishlaydi: <b style={{ color: T.ink }}>agar</b> hozir yorug' bo'lsa — qorong'iga o'tkaz, <b style={{ color: T.ink }}>aks holda</b> — yorug'ga. Bitta tugma butun saytning ko'rinishini o'zgartiradi. Tugmani bosib ikkala rejimni ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Saytingiz — {dark ? 'tungi' : 'kunduzgi'}</p>
@@ -575,6 +602,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bitta tugma — butun sayt o'zgardi. Bu <b>shart</b> yordamida: har bosishda rejim teskarisiga aylanadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -607,6 +635,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Menyu qanday qilib o'zi <span className="italic" style={{ color: T.accent }}>ochilib-yopiladi?</span></h2></div>
         <Mentor>Menyu, "batafsil" matni, savol-javob bo'limlari — hammasi bitta g'oyaga asoslangan: <b style={{ color: T.ink }}>bosilganda ko'rsat, yana bosilganda yashir</b>. Bu joyni tejaydi va saytni qulay qiladi. Tugmani bosib batafsil matnni oching-yoping.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Saytingiz</p>
@@ -631,6 +660,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir tugma — ikki holat: ochiq va yopiq. Saytlardagi menyular aynan shunday ishlaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -646,6 +676,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Siz yozayotganingizni sayt qanday <span className="italic" style={{ color: T.accent }}>darhol sezadi?</span></h2></div>
         <Mentor>Bu eng yoqimli his: matn maydoniga <b style={{ color: T.ink }}>har bir harf</b> yozganingizda sayt <b style={{ color: T.ink }}>shu zahoti</b> o'zgaradi. "Yozish" hodisasi har harf yozilganda ishlaydi va salomni yangilaydi. Ismingizni yozib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Saytingiz</p>
@@ -666,6 +697,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har harf — yangi reaksiya. Sayt sizni real vaqtda eshityapti. Juda kuchli his, to'g'rimi?</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -688,6 +720,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bo'sh forma yuborilsa, sayt buni qanday <span className="italic" style={{ color: T.accent }}>payqaydi?</span></h2></div>
         <Mentor>Aqlli saytlar foydalanuvchi xato qilmasin deb <b style={{ color: T.ink }}>tekshiradi</b>. Bu yerda <b style={{ color: T.ink }}>shart</b> ishlaydi: <b style={{ color: T.ink }}>agar</b> maydon bo'sh bo'lsa — qizil xato, <b style={{ color: T.ink }}>aks holda</b> — yashil "yuborildi". Avval <b>bo'sh</b> holda "Yuborish"ni bosing, keyin ism yozib qayta bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Saytingiz</p>
@@ -716,6 +749,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ikkala holatni ko'rdingiz. Sayt endi foydalanuvchini xatodan saqlaydi — bu professional saytlarning belgisi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -752,6 +786,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mana — saytingiz endi <span className="italic" style={{ color: T.accent }}>to'liq jonlandi</span></h2></div>
         <Mentor>Mana — 5 ta vositaning hammasi bitta saytda. Like bosing, rejimni almashtiring, batafsilni oching, ismingizni yozing. Va eng qizig'i: <b style={{ color: T.ink }}>"Jonsiz"</b> tugmasini bosib, dars boshidagi jonsiz saytga qaytib ko'ring — farqni his qiling.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -791,6 +826,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Statik rasmdan to'laqonli jonli saytgacha. Siz HTML/CSS saytiga JavaScript bilan jon kiritdingiz — bu haqiqiy dasturchining ishi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -813,6 +849,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Interaktivlik <span className="italic" style={{ color: T.accent }}>qachon</span> kerak?</h2></div>
         <Mentor>Har bir sayt ham jonli bo'lishi shart emas. Ba'zilari faqat <b style={{ color: T.ink }}>ma'lumot ko'rsatadi</b> (statik), ba'zilari esa foydalanuvchi bilan <b style={{ color: T.ink }}>"gaplashadi"</b> (interaktiv). Har ikkala kartani bosib, farqini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -838,6 +875,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Esda tuting: ishlatadigan deyarli barcha ilovalar — Instagram, YouTube, o'yinlar — <b>interaktiv</b>. Jonlantirish — zamonaviy vebning yuragi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -868,6 +906,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Shularni endi <span className="italic" style={{ color: T.accent }}>AI'ga aytib</span> qildirsak-chi?</h2></div>
         <Mentor>Buni <b style={{ color: T.ink }}>vibecoding</b> deyiladi: kodni o'zingiz yozish o'rniga, <b style={{ color: T.ink }}>oddiy so'z bilan</b> nima xohlayotganingizni aytasiz — AI agent (masalan, <b style={{ color: T.ink }}>Antigravity</b>) yozib beradi. Ammo <b style={{ color: T.accent }}>boshliq — siz</b>: agent avval rejasini ko'rsatadi, siz uni <b style={{ color: T.ink }}>tasdiqlaysiz</b>, oxirida natijani <b style={{ color: T.ink }}>tekshirasiz</b>. Bir buyruqni sinab ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. Agentga so'z bilan ayting</p>
@@ -920,6 +959,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Buyruq bering va rejani tasdiqlang — ishlaydigan natija shu yerda paydo bo'ladi.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -942,6 +982,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi sinov: tugmani <span className="italic" style={{ color: T.accent }}>o'zingiz</span> to'g'ri jonlantiring</h2></div>
         <Mentor>Maqsad: <b style={{ color: T.ink }}>"Tugma bosilganda sahifa rangi o'zgarsin."</b> To'g'ri <b style={{ color: T.ink }}>HODISA</b> va to'g'ri <b style={{ color: T.ink }}>REAKSIYA</b>ni tanlang. Ikkalasi to'g'ri bo'lsa — tugma o'ngdagi saytda haqiqatan ishlay boshlaydi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. Qaysi HODISA?</p>
@@ -972,6 +1013,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Maslahat: tugma uchun "bosish" hodisasi va maqsadga mos reaksiya kerak.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1057,6 +1099,12 @@ export default function PracticeLesson1({ lang: langProp, onFinished }) {
         .fade-up { animation: fade-in-up 0.4s ease-out forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
@@ -1093,7 +1141,7 @@ export default function PracticeLesson1({ lang: langProp, onFinished }) {
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
         .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

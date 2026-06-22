@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // REACT MODULI · 1-DARS — REACT NIMA VA NIMA UCHUN? — PLATFORM STANDARD v16
@@ -279,11 +280,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -357,6 +354,26 @@ const LikeDemo = ({ mode, title, onLiked }) => {
   );
 };
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 // ===== SCREEN 0 — HOOK (like bosilganda butun sahifa yangilanadimi?) =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const audio = useAudio([{ id: 's0', text: `Telefoningizda like bosganingizda butun ekran o'chib-yonadimi? Yo'q-ku! Lekin eski saytlarda aynan shunday bo'lardi. Ikkala rejimni almashtirib, like bosib ko'ring — farqni his qiling. Keyin ayting: zamonaviy ilovalar buni qanday uddalaydi?`, trigger: 'on_mount', waits_for: { type: 'option_picked' } }]);
@@ -373,6 +390,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 780 }}>Like bossangiz, butun sahifa <span className="italic" style={{ color: T.accent }}>qayta yuklanadimi</span>?</h1>
         <Mentor>Telefoningizda like bosganingizda butun ekran o'chib-yonadimi? Yo'q-ku! Lekin <b style={{ color: T.ink }}>eski saytlarda</b> aynan shunday bo'lardi. Ikkala rejimni almashtirib, like bosib ko'ring — <b style={{ color: T.ink }}>farqni his qiling</b>.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -400,6 +418,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Yaxshi! Sir — <b>faqat o'zgargan joy yangilanadi</b>. Buni qiladigan vositaning nomi — <b>React</b>. Hozir hammasini ochamiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -449,7 +468,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Va'da beraman: dars oxirida <b style={{ color: T.ink }}>Instagram nega buncha tez ishlashini</b> aniq bilasiz. Butun sir ikkita g'oyada — <b style={{ color: T.ink }}>komponent</b> va <b style={{ color: T.ink }}>Virtual DOM</b>. Bugun shu ikkalasini ochamiz, 5 ta qadamda.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -479,6 +498,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">100 ta skin kartochkasini <span className="italic" style={{ color: T.accent }}>qo'lda</span> yozasizmi?</h2></div>
         <Mentor>Mana oddiy HTML'da yasalgan <b style={{ color: T.ink }}>Minecraft skinlar sayti</b>. Yana bitta skin kerakmi? Kodni <b style={{ color: T.ink }}>nusxalaysiz</b>. Yana bittasi? Yana nusxalaysiz. <b style={{ color: T.ink }}>"Skin qo'shish"</b> tugmasini bosib ko'ring — kod qanday shishib ketishini kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -507,6 +527,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -532,6 +553,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu muammoni kim, qanday <span className="italic" style={{ color: T.accent }}>yechgan</span>?</h2></div>
         <Mentor>React — JavaScript'da yozilgan <b style={{ color: T.ink }}>kutubxona</b>, ya'ni tayyor asboblar to'plami. Uni 2013-yilda <b style={{ color: T.ink }}>Facebook</b> yaratgan va hammaga bepul tarqatgan. Ilovalarni bosing — qaysilari React'da qurilganini bilib oling.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="frame fade-up delay-1" style={{ padding: '13px 16px' }}>
@@ -562,6 +584,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har kuni ishlatadigan ilovalaringiz — <b>React'da</b>. Bugun siz ham shu yo'lga qadam qo'yasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -603,6 +626,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu sahifa nechta <span className="italic" style={{ color: T.accent }}>blokdan</span> yig'ilgan?</h2></div>
         <Mentor>Minecraft'ni eslang: butun dunyo <b style={{ color: T.ink }}>alohida bloklardan</b> quriladi. React'da sahifa ham xuddi shunday — <b style={{ color: T.ink }}>komponent</b> degan bloklardan yig'iladi. Sahifadagi <b style={{ color: T.ink }}>har bir qismni bosib</b>, qaysi blok ekanini bilib oling.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="frame fade-up delay-2" style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -648,6 +672,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -681,6 +706,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bir marta yozib, <span className="italic" style={{ color: T.accent }}>ming marta</span> ishlatish mumkinmi?</h2></div>
         <Mentor>Esingizdami, oddiy HTML'da kod qanday <b style={{ color: T.ink }}>shishib ketgan</b> edi? Endi React usuli: <span className="mono">SkinCard</span> <b style={{ color: T.ink }}>bir marta</b> yoziladi, keyin xohlagancha chaqiriladi. Qo'shib ko'ring — kod qatorini kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
@@ -707,6 +733,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Sezdingizmi? Kartochka ko'paydi, kod esa <b>deyarli o'smadi</b>. Mana komponentning kuchi. O'zgartirish kerakmi? Bitta joyda o'zgartirasiz — hammasi yangilanadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -734,6 +761,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta baho o'zgarsa, <span className="italic" style={{ color: T.accent }}>butun jurnalni</span> qayta yozasizmi?</h2></div>
         <Mentor>Sinf jurnalini tasavvur qiling. Azizaning matematikadan bahosi o'zgardi. O'qituvchi <b style={{ color: T.ink }}>butun jurnalni</b> boshidan qayta yozadimi? Albatta yo'q — <b style={{ color: T.ink }}>faqat bitta katakni</b> to'g'rilaydi. Ikkala usulni sinab ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -774,6 +802,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -808,6 +837,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">React nima o'zgarganini <span className="italic" style={{ color: T.accent }}>qayerdan</span> biladi?</h2></div>
         <Mentor>React xotirasida sahifaning yengil nusxasini — <b style={{ color: T.ink }}>qoralamasini</b> saqlaydi. Bu <b style={{ color: T.ink }}>Virtual DOM</b> deyiladi. O'zgarish bo'lganda: yangi qoralama → eskisi bilan solishtirish → <b style={{ color: T.ink }}>faqat farq</b> sahifaga. Tugmani bosib kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run} disabled={running}>{running ? 'Ishlayapti…' : (done ? '↻ Yana ko’rsatish' : '▶ Like bosildi — kuzating')}</button>
@@ -837,6 +867,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>Virtual DOM</b> — xotiradagi qoralama. Solishtirdi → farqni topdi → faqat o'sha joyni yangiladi. Shuning uchun React ilovalar tez!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -875,6 +906,8 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oddiy sayt va React ilova — <span className="italic" style={{ color: T.accent }}>farqni his qiling</span>.</h2></div>
         <Mentor>Endi ikkalasini <b style={{ color: T.ink }}>yonma-yon</b> solishtiring — xuddi dars boshidagidek, lekin endi siz <b style={{ color: T.ink }}>sababini bilasiz</b>. Avval chapda, keyin o'ngda like bosing.</Mentor>
+        <Zoomable>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div className="split">
           <Col>
             <p className="flow-label">Oddiy sayt (HTML + JS) {liked.has('old') ? '✓' : ''}</p>
@@ -901,6 +934,8 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </div>
         )}
+        </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -926,6 +961,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta texnologiya bilan <span className="italic" style={{ color: T.accent }}>telefon ilovasi</span> ham yasaladimi?</h2></div>
         <Mentor>Eng zo'r yangilik: React'ni o'rgansangiz, faqat sayt emas — haqiqiy <b style={{ color: T.ink }}>telefon ilovalarini</b> ham yasay olasiz. Buning nomi <b style={{ color: T.ink }}>React Native</b>. Ikkala ko'rinishni almashtiring: <b style={{ color: T.ink }}>kod bitta, dunyo ikkita</b>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -955,6 +991,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir marta React o'rganasiz — <b>sayt ham, telefon ilovasi ham</b> qo'lingizda.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1007,6 +1044,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'z saytingizni <span className="italic" style={{ color: T.accent }}>bloklardan</span> quring.</h2></div>
         <Mentor>Endi o'zingiz quring! Chiplardan bosib, o'z Minecraft saytingizni komponentlardan yig'ing. Eng zo'ri: <b style={{ color: T.ink }}>bitta komponentni necha marta xohlasangiz</b> — shuncha ishlating, xuddi Minecraft'da bitta blokni qayta-qayta qo'yganday! Kamida 3 ta blok qo'ying.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Bloklar (komponentlar)</p>
@@ -1035,6 +1073,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Siz hozir <b>React'cha fikrladingiz</b>: sahifa = komponentlar ro'yxati. Keyingi darsda buni haqiqiy kodda yozasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1061,6 +1100,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — siz esa <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
         <Mentor>AI kod yozishda <b style={{ color: T.ink }}>zo'r yordamchi</b> — Minecraft do'koni sahifasini bir zumda komponentlarga bo'lib berdi. Lekin <b style={{ color: T.ink }}>odamlar ham, AI ham</b> ba'zan kichik xato qiladi. Shuni topib tuzatish — <b style={{ color: T.ink }}>debugging</b> deyiladi, va bu eng zo'r mahorat. Esingizda: har bo'lak <b style={{ color: T.ink }}>kichik va aniq</b> bo'lishi kerak. Qaysi qator bunga zid? Toping-chi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-2">
@@ -1097,6 +1137,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1132,6 +1173,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Like bosildi — React ichida <span className="italic" style={{ color: T.accent }}>nima yuz beradi</span>?</h2></div>
         <Mentor>Oxirgi sinov! Like bosilgandan to sahifa yangilangunigacha React ichida <b style={{ color: T.ink }}>nima yuz beradi</b>? Qadamlarni to'g'ri tartibda bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qadamlar — to'g'ri tartibda bosing</p>
@@ -1164,6 +1206,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {failed && !passed && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tartib biroz aralashdi. «Qaytadan» bosing — hammasi nimadan <b>boshlanadi</b>? Solishtirish uchun avval nima kerak?</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1268,6 +1311,12 @@ export default function ReactIntroLesson({ lang: langProp, onFinished }) {
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes dl-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.18); } }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
@@ -1307,8 +1356,8 @@ export default function ReactIntroLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

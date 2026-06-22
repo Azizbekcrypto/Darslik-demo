@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import mentorImg from '../../assets/common/mentor.png';
+import togImg from '../../assets/images/tog.png';
+import mushukImg from '../../assets/images/mushuk.png';
+import raketaImg from '../../assets/images/raketa.png';
 
 // ============================================================
 // HTML 1-DARS — PLATFORM STANDARD v15 (Notion: design_system + platform_contract + infrastructure_v1)
@@ -323,7 +326,8 @@ const Zoomable = ({ children }) => {
   );
 };
 
-// ===== RASM HELPER (rasmlar uchun joy egasi — haqiqiy fayl shart emas) =====
+// ===== RASM HELPER (tog/mushuk/raketa — haqiqiy rasm; profil — emoji) =====
+const PHOTO_IMG = { tog: togImg, mushuk: mushukImg, raketa: raketaImg };
 const Photo = ({ kind = 'tog', w = 180, h = 120, broken = false, alt = '' }) => {
   const SET = {
     tog:    { bg: 'linear-gradient(160deg,#a9def0,#eaf6ee)', emoji: '🏔️' },
@@ -332,6 +336,8 @@ const Photo = ({ kind = 'tog', w = 180, h = 120, broken = false, alt = '' }) => 
     profil: { bg: 'linear-gradient(160deg,#ffd9cf,#ffeee9)', emoji: '🧑‍🚀' }
   };
   if (broken) return (<span className="img-broken" style={{ width: w, height: h }}><span className="ib-ic">🖼️</span><span>{alt || 'rasm yuklanmadi'}</span></span>);
+  const src = PHOTO_IMG[kind];
+  if (src) return (<img src={src} alt={alt} style={{ width: w, height: h, objectFit: 'cover', borderRadius: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'block' }} />);
   const sc = SET[kind] || SET.tog;
   return (<span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: w, height: h, borderRadius: 10, background: sc.bg, fontSize: Math.round(h * 0.36), boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>{sc.emoji}</span>);
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BACKEND MODULI (4-MODUL) · 2-DARS — SQL vs NoSQL / PostgreSQL — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -63,6 +64,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
@@ -182,11 +202,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -352,6 +368,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 840 }}>Bir xil ma'lumotni saqlashning <span className="italic" style={{ color: T.accent }}>ikki yo'li</span> bor. Qaysi biri to'g'ri?</h1>
         <Mentor>O'tgan darsda Instagram sxemasini chizdik. Endi savol: uni qayerda saqlaymiz? Aslida <b style={{ color: T.ink }}>ikkita butunlay boshqacha dunyo</b> bor — <b style={{ color: T.accent }}>SQL</b> (chiroyli jadvallar) va <b style={{ color: T.blue }}>NoSQL</b> (egiluvchan hujjatlar). Ikkala ko'rinishni ko'ring — bu <b style={{ color: T.ink }}>aynan bir xil ma'lumot</b>, faqat boshqacha qadoqlangan.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -382,6 +399,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Hech biri "noto'g'ri" emas — <b>ikkalasi ham ishlaydi</b>. Savol shundaki: <b>qaysi vazifa uchun qaysi biri yaxshiroq?</b> Bugun shu tanlovni qilishni o'rganamiz — va nega bizning loyihalarga PostgreSQL mos kelishini ko'ramiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -421,7 +439,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Ikki dunyo orasidan <span className="italic" style={{ color: T.accent }}>to'g'ri tanlash</span></h2></div>
         <Mentor>Va'da: dars oxirida loyihangiz uchun <b style={{ color: T.ink }}>qaysi ma'lumotlar bazasi to'g'ri kelishini</b> o'zingiz aniqlay olasiz. SQL ham, NoSQL ham zo'r — gap ularni <b style={{ color: T.ink }}>qachon ishlatishni</b> bilishda. O'ngdagi kompas bizni shu qarorga olib boradi.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -455,6 +473,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ma'lumotlar bazalari <span className="italic" style={{ color: T.accent }}>ikki oilaga</span> bo'linadi</h2></div>
         <Mentor>Dunyodagi barcha bazalar ikki katta oilaga bo'linadi: <b style={{ color: T.accent }}>SQL</b> (relyatsion — jadvalli) va <b style={{ color: T.blue }}>NoSQL</b> (hujjatli). Har oilada ko'p a'zo bor. Ikkalasini bosib, farqini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -475,6 +494,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{USERS.slice(0, 2).map(u => <JsonView key={u.id} obj={{ id: u.id, username: u.username }} />)}</div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -490,6 +510,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta postga <span className="italic" style={{ color: T.accent }}>"musiqa" qo'shsak</span> — nima bo'ladi?</h2></div>
         <Mentor>Eng katta farq — <b style={{ color: T.ink }}>shakl</b>. SQL jadvalida ustunlar <b style={{ color: T.accent }}>oldindan belgilangan</b> — yangi maydon qo'shish uchun jadvalni qaytadan tuzish kerak. NoSQL hujjatiga esa <b style={{ color: T.blue }}>istalgan maydonni</b> bemalol qo'shasiz. Tugmani bosing — bitta postga "musiqa" maydonini qo'shib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label"><DbBadge kind="sql" /> &nbsp;qat'iy jadval</p>
@@ -502,6 +523,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {added && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>Bemalol!</b> NoSQL hujjatiga <span className="mono">musiqa</span> maydonini shunchaki qo'shdik — boshqa hujjatlar o'zgarmaydi ham. Mana shu <b>egiluvchanlik</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
         {!added && <button className="btn fade-up delay-2" style={{ alignSelf: 'flex-start' }} onClick={() => setAdded(true)}>+ Ikkalasiga "musiqa" maydonini qo'shish</button>}
       </div>
     </Stage>
@@ -534,6 +556,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">"Har postning egasini ko'rsat" — SQL buni <span className="italic" style={{ color: T.accent }}>bir qatorda</span> bajaradi</h2></div>
         <Mentor>SQL — bu <b style={{ color: T.ink }}>jadval bilan gaplashish tili</b>. Siz so'rov yozasiz, u javobni jadval qilib qaytaradi. Eng kuchli tomoni — <b style={{ color: T.ink }}>JOIN</b>: ikki jadvalni <span className="mono">user_id</span> orqali bir-biriga ulaydi. Bugun yozmaymiz — faqat bitta so'rovni ishga tushirib, qanchalik kuchli ekanini ko'ramiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">SQL so'rovi (faqat ko'rsatish)</p>
@@ -549,6 +572,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 100 }}><p className="small" style={{ color: T.ink3, fontStyle: 'italic', textAlign: 'center', margin: 0 }}>← So'rovni ishga tushiring — natija shu yerda jadval bo'lib chiqadi</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -579,6 +603,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi mahsulotni <span className="italic" style={{ color: T.accent }}>2 kishi bir vaqtda</span> sotib olsa-chi?</h2></div>
         <Mentor>Do'konda <b style={{ color: T.ink }}>bitta</b> telefon qoldi. Ali va Vali aynan bir lahzada "Sotib olish" bosdi. Agar baza ehtiyot bo'lmasa — <b style={{ color: T.ink }}>ikkovi ham</b> sotib olib qo'yadi (xato!). SQL bu yerda <b style={{ color: T.accent }}>tranzaksiya</b> bilan himoya qiladi: faqat bittasiga sotadi. Pul va buyurtmada bunday <b style={{ color: T.ink }}>ishonchlilik</b> hayotiy muhim.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <Win title="do'kon — ombor" minH={120}>
@@ -603,6 +628,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             ) : <div className="frame-dash" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 100 }}><p className="small" style={{ color: T.ink3, fontStyle: 'italic', textAlign: 'center', margin: 0 }}>← Tugmani bosing — SQL nima qilishini ko'ring</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -633,6 +659,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Millionlab chat xabari — bu yerda <span className="italic" style={{ color: T.blue }}>NoSQL</span> porlaydi</h2></div>
         <Mentor>Endi NoSQL kuchini ko'raylik. Telegram'simon chatda har soniyada <b style={{ color: T.ink }}>minglab xabar</b> keladi. Har xabar — oddiy hujjat (kim, matn, vaqt), murakkab bog'lanish yo'q. Bunday <b style={{ color: T.ink }}>ulkan miqyos + tezlik + oddiy shakl</b> uchun NoSQL ideal. Tugmani bosib, oqimni kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <Win title="chat.uz — jonli oqim" minH={150}>
@@ -652,6 +679,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>NoSQL ulkan, oddiy va tez ma'lumot uchun zo'r. <span className="mono">(Masalan, o'yin inventari ham har o'yinchida har xil — NoSQL egiluvchanligi shu yerda ham qo'l keladi.)</span></p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -678,6 +706,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qaysi birini tanlash — <span className="italic" style={{ color: T.accent }}>4 savol</span> hal qiladi</h2></div>
         <Mentor>Tanlovni 4 ta savol osonlashtiradi. Har birini bosing — u qaysi tomonni ko'rsatishini ko'ring. O'ngdagi kompas javoblarga qarab suriladi. Ko'pchilik oddiy loyihalarda javoblar <b style={{ color: T.accent }}>SQL</b> tomon og'adi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -698,6 +727,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>4 mezondan 3 tasi <b>SQL</b> tomon, 1 tasi NoSQL tomon. Demak ko'p loyihalar uchun boshlang'ich tanlov — SQL. Endi nega aynan <b>PostgreSQL</b> ekanini ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -738,6 +768,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Nega bizning loyihalarga aynan <span className="italic" style={{ color: T.accent }}>PostgreSQL</span>?</h2></div>
         <Mentor>SQL oilasida ko'p a'zo bor — nega aynan <b style={{ color: T.accent }}>PostgreSQL</b>? Chunki u bizning loyihalarga (Instagram, do'kon, planner) juda mos: bog'langan, ishonchli, bepul — va kerak bo'lsa <b style={{ color: T.ink }}>JSON</b> ham saqlay oladi (ya'ni NoSQL egiluvchanligi ham bor!). Sabablarni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }} className="fade-up delay-1">
@@ -759,6 +790,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>PostgreSQL — SQL kuchini va NoSQL egiluvchanligini birlashtiradi. Shuning uchun bizning butun moduldagi tanlovimiz — <b>PostgreSQL</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -785,6 +817,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Loyihangizga DB'ni <span className="italic" style={{ color: T.accent }}>AI tavsiya</span> qilsin — siz tekshiring</h2></div>
         <Mentor>Endi siz tanlov mantig'ini bilasiz! Loyihangizni ayting, AI <b style={{ color: T.ink }}>DB tavsiya qiladi va sababini aytadi</b> — siz esa tekshirasiz: sabab to'g'rimi? Bog'langanmi, ishonchlilik kerakmi, yoki ulkan-oddiy oqimmi? Boshliq — siz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. AI'ga loyihangizni ayting</p>
@@ -816,6 +849,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>AI tavsiya berdi, siz <b>sababini tekshirdingiz</b>. Do'kon va blog — bog'langan → SQL. Chat — ulkan oddiy oqim → NoSQL. Mantiq to'g'ri!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -855,6 +889,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har loyihaga <span className="italic" style={{ color: T.accent }}>to'g'ri bazani</span> tanlang</h2></div>
         <Mentor>Endi o'zingiz qaror qiling! Har bir loyiha uchun <b style={{ color: T.accent }}>SQL</b> yoki <b style={{ color: T.blue }}>NoSQL</b> tugmasini bosing. O'ylang: bog'langanmi? ishonchlilik kerakmi? yoki ulkan-oddiy-tezmi? To'g'ri tanlasangiz — yashil bo'ladi.</Mentor>
+        <Zoomable>
         <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 640, margin: '0 auto', width: '100%' }}>
           {PROJECTS.map(p => {
             const a = assign[p.id];
@@ -873,6 +908,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             );
           })}
         </div>
+        </Zoomable>
         {done && <div className="frame-success fade-step" style={{ maxWidth: 640, margin: '0 auto', width: '100%' }}><p className="body" style={{ margin: 0, color: T.ink }}>Hammasi to'g'ri! Bank va do'kon — bog'langan + ishonchli → <b>SQL</b>. Chat va loglar — ulkan + oddiy → <b>NoSQL</b>. Tanlov vazifaga bog'liq.</p></div>}
       </div>
     </Stage>
@@ -1116,8 +1152,14 @@ export default function DbSqlNosqlLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

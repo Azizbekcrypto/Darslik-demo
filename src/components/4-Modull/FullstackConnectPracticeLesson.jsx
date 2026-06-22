@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // MA'LUMOT VA BACKEND MODULI · PRAKTIKA 2 — FULLSTACK ULASH: AVTOIJARA (React front + Node back) — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -202,6 +203,26 @@ function ScoreRing({ correct, total }) {
 }
 
 // ===== MENTOR =====
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
   const enabled = !!ctx.enabled;
@@ -210,11 +231,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -324,6 +341,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Bazaga mashina qo'shdik — lekin saytda <span className="italic" style={{ color: T.accent }}>ko'rinmayapti</span>. Nega?</h1>
         <Mentor>Praktika 1'da Postman orqali bazaga <b style={{ color: T.ink }}>Chevrolet Spark</b>'ni qo'shgan edingiz — o'ngda, bazada u bor. Lekin chapdagi AvtoIjara saytida Spark <b style={{ color: T.ink }}>yo'q</b>! Saytni yangilab ko'ring (🔄) — paydo bo'ladimi?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -352,6 +370,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Sayt mashinalarni hali ham kodga yozilgan eski ro'yxatdan oladi — <b>bazaga ulanmagan</b>. Bugun ularni ulaymiz: sayt ma'lumotni to'g'ridan-to'g'ri <b>serverdan</b> oladigan bo'ladi.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -388,7 +407,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Frontni backendga <span className="italic" style={{ color: T.accent }}>qanday</span> ulaymiz?</h2></div>
         <Mentor>Sizda ikki yarim bor: Modul 3'dagi <b style={{ color: T.ink }}>sayt</b> (front) va Praktika 1'dagi <b style={{ color: T.ink }}>server</b> (back). Bugun ularni gaplashtiramiz. Yana o'sha uch rol: <b style={{ color: T.ink }}>ME'MOR</b> (ma'lumot oqimini chizasiz) → <b style={{ color: T.ink }}>REJISSYOR</b> (AI'ga buyruq berasiz) → <b style={{ color: T.ink }}>NAZORATCHI</b> (brauzerda sinaysiz).</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -416,6 +435,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sayt va server — <span className="italic" style={{ color: T.accent }}>bitta dasturmi</span> yoki ikkita?</h2></div>
         <Mentor>Fullstack ilovada <b style={{ color: T.ink }}>ikkita alohida dastur</b> bir vaqtda ishlaydi: <b style={{ color: T.ink }}>front</b> (sayt, :5173) va <b style={{ color: T.ink }}>back</b> (server, :3000). Front — ko'rinish, back — ma'lumot. Ular o'zaro <b style={{ color: T.ink }}>HTTP so'rov</b> orqali gaplashadi. Ikkalasini ishga tushiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="run-card fade-up delay-1">
@@ -451,6 +471,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Faqat bittasi ishlasa — ulanish bo'lmaydi. Ikkalasini ham yoqing.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -468,6 +489,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Katalog mashinalarni <span className="italic" style={{ color: T.accent }}>qayerdan</span> olishi kerak?</h2></div>
         <Mentor>AI kod yozishidan oldin <b style={{ color: T.ink }}>siz</b> qaror qilasiz: sayt ma'lumotni qayerdan oladi? Hozir u kodga yozilgan eski ro'yxatdan oladi. To'g'ri manbani tanlang — ma'lumot oqimi chiziladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Ma'lumot manbasi</p>
@@ -493,6 +515,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>To'g'ri! Sayt <span className="mono">fetch</span> bilan serverga boradi, server bazadan oladi. Endi baza yangilansa — sayt ham yangilanadi. Bu — <b>jonli</b> ulanish.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -522,6 +545,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mashinalarni serverdan <span className="italic" style={{ color: T.accent }}>qanday yuklab</span> olamiz?</h2></div>
         <Mentor>AI'ga aniq buyruq beramiz: <i>"qattiq <span className="mono">const cars</span> o'rniga, sahifa ochilganda <span className="mono">GET /api/cars</span>'dan fetch qilib, <span className="mono">useState</span>'ga saqla"</i>. Bu — Modul 3'dagi "API GET" darsi: <span className="mono">useEffect</span> + <span className="mono">fetch</span> + <span className="mono">useState</span>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Aniq buyruq (prompt)</p>
@@ -545,6 +569,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Kod tayyor ko'rinadi. Lekin haqiqatan ishlaydimi? Buni NAZORATCHI sifatida brauzerda sinaymiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -616,6 +641,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ma'lumot kelguncha foydalanuvchi <span className="italic" style={{ color: T.accent }}>nimani ko'radi</span>?</h2></div>
         <Mentor>Serverdan ma'lumot olish <b style={{ color: T.ink }}>bir lahza vaqt</b> oladi — ba'zan server o'chiq ham bo'ladi. Shuning uchun yaxshi sayt uchta holatni hisobga oladi: <b style={{ color: T.ink }}>yuklanmoqda</b>, <b style={{ color: T.ink }}>xato</b>, <b style={{ color: T.ink }}>tayyor</b>. Uchalasini bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Holatni sinab ko'ring</p>
@@ -635,6 +661,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Uch holat ham tayyor! <span className="mono">if (loading)</span> → skeleton, <span className="mono">if (error)</span> → xabar, aks holda → kartochkalar. Foydalanuvchi hech qachon "buzuq" sayt ko'rmaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -673,6 +700,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Saytni ochdik — konsoldagi <span className="italic" style={{ color: T.accent }}>qizil xato</span> nimani aytmoqchi?</h2></div>
         <Mentor>Brauzer xavfsizlik uchun bitta manzildan (<span className="mono">:5173</span>) boshqasiga (<span className="mono">:3000</span>) so'rovni <b style={{ color: T.ink }}>bloklaydi</b> — buni <b style={{ color: T.ink }}>CORS</b> deyiladi. Bu — har bir dasturchi ko'radigan <b style={{ color: T.ink }}>birinchi</b> xato, qo'rqinchli emas. Yechimi bitta qator: serverga <span className="mono">app.use(cors())</span> qo'shamiz — "menga :5173'dan so'rov kelishi mumkin" degani.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={phase >= 1 && phase < 3 ? false : (phase === 0 ? false : true)} onClick={phase === 0 ? run : undefined}>{phase === 0 ? '▶ Saytni ishga tushir' : (phase < 3 ? 'Yuklanmoqda / xato…' : '✓ Ishladi')}</button>
@@ -697,6 +725,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="takeaway fade-step"><div className="ta-bulb">🎉</div><p className="ta-h">Sayt endi serverdan o'qiyapti!</p><p className="ta-sub">Spark ham paydo bo'ldi — S0'dagi muammo hal bo'ldi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -717,6 +746,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Forma orqali qo'shilgan mashina <span className="italic" style={{ color: T.accent }}>darrov ko'rinadimi</span>?</h2></div>
         <Mentor>Endi yozish tomoni: forma to'ldirib <b style={{ color: T.ink }}>POST</b> yuboramiz, so'ng ro'yxatni <b style={{ color: T.ink }}>qayta fetch</b> qilamiz — yangi mashina darrov chiqadi. Eng muhimi: sahifani yangilasangiz ham u <b style={{ color: T.ink }}>saqlanib qoladi</b> (chunki bazada). Sinab ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Yangi mashina formasi</p>
@@ -741,6 +771,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yangilandi — Tracker baribir joyida! Chunki u faqat ekranda emas, <b>bazada</b> saqlangan. Mana to'liq ulanish: forma → POST → baza → qayta GET → ekran.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -768,10 +799,10 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             })}
           </div>
           <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={done} onClick={() => setStep(s => Math.min(s + 1, CIRCLE.length - 1))}>{step < 0 ? '▶ Boshlash' : (done ? '✓ Yo\'l tugadi' : 'Keyingi qadam →')}</button>
-          {done && <Split>
+          {done && <Zoomable><Split>
             <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana ma'lumotning to'liq yo'li. Har bo'lak o'z ishini qiladi: <b>front</b> ko'rsatadi, <b>server</b> boshqaradi, <b>baza</b> saqlaydi.</p></div>
             <div className="frame fade-step" style={{ padding: 14 }}><p className="body" style={{ margin: 0, color: T.ink2 }}>Ma'lumot bazada saqlanadi, shuning uchun u <b style={{ color: T.ink }}>yo'qolmaydi</b>: sahifani yangilasangiz ham, do'stingiz boshqa telefonda ochsa ham — hamma bir xil mashinalarni ko'radi.</p></div>
-          </Split>}
+          </Split></Zoomable>}
         </Col>
       </div>
     </Stage>
@@ -795,6 +826,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi o'zingiz — <span className="italic" style={{ color: T.accent }}>to'liq ulangan</span> saytni boshqaring.</h2></div>
         <Mentor>Mana sizning fullstack AvtoIjarangiz: mashinalar serverdan yuklangan. Bittasini <b style={{ color: T.ink }}>qo'shing</b> (POST), keyin <b style={{ color: T.ink }}>yangilang</b> — saqlanib qolishini ko'ring. Uchala belgi yashil bo'lsa — ilovangiz to'liq tayyor!</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Amallar</p>
@@ -810,6 +842,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 Fullstack ilova tayyor! Sayt serverdan o'qiydi, formaga yozsangiz bazaga yoziladi, refresh'da yo'qolmaydi. Front + back + baza — bittasi bo'lib ishlaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -836,6 +869,7 @@ const Screen15 = ({ screen, onNext, onPrev }) => (
     <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
       <div className="head"><h2 className="title h-title fade-up">Fullstack — <span className="italic" style={{ color: T.accent }}>bir qarashda</span> nima?</h2></div>
       <Mentor>Eng muhimi: <b style={{ color: T.ink }}>front</b> va <b style={{ color: T.ink }}>back</b> — ikki alohida dastur, ular <span className="mono">fetch ↔ API</span> orqali gaplashadi. Ma'lumot endi kodda emas, serverdan keladi.</Mentor>
+      <Zoomable>
       <Split>
         <Col>
           <p className="flow-label">3 ta asosiy g'oya</p>
@@ -851,6 +885,7 @@ const Screen15 = ({ screen, onNext, onPrev }) => (
           <div className="frame" style={{ padding: 14 }}><p className="body" style={{ margin: 0, color: T.ink2 }}>Yana o'sha uch rol — hammasini <b style={{ color: T.ink }}>siz</b> bajarasiz: <b style={{ color: T.ink }}>ME'MOR</b> (loyihachi) — ma'lumot yo'lini chizasiz; <b style={{ color: T.ink }}>REJISSYOR</b> (buyruq beruvchi) — AI'ga aniq topshiriq berasiz; <b style={{ color: T.ink }}>NAZORATCHI</b> (tekshiruvchi) — natijani brauzerda sinaysiz.</p></div>
         </Col>
       </Split>
+      </Zoomable>
     </div>
   </Stage>
 );
@@ -876,6 +911,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: <span className="italic" style={{ color: T.accent }}>fetch manzilini</span> o'zingiz yozing.</h2></div>
         <Mentor>VS Code'da <span className="mono">App.jsx</span> ochiq: <span className="mono">useEffect</span> tayyor — faqat <b style={{ color: T.ink }}>fetch manzili bo'sh</b>. Backend manzilini yozing: <span className="mono">'http://localhost:3000/api/cars'</span> (protokol + manzil + yo'l).</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-2">
@@ -907,6 +943,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {!valid && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Manzil yozilmaguncha sayt yuklay olmaydi…</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1051,8 +1088,15 @@ export default function FullstackConnectPracticeLesson({ lang: langProp, onFinis
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

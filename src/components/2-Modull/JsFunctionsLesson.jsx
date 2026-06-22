@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // 11-DARS — JAVASCRIPT: FUNKSIYA, PARAMETR, return — PLATFORM STANDARD v16
@@ -185,11 +186,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -211,6 +208,27 @@ const Terminal = ({ lines, empty = '// natija shu yerda chiqadi…', title = 'co
   </div>
 );
 
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 // ===== SCREEN 0 — HOOK (qo'lda takror dardi) =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const NEED = 5;
@@ -228,6 +246,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 800 }}>Limonadni har safar <span className="italic" style={{ color: T.accent }}>noldan</span> qo'lda tayyorlaysizmi?</h1>
         <Mentor>Tasavvur qiling: do'stlaringiz kelishdi, hammaga limonad kerak. Har bir stakan uchun <b style={{ color: T.ink }}>4 bosqichni</b> — limon kesish, shakar qo'shish, suv quyish, aralashtirish — qo'lda takrorlaysiz. Tugmani bir necha marta bosing, qancha zerikarli ekanini his qiling.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label">Qo'lda tayyorlangan limonadlar</p>
@@ -260,6 +279,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">To'g'ri yo'l — <b>funksiya</b> yasash! Bir marta "mashina"ni yozasiz, keyin nom bilan istalgancha chaqirasiz. Bugun shuni o'rganamiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -312,7 +332,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Yaxshi dasturchi bir ishni <b style={{ color: T.ink }}>bir marta yozadi</b>, unga nom beradi va keyin shu nom bilan istalgancha ishlatadi. Bu — <b style={{ color: T.ink }}>funksiya</b>. Bugun 3 tushunchani ochamiz — <b style={{ color: T.ink }}>funksiya</b>, <b style={{ color: T.ink }}>parametr</b> va <b style={{ color: T.ink }}>return</b> — 5 ta qadamda.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -341,6 +361,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bir retseptni <span className="italic" style={{ color: T.accent }}>3 marta</span> — qanday yozamiz?</h2></div>
         <Mentor>3 qatorli salomlashishni 3 marta chop etmoqchimiz. <b style={{ color: T.ink }}>Funksiyasiz</b> — uch qatorni qayta-qayta ko'chiramiz (9 qator). <b style={{ color: T.ink }}>Funksiya bilan</b> — bir marta yozib, unga <b style={{ color: T.ink }}>nom</b> beramiz va shu nomni 3 marta chaqiramiz. Ikkala tugmani bosib solishtiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -376,6 +397,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Natija bir xil! Lekin <b>funksiya</b> bilan retsept bir marta yozildi. Matnni o'zgartirsangiz — faqat <b>bitta joyda</b> tuzatasiz. Mana shuning uchun funksiya kerak.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -404,6 +426,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Funksiya nimalardan <span className="italic" style={{ color: T.accent }}>tuzilgan?</span></h2></div>
         <Mentor>Funksiyani mashinaga o'xshating: uning <b style={{ color: T.blue }}>nomi</b> bor (qaysi mashina), <b style={{ color: T.accent }}>parametri</b> bor (nima kiritamiz) va <b style={{ color: T.success }}>return</b>i bor (qanday natija chiqaradi). Qavs ichidagi <b style={{ color: T.ink }}>{'{ }'}</b> — uning ichki mexanizmi (tanasi). Rangli qismlarni <b style={{ color: T.ink }}>bosib</b> bilib oling, so'ng "Chaqirish"ni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="codebox fade-up delay-1" style={{ fontSize: 'clamp(13px,1.8vw,15px)' }}>
@@ -435,6 +458,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ "Ali" qiymati <b>ism</b> parametriga tushdi, funksiya <span className="mono">return</span> orqali <b>"Salom, Ali!"</b> ni qaytardi. Mana to'liq mashina!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -469,6 +493,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mashinaga <span className="italic" style={{ color: T.accent }}>turli narsa</span> kiriting</h2></div>
         <Mentor>Parametr — bu mashinaning <b style={{ color: T.ink }}>kirish teshigi</b>. Funksiyani <span className="mono">salomBer("Ali")</span> deb chaqirganda, <b style={{ color: T.ink }}>"Ali"</b> qiymati <span className="mono">ism</span> parametriga tushadi. Kirishni o'zgartiring — natija o'zi o'zgaradi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Kimga salom beramiz?</p>
@@ -488,6 +513,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Ko'rdingizmi? Funksiya <b>bitta</b>, lekin har xil <b>parametr</b> bilan har xil natija beradi. Bir mashina — ko'p ish!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -528,6 +554,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Funksiya javobini qanday <span className="italic" style={{ color: T.accent }}>saqlab qolamiz?</span></h2></div>
         <Mentor><span className="mono" style={{ color: T.accent }}>return</span> funksiyaning <b style={{ color: T.ink }}>javobini tashqariga qaytaradi</b>. Eng muhimi: bu javobni <b style={{ color: T.ink }}>o'zgaruvchiga saqlash</b> va keyin ishlatish mumkin! <span className="mono">kvadrat</span> mashinasiga son kiriting va ishga tushiring — natija <span className="mono">natija</span> o'zgaruvchisida saqlanadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qaysi sonni kiritamiz?</p>
@@ -551,6 +578,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ <span className="mono">return n * n</span> javob ({n} × {n} = {n * n}) ni qaytardi, u <span className="mono">natija</span> o'zgaruvchisiga saqlandi. Endi bu qiymatni xohlagancha ishlatishingiz mumkin!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -573,6 +601,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Eng ko'p <span className="italic" style={{ color: T.accent }}>chalkashtiradigan</span> ikkita narsa</h2></div>
         <Mentor>Yangi dasturchilar <span className="mono">console.log</span> va <span className="mono">return</span> ni adashtiradi. Farq oddiy: <b style={{ color: T.accent }}>console.log</b> natijani <b style={{ color: T.ink }}>ekranga ko'rsatadi</b> (ko'z uchun), <b style={{ color: T.accent }}>return</b> esa qiymatni <b style={{ color: T.ink }}>kodga qaytaradi</b> (saqlash uchun). Ikkala kartani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -598,6 +627,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Esda tuting: <b>console.log</b> = ko'rsatadi (yo'qoladi), <b>return</b> = qaytaradi (saqlanadi va ishlatiladi).</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -618,6 +648,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mashinaga <span className="italic" style={{ color: T.accent }}>2 ta narsa</span> kiritsak-chi?</h2></div>
         <Mentor>Bitta funksiya bir nechta parametr olishi mumkin — ularni <b style={{ color: T.ink }}>vergul</b> bilan ajratamiz. <span className="mono">qoshish(a, b)</span> ikkita son oladi va yig'indisini qaytaradi. Diqqat: <b style={{ color: T.ink }}>tartib</b> muhim — birinchisi <span className="mono">a</span>, ikkinchisi <span className="mono">b</span>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Birinchi son — a</p>
@@ -641,6 +672,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Ikkita parametr — ikkita kirish. Sonlarni o'zgartirdingiz, funksiya darhol yangi yig'indini qaytardi. Bitta mashina, cheksiz hisob-kitob!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -682,6 +714,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Funksiya + parametr + return — <span className="italic" style={{ color: T.accent }}>birga</span></h2></div>
         <Mentor>Mana haqiqiy "mashina"! Do'kon kassasini yasaymiz: <span className="mono">hisobla(narx, soni)</span> ikkita parametr oladi, ularni ko'paytiradi va <b style={{ color: T.ink }}>jami narxni</b> <span className="mono">return</span> qiladi. Nechta daftar olishni tanlang va hisoblang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Nechta daftar? (donasi {NARX} so'm)</p>
@@ -706,6 +739,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ <b>Funksiya</b> (hisobla), <b>parametrlar</b> (narx, soni) va <b>return</b> (narx × soni) — uchalasi birga ishladi. {NARX} × {soni} = {jami} so'm!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -735,6 +769,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Esingizdami — <span className="italic" style={{ color: T.accent }}>limonad?</span> Mana mashina!</h2></div>
         <Mentor>Dars boshida har bir limonadni qo'lda 4 bosqichda tayyorlayotgan edingiz. Endi <b style={{ color: T.ink }}>limonad mashinasini</b> yozdik: retsept bir marta funksiya ichida. Mashinani <b style={{ color: T.ink }}>xil</b> (ta'm) parametri bilan chaqirsangiz — har safar tayyor limonad qaytaradi. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="codebox fade-up delay-1" style={{ lineHeight: 1.9 }}>
@@ -754,6 +789,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ 3 xil limonad — <b>bitta funksiya bilan</b>! Retsept bir marta yozildi, mashina har xil parametr bilan har xil natija qaytardi. Mana funksiyaning kuchi! 🚀</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -796,6 +832,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.4vw,14px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi <span className="italic" style={{ color: T.accent }}>siz</span> funksiyani sinab ko'ring</h2></div>
         <Mentor>Navbat sizga! <b style={{ color: T.ink }}>Salomlashish so'zini</b> tanlang (funksiya ichida) va <b style={{ color: T.ink }}>kimga</b> ekanini tanlang (parametr), keyin "Chaqirish"ni bosing. Kod va natija o'zgarishini kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qaysi so'z? (funksiya ichi)</p>
@@ -820,6 +857,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Zo'r! Siz funksiyani parametr bilan chaqirdingiz va u natija qaytardi. Tanlovni o'zgartirib, yana sinab ko'ring.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -839,6 +877,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu funksiya <span className="italic" style={{ color: T.accent }}>undefined</span> qaytaryapti — nega?</h2></div>
         <Mentor>AI sonning kvadratini hisoblaydigan funksiya yozdi, lekin natija <b style={{ color: T.ink }}>undefined</b> (hech narsa) chiqyapti! Funksiya hisobni bajaryapti, lekin natijani <b style={{ color: T.ink }}>tashqariga bermayapti</b>. Diqqat bilan o'qing: bir narsa <b style={{ color: T.ink }}>yetishmayapti</b>. Xato qatorni toping va bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -881,6 +920,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && (<div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Topdingiz va tuzatdingiz — bu debugging!</p><p className="ta-sub">return bo'lmasa — funksiya undefined qaytaradi</p></div>)}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -905,6 +945,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: <span className="mono italic" style={{ color: T.accent }}>kvadrat</span> funksiyasini o'zingiz yozing.</h2></div>
         <Mentor>Navbat sizga! Endi <b style={{ color: T.ink }}>namuna yo'q</b> — funksiyani o'zingiz yodingizdan yozasiz. Son (<span className="mono">n</span>) oladigan <span className="mono">kvadrat</span> funksiyasini tuzing: <b style={{ color: T.ink }}>function</b>, nom va <span className="mono">(n)</span> dan boshlang, <span className="mono">{'{'}</span> qavsni oching, ichiga <span className="mono">return n * n</span> yozing va qavsni <b style={{ color: T.ink }}>{'}'}</b> bilan yoping. Har bir qism to'g'ri bo'lsa, belgisi <b style={{ color: T.success }}>yashil</b> yonadi. ✓</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Funksiyangizni shu yerga yozing 👇</p>
@@ -930,6 +971,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1015,6 +1057,12 @@ export default function JsFunctionsLesson({ lang: langProp, onFinished }) {
         .fade-up { animation: fade-in-up 0.4s ease-out forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
@@ -1051,7 +1099,7 @@ export default function JsFunctionsLesson({ lang: langProp, onFinished }) {
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
         .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

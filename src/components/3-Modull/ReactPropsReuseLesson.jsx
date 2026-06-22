@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // REACT MODULI · 4-DARS — PROPS VA QAYTA ISHLATISH — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -64,6 +65,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
@@ -183,11 +203,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -270,6 +286,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 780 }}>6 ta har xil kartochka — <span className="italic" style={{ color: T.accent }}>nechta kod</span>?</h1>
         <Mentor>Mana robo-games katalogi — xuddi Roblox bosh sahifasiday. Hammasi har xil: nomlar, ranglar, o'yinchilar. Endi <b style={{ color: T.ink }}>🩻 Rentgen</b>ni yoqing — kartochkalarning "ichini" ko'rasiz. Nimani sezdingiz?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -297,6 +314,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! Skelet — <b>bitta <span className="mono">{'<GameCard />'}</span></b>, farq esa faqat <b>ma'lumotda</b> (props). Bugun shu ma'lumotni komponentlarga <b>uzatish san'atini</b> o'rganamiz — va butun katalogni quramiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -343,7 +361,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Va'da beraman: dars oxirida <b style={{ color: T.ink }}>Roblox'dagiday to'liq katalog</b> qurasiz — ro'yxatga yangi o'yin qo'shsangiz, kartochkasi <b style={{ color: T.ink }}>o'zi paydo bo'ladi</b>. Buning kaliti: ma'lumotni komponentlarga to'g'ri uzatish.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -381,6 +399,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">App ma'lumotni GameCard'ga <span className="italic" style={{ color: T.accent }}>qanday yetkazadi</span>?</h2></div>
         <Mentor>Xuddi Roblox'dagi <b style={{ color: T.ink }}>trade</b> kabi: bir o'yinchi ikkinchisiga buyum uzatadi. Bizda: <b style={{ color: T.ink }}>App jo'natadi</b> (atribut yozadi), <b style={{ color: T.ink }}>GameCard qabul qiladi</b> (props orqali). Posilkani yuborib, yo'lini kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">App — jo'natuvchi</p>
@@ -409,6 +428,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yo'l: <b>atribut yozildi → props'ga tushdi → kartochka chizildi</b>. Atribut nomi = props ichidagi nom: <span className="mono">name</span> → <span className="mono">props.name</span>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -429,6 +449,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta kartochkaga <span className="italic" style={{ color: T.accent }}>nechta ma'lumot</span> uzatsa bo'ladi?</h2></div>
         <Mentor>Istalgancha! Har atribut — alohida props: <span className="mono">name</span>, <span className="mono">players</span>, <span className="mono">emoji</span>… Uchalasini tanlab, kartochkani <b style={{ color: T.ink }}>to'liq ma'lumot bilan</b> jihozlang. Kod qanday o'sishini kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">name</p>
@@ -461,6 +482,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>3 ta props — 3 ta atribut. Komponent ularni <span className="mono">props.name</span>, <span className="mono">props.players</span>, <span className="mono">props.emoji</span> deb o'qiydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -523,6 +545,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bola komponent otasiga ma'lumot <span className="italic" style={{ color: T.accent }}>yubora oladimi</span>?</h2></div>
         <Mentor>Hozir bilib olamiz! Props <b style={{ color: T.ink }}>daryo kabi</b> oqadi: yuqoridan pastga — otadan bolaga, boladan nabiraga. <b style={{ color: T.ink }}>Ikkala tugmani</b> ham sinab ko'ring: avval pastga yuborish, keyin… teskarisini ham.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -543,6 +566,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir tomonlama oqim: <span className="mono">App → GameCard → LikeButton</span>. Har daraja faqat <b>o'z otasidan</b> oladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -583,6 +607,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Komponent o'ziga kelgan props'ni <span className="italic" style={{ color: T.accent }}>o'zgartira oladimi</span>?</h2></div>
         <Mentor>Sinab ko'raylik! 1-tugma: kartochka <b style={{ color: T.ink }}>ichkaridan</b> o'z nomini o'zgartirmoqchi. 2-tugma: <b style={{ color: T.ink }}>App (ota)</b> yangi nom yuboradi. Qaysi biri ishlaydi?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -603,6 +628,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qoida: props — <b>faqat o'qish uchun</b>. O'zgartirishni faqat <b>ota</b> qiladi (yangi qiymat yuboradi). Komponent o'zida nimanidir o'zgartirmoqchi bo'lsa — buning uchun <b>state</b> bor (o'tgan dars!).</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -621,6 +647,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Roblox'dagi minglab o'yin ma'lumoti <span className="italic" style={{ color: T.accent }}>qayerda saqlanadi</span>?</h2></div>
         <Mentor>Katta saytlarning siri: ma'lumot <b style={{ color: T.ink }}>kod ichiga yozilmaydi</b> — alohida <b style={{ color: T.ink }}>ro'yxatda (massivda)</b> turadi. Har qator — bitta o'yin, ichida props uchun hamma narsa tayyor. Qatorlarni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">games — ma'lumotlar massivi</p>
@@ -651,6 +678,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har qator — bitta kartochkaning <b>xom ashyosi</b>. Endi savol: 3 ta qatorni 3 ta kartochkaga <b>kim aylantiradi</b>? Keyingi ekranda!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -679,6 +707,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ro'yxatdan katalogga — <span className="italic" style={{ color: T.accent }}>bitta qator</span> yetadimi?</h2></div>
         <Mentor>Yetadi! <span className="mono">games.map(…)</span> — ro'yxatdagi <b style={{ color: T.ink }}>har bir o'yin uchun</b> bitta kartochka yasaydi: qatorni oladi → props qilib uzatadi → kartochka chizadi. Tugmani bosib, konveyerni kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run} disabled={running}>{running ? 'Chizilmoqda…' : (done ? '↻ Yana chizish' : '▶ Katalogni chizish')}</button>
@@ -708,6 +737,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>E'tibor bering: <span className="mono">name={'{g.name}'}</span> — <b>jingalak qavs</b>! Chunki qiymat qo'shtirnoqdagi matn emas, <b>ro'yxatdan kelyapti</b>.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -741,6 +771,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Katalogga yangi o'yin qo'shish uchun <span className="italic" style={{ color: T.accent }}>kod kerakmi</span>?</h2></div>
         <Mentor>Sinab ko'ring! Yangi o'yinni bosing — u faqat <b style={{ color: T.ink }}>ro'yxatga</b> qo'shiladi. Katalog kodiga (<span className="mono">map</span> qatoriga) <b style={{ color: T.ink }}>tegmaymiz</b>. Kartochka qayerdan paydo bo'larkin?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -765,6 +796,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? <b>Faqat ma'lumot o'zgardi</b> — kartochkalar o'zi paydo bo'ldi. Buning nomi <b>data-driven sayt</b>: sayt ro'yxatga qarab o'zini chizadi. Roblox ham shunday ishlaydi!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -791,6 +823,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Katalogni <span className="italic" style={{ color: T.accent }}>AI bilan</span> boyitsak-chi?</h2></div>
         <Mentor>Endi siz props oqimini bilasiz — agent kodini <b style={{ color: T.ink }}>tekshira olasiz</b>: ma'lumot ro'yxatdan kelyaptimi, jingalak qavs to'g'rimi, props pastga oqyaptimi. Buyruq bering, rejani <b style={{ color: T.ink }}>tasdiqlang</b>, natijani sinang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. Agentga so'z bilan ayting</p>
@@ -831,6 +864,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Natija shu yerda paydo bo'ladi — keyin uni o'zingiz tekshirasiz.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -869,6 +903,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'z katalogingizni <span className="italic" style={{ color: T.accent }}>yig'a olasizmi</span>?</h2></div>
         <Mentor>Endi o'zingiz! Sevimli o'yinlaringizdan <b style={{ color: T.ink }}>kamida 3 tasini</b> ro'yxatga qo'shing — kartochkalar o'zi chiziladi. Keyin bittasini <b style={{ color: T.ink }}>kartochkasini bosib</b> 🔥 TOP qilib belgilang (top props!).</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Ro'yxatga qo'shing</p>
@@ -894,6 +929,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Katalogingiz tayyor: ro'yxat + map + props (<span className="mono">name</span>, <span className="mono">top</span>). Siz endi <b>ma'lumot bilan boshqaradigan</b> dasturchisiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -914,6 +950,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — siz esa <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
         <Mentor>AI kod yozishda <b style={{ color: T.ink }}>zo'r yordamchi</b> — katalogni bir zumda yozib berdi. Lekin <b style={{ color: T.ink }}>odamlar ham, AI ham</b> ba'zan kichik xato qiladi. Qarang: katalog chizildi, lekin hamma kartochka <b style={{ color: T.ink }}>bir xil va nomsiz</b>! Ma'lumot qayerdadir yo'qoldi. Qaysi qatorda?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-2">
@@ -951,6 +988,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -981,6 +1019,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: katalogni <span className="italic" style={{ color: T.accent }}>o'zingiz</span> ishga tushiring.</h2></div>
         <Mentor>VS Code'da <span className="mono">App.jsx</span> ochiq: ro'yxat tayyor, konveyer (<span className="mono">map</span>) aylanyapti — faqat <b style={{ color: T.ink }}>6-qator bo'sh</b>! Yozing: <b style={{ color: T.ink }}>{'<GameCard'}</b> + <b style={{ color: T.ink }}>name={'{g}'}</b> (jingalak qavs — ma'lumot ro'yxatdan!) + <b style={{ color: T.ink }}>{'/>'}</b>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-2">
@@ -1026,6 +1065,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1168,8 +1208,14 @@ export default function ReactPropsReuseLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

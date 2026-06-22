@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // 09-DARS — JAVASCRIPT: if / else — PLATFORM STANDARD v16
@@ -282,11 +283,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -300,6 +297,27 @@ const Mentor = ({ children }) => {
 const BoolPill = ({ value }) => (
   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 14, color: value ? T.success : T.accent, background: value ? T.successSoft : T.accentSoft, padding: '5px 12px', borderRadius: 99 }}>{value ? '✓ true' : '✗ false'}</span>
 );
+
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 // ===== SCREEN 0 — HOOK (yosh chegarasi) =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
@@ -318,6 +336,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 760 }}>Turniket <span className="italic" style={{ color: T.accent }}>kimga</span> ochiladi?</h1>
         <Mentor>Attraksionda yozuv: <b style={{ color: T.ink }}>"12 yoshdan oshganlar chiqadi"</b>. Turniket yoshingizga qarab ochiladi yoki yopiq qoladi. Dastur bu qarorni qanday qabul qiladi? Yoshni o'zgartirib, sinab ko'ring.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label">Yoshingizni tanlang</p>
@@ -346,6 +365,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">To'g'ri yo'nalish! Dastur <b>shartni</b> tekshiradi. Buni <span className="mono">if</span> bilan yozamiz — bugun shuni o'rganamiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -386,7 +406,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Algoritm darsida <b style={{ color: T.ink }}>"agar... bo'lsa..."</b> degandik, esingizdami? Bugun aynan shuni haqiqiy kodga aylantiramiz — <span className="mono">if</span> va <span className="mono">else</span>. 5 qadamda o'rganamiz.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -417,6 +437,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Agar</span> ... bo'lsa — buni bajaring</h2></div>
         <Mentor><span className="mono">if</span> degani <b style={{ color: T.ink }}>"agar"</b>. Qavs ichiga <b style={{ color: T.ink }}>shart</b>, figurali qavs <span className="mono">{'{ }'}</span> ichiga <b style={{ color: T.ink }}>kod</b> yoziladi. Shart <b style={{ color: T.ink }}>rost (true)</b> bo'lsa — kod ishlaydi. Yoshni o'zgartiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">yosh = {age}</p>
@@ -438,6 +459,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ <b>if</b> — bu darvoza: shart <b>true</b> bo'lsagina ichidagi kodga yo'l ochiladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -467,6 +489,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Shartni <span className="italic" style={{ color: T.accent }}>qanday</span> yozamiz?</h2></div>
         <Mentor>Shart — <b style={{ color: T.ink }}>taqqoslash operatorlari</b> bilan yoziladi. Har biri ikki qiymatni solishtirib, <b style={{ color: T.ink }}>true</b> yoki <b style={{ color: T.ink }}>false</b> qaytaradi. Operatorlarni bosib, natijani ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Operatorni tanlang</p>
@@ -488,6 +511,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Esda saqlang: <span className="mono">===</span> teng, <span className="mono">!==</span> teng emas, <span className="mono">{'>='}</span> katta yoki teng. Hammasi true/false beradi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -518,6 +542,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Shart bajarilmasa — <span className="italic" style={{ color: T.accent }}>aks holda</span>?</h2></div>
         <Mentor>Shart bajarilmasa-chi? Buning uchun <span className="mono">else</span> bor — <b style={{ color: T.ink }}>"aks holda"</b>. if rost bo'lsa birinchi blok, <b style={{ color: T.ink }}>aks holda</b> else bloki ishlaydi. Doim bittasi tanlanadi. Yoshni o'zgartiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -541,6 +566,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ <b>if / else</b> — ikki yo'lli ayri: rost bo'lsa biri, yolg'on bo'lsa ikkinchisi. Hech qachon ikkalasi birga emas.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -576,6 +602,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>=</span> va <span className="italic" style={{ color: T.accent }}>===</span> — farqi nimada?</h2></div>
         <Mentor>Bu yerda yangi boshlovchilar ko'p adashadi! <b style={{ color: T.ink }}>=</b> qiymatni qutiga <b style={{ color: T.ink }}>soladi</b>. <b style={{ color: T.ink }}>===</b> esa savol beradi: <b style={{ color: T.ink }}>tengmi?</b> va true/false qaytaradi. Shartda doim <span className="mono">===</span> ishlatasiz! Ikkala kartani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button onClick={() => tap('assign')} className="fade-up delay-1" style={{ textAlign: 'left', cursor: 'pointer', border: 'none', width: '100%', borderRadius: 14, padding: '15px 17px', background: T.paper, boxShadow: active === 'assign' ? `inset 0 0 0 2px ${T.accent}, 0 8px 20px -6px rgba(255,79,40,0.22)` : `0 6px 16px -6px rgba(${T.shadowBase},0.14)`, transition: 'all 0.18s', marginBottom: 10 }}>
@@ -598,6 +625,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>Qoida:</b> qiymat berish — <span className="mono">=</span>, tekshirish — <span className="mono">===</span>. Aralashtirmang!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -625,6 +653,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ikkidan ko'p <span className="italic" style={{ color: T.accent }}>yo'l</span> bo'lsa-chi?</h2></div>
         <Mentor>Ba'zan bir nechta yo'l bo'ladi. Imtihon bahosi: 90+ → 5, 70+ → 4, 60+ → 3, aks holda → 2. Buning uchun <span className="mono">else if</span> — <b style={{ color: T.ink }}>"aks holda, agar..."</b>. Ballni o'zgartiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">ball = {ball}</p>
@@ -644,6 +673,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ <b>else if</b> zanjiri: yuqoridan pastga tekshiriladi, birinchi rost shart ishlaydi, qolganlari o'tkazib yuboriladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -663,6 +693,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Shart aslida <span className="italic" style={{ color: T.accent }}>nima</span> qaytaradi?</h2></div>
         <Mentor>Bir sirni payqadingizmi: taqqoslash natijasi — o'sha <b style={{ color: T.ink }}>true yoki false</b> (1-darsdagi boolean!). Demak shartni <b style={{ color: T.ink }}>qutiga ham solsa</b> bo'ladi. Yoshni o'zgartirib, <span className="mono">katta</span> qutisiga nima tushishini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -678,6 +709,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Ko'rdingizmi — <span className="mono">yosh {'>='} 18</span> shunchaki <b>true/false</b>. Shart va boolean — bir narsa!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -715,6 +747,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta shart <span className="italic" style={{ color: T.accent }}>yetmasa</span>?</h2></div>
         <Mentor>Attraksionga kirish uchun: avval <b style={{ color: T.ink }}>yosh</b> yetarli, keyin <b style={{ color: T.ink }}>chipta</b> ham kerak. Demak <span className="mono">if</span> ichiga yana <span className="mono">if</span> yozamiz — <b style={{ color: T.ink }}>ichma-ich shart</b>. Sozlamalarni o'zgartiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -737,6 +770,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ <b>Ichma-ich shart</b>: tashqi if rost bo'lsagina, ichki if tekshiriladi. Bosqichma-bosqich qaror.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -763,6 +797,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kino chiptasi — <span className="italic" style={{ color: T.accent }}>yoshga qarab</span> narx</h2></div>
         <Mentor>Hamma narsani birga ishlatamiz. Chipta narxi: 7 gacha — <b style={{ color: T.ink }}>tekin</b>, 18 gacha — <b style={{ color: T.ink }}>yarim narx</b>, kattalar — <b style={{ color: T.ink }}>to'liq</b>. Yoshni o'zgartiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">yosh = {age}</p>
@@ -782,6 +817,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Mana — haqiqiy dasturlardagi mantiq! if/else if bilan har qanday qoidani yozish mumkin.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -820,6 +856,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Turniket shartini <span className="italic" style={{ color: T.accent }}>o'zingiz tuzing</span></h2></div>
         <Mentor>Endi o'zingiz shart tuzasiz. <b style={{ color: T.ink }}>Operator</b> va <b style={{ color: T.ink }}>son</b>ni tanlang — turniket shartini quring. So'ng yoshlar bilan sinab ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Operator</p>
@@ -846,6 +883,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -866,6 +904,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Shart noto'g'ri ishlayapti — <span className="italic" style={{ color: T.accent }}>nega</span>?</h2></div>
         <Mentor>AI shart yozdi, lekin xato qilibdi. Shartda <b style={{ color: T.ink }}>bitta teng belgisi</b> ishlatilibdi — bu qiymatni o'zlashtiradi, <b style={{ color: T.ink }}>tekshirmaydi</b>! Tekshirish uchun <span className="mono">===</span> kerak. Xato qatorni toping.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -889,6 +928,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && (<div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Topdingiz va tuzatdingiz — bu debugging!</p><p className="ta-sub">Shartda doim === (tekshirish), = emas</p></div>)}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -918,6 +958,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: <span className="italic" style={{ color: T.accent }}>if</span> ni o'zingiz yozing.</h2></div>
         <Mentor>Ball 90 dan katta bo'lsa tekshiradigan shart yozing: <span className="mono">if</span>, qavs ichida <span className="mono">ball {'>'} 90</span>, va <span className="mono">{'{'}</span> oching. Masalan: <span className="mono">{'if (ball > 90) {'}</span></Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <input className="fade-up delay-1" value={value} onChange={e => setValue(e.target.value)} placeholder={'if (ball > 90) {'} spellCheck={false} autoCapitalize="off" autoCorrect="off" style={{ width: '100%', fontFamily: "'JetBrains Mono', monospace", fontSize: 16, padding: '14px 16px', borderRadius: 12, border: 'none', background: T.paper, color: T.ink, outline: 'none', transition: 'box-shadow 0.2s', boxShadow: valid ? `0 0 0 2px ${T.success}, 0 8px 20px -8px rgba(${T.shadowBase},0.2)` : `0 4px 14px -6px rgba(${T.shadowBase},0.16)` }} />
@@ -940,6 +981,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1025,6 +1067,12 @@ export default function JsConditionsLesson({ lang: langProp, onFinished }) {
         .fade-up { animation: fade-in-up 0.4s ease-out forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
 
@@ -1058,7 +1106,7 @@ export default function JsConditionsLesson({ lang: langProp, onFinished }) {
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
         .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

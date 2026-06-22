@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // 08-DARS — JAVASCRIPT: O'ZGARUVCHILAR (Peremennie) — PLATFORM STANDARD v16
@@ -289,17 +290,34 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
         <div className="mentor-msg body">{children}</div>
       </div>
     </div>
+  );
+};
+
+// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
   );
 };
 
@@ -319,6 +337,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 760 }}>O'yin ballingizni <span className="italic" style={{ color: T.accent }}>qayerda</span> saqlaydi?</h1>
         <Mentor>O'yin o'ynaganingizda ekranda <b style={{ color: T.ink }}>ballingiz</b>, jonlaringiz va ismingiz turadi. O'yin ularni qayerda eslab qoladi? <b style={{ color: T.ink }}>"Kod"</b> tugmasini bosib, ichkariga qarang.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -360,6 +379,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">To'g'ri yo'nalish! Bu "qutilar" — <b>o'zgaruvchilar</b>. Bugun ularni o'rganamiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -400,7 +420,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Mana, eng qizig'i boshlanadi — bugun siz birinchi marta <b style={{ color: T.ink }}>haqiqiy JavaScript kodi</b> yozasiz! Hammasi <b style={{ color: T.ink }}>o'zgaruvchilardan</b> boshlanadi. 5 qadamda o'rganamiz va oxirida o'zingiz yozasiz.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -435,6 +455,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'zgaruvchi aslida <span className="italic" style={{ color: T.accent }}>nima</span>?</h2></div>
         <Mentor>O'zgaruvchini shunday tasavvur qiling: ustiga nom yozilgan <b style={{ color: T.ink }}>quti</b>. Qutining <b style={{ color: T.ink }}>nomi</b> bor, ichida esa <b style={{ color: T.ink }}>qiymat</b> turadi. Nom orqali qutini istalgan payt topasiz. Quti qismlarini bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
@@ -455,6 +476,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Mana shu — <b>o'zgaruvchi</b>: nomi bor quti. <span className="mono">ism</span> deb chaqirsangiz, ichidagi <span className="mono">"Aziza"</span> ni olasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -472,6 +494,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qutiga qiymatni <span className="italic" style={{ color: T.accent }}>qanday</span> solamiz?</h2></div>
         <Mentor>Qutiga qiymat <b style={{ color: T.ink }}>= belgisi</b> orqali solinadi. Lekin diqqat: kodda <b style={{ color: T.ink }}>=</b> "teng" degani emas — u <b style={{ color: T.ink }}>"qutiga sol"</b> degani! Bir qiymat tanlab, qutiga tushishini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qiymat tanlang</p>
@@ -489,6 +512,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Tayyor! <span className="mono">ism</span> qutisida endi <span className="mono">"{val}"</span> turibdi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -520,6 +544,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Quti ichidagini <span className="italic" style={{ color: T.accent }}>o'zgartirsa</span> bo'ladimi?</h2></div>
         <Mentor>O'yindagi <b style={{ color: T.ink }}>ballingiz</b> doim o'zgarib turadi-ku. Bunday qiymatlar uchun <b style={{ color: T.ink }}>let</b> so'zini ishlatamiz — uning ichini istagancha o'zgartirsa bo'ladi. Tugmani bosib, ballni oshiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Quti — ball</p>
@@ -534,6 +559,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}>Diqqat: ikkinchi marta <span className="mono">let</span> yozilmaydi — quti bor, faqat ichini almashtiramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -566,6 +592,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ba'zi qiymatlar <span className="italic" style={{ color: T.accent }}>o'zgarmasligi</span> kerakmi?</h2></div>
         <Mentor>Ba'zi qiymatlar hech qachon o'zgarmaydi: <b style={{ color: T.ink }}>tug'ilgan yilingiz</b> doim bir xil-ku. Bunday qiymatlar uchun <b style={{ color: T.ink }}>const</b> so'zini ishlatamiz — uning ichini o'zgartirib bo'lmaydi. Ishonmaysizmi? Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Quti — o'zgarmas (const)</p>
@@ -585,6 +612,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}>const = constant = o'zgarmas. Tug'ilgan yil, hafta kunlari soni (7), Pi soni — bularga const.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -607,6 +635,8 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">let yoki const — <span className="italic" style={{ color: T.accent }}>qaysi birini</span>?</h2></div>
         <Mentor>Oddiy qoida: qiymat <b style={{ color: T.ink }}>o'zgaradimi</b> — <span className="mono">let</span>. <b style={{ color: T.ink }}>O'zgarmaydimi</b> — <span className="mono">const</span>. Har bir holat uchun to'g'ri so'zni tanlang.</Mentor>
+        <Zoomable>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {CASES.map((c, i) => {
             const correct = ans[i] === c.a;
@@ -628,6 +658,8 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           })}
         </div>
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Ajoyib! Ko'pincha <b>const</b> dan boshlanadi — agar qiymat keyin o'zgarishi kerak bo'lsa, <b>let</b> ga o'tasiz.</p></div>}
+        </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -646,6 +678,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">var — bu <span className="italic" style={{ color: T.accent }}>nima</span> (eski tanish)?</h2></div>
         <Mentor>Eski kodlarda yana bitta so'zni uchratasiz — <b style={{ color: T.ink }}>var</b>. Bu o'zgaruvchining eng eski usuli (2015-yilgacha). Kamchiliklari borligi uchun bugun biz <b style={{ color: T.ink }}>let</b> va <b style={{ color: T.ink }}>const</b> ishlatamiz. var bilan shunchaki tanish bo'lib qo'ying.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -666,6 +699,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Endi uchalasini ham bilasiz: <b>var</b> (eski), <b>let</b> va <b>const</b> (yangi). Tanlov oson — let yoki const.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -706,6 +740,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qutiga <span className="italic" style={{ color: T.accent }}>nima</span> solish mumkin?</h2></div>
         <Mentor>Qutiga turli xil narsa sig'adi: <b style={{ color: T.ink }}>matn</b> (qo'shtirnoq ichida), <b style={{ color: T.ink }}>raqam</b> (qo'shtirnoqsiz) va <b style={{ color: T.ink }}>ha/yo'q</b> (true yoki false). Bular — <b style={{ color: T.ink }}>ma'lumot turlari</b>. Har birini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -728,6 +763,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Uchta asosiy tur: <b>matn</b>, <b>raqam</b>, <b>boolean</b>. Eng muhim farq — qo'shtirnoq!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -747,6 +783,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Besh qo'shuv besh — <span className="italic" style={{ color: T.accent }}>qachon</span> o'n emas?</h2></div>
         <Mentor>Bitta <b style={{ color: T.ink }}>qo'shtirnoq</b> hammasini o'zgartiradi! Raqamlar qo'shtirnoqsiz bo'lsa — <b style={{ color: T.ink }}>qo'shiladi</b> (5+5=10). Qo'shtirnoq ichida bo'lsa — ular matn, <b style={{ color: T.ink }}>yopishtiriladi</b> ("5"+"5"="55"). Solishtiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -768,6 +805,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Esda saqlang: <b>qo'shtirnoq bor → matn</b>, <b>qo'shtirnoq yo'q → raqam</b>. Bu — eng ko'p chalkashtiradigan joy!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -812,6 +850,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'z o'zgaruvchilaringizni <span className="italic" style={{ color: T.accent }}>yarating</span></h2></div>
         <Mentor>Endi navbat sizga — o'zingiz haqingizda o'zgaruvchilar yarating. Bloklarni bosib qo'shing: ism, yosh, shahar... Kamida <b style={{ color: T.ink }}>3 ta</b> o'zgaruvchi yig'ing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Bloklar — bosib qo'shing</p>
@@ -835,6 +874,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Zo'r! Siz {items.length} ta o'zgaruvchi yaratdingiz — har biri nomi va qiymati bor quti.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -855,6 +895,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kod ishlamadi — <span className="italic" style={{ color: T.accent }}>nega</span>?</h2></div>
         <Mentor>AI kod yozib berdi, lekin dastur <b style={{ color: T.ink }}>ishlamayapti</b>. Yaxshilab qarang: bir o'zgaruvchining <b style={{ color: T.ink }}>matn qiymati qo'shtirnoqsiz</b> qolib ketibdi. Xato qatorni toping va bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -883,6 +924,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </>)}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -915,6 +957,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: o'zgaruvchini <span className="italic" style={{ color: T.accent }}>o'zingiz</span> yozing.</h2></div>
         <Mentor>Ismingizni saqlaydigan o'zgaruvchi yozing: <span className="mono">let</span>, keyin nom, <span className="mono">=</span> va qo'shtirnoqda ismingiz. Masalan: <span className="mono">let ism = "Aziza"</span>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <input className="fade-up delay-1" value={value} onChange={e => setValue(e.target.value)} placeholder={'let ism = "Aziza"'} spellCheck={false} autoCapitalize="off" autoCorrect="off" style={{ width: '100%', fontFamily: "'JetBrains Mono', monospace", fontSize: 16, padding: '14px 16px', borderRadius: 12, border: 'none', background: T.paper, color: T.ink, outline: 'none', transition: 'box-shadow 0.2s', boxShadow: valid ? `0 0 0 2px ${T.success}, 0 8px 20px -8px rgba(${T.shadowBase},0.2)` : `0 4px 14px -6px rgba(${T.shadowBase},0.16)` }} />
@@ -937,6 +980,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1022,6 +1066,12 @@ export default function JsVarsLesson({ lang: langProp, onFinished }) {
         .fade-up { animation: fade-in-up 0.4s ease-out forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
@@ -1058,7 +1108,7 @@ export default function JsVarsLesson({ lang: langProp, onFinished }) {
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
         .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

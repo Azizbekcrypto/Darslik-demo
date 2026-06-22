@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BACKEND MODULI (4-MODUL) · 5-DARS — PostgreSQL SO'ROVLAR (CRUD) + AI BILAN ISHLASH — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -173,6 +174,26 @@ function ScoreRing({ correct, total }) {
 }
 
 // ===== MENTOR =====
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
   const enabled = !!ctx.enabled;
@@ -181,11 +202,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -292,6 +309,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 860 }}>Do'kondagi <span className="italic" style={{ color: T.accent }}>minglab mahsulot</span> aslida qayerda saqlanadi?</h1>
         <Mentor>O'tgan darsda server qurdik — u so'rovga javob beradi. Lekin mahsulotlar, narxlar, buyurtmalar <b style={{ color: T.ink }}>qayerda saqlanadi</b>? Saytni ko'ring, keyin <b style={{ color: T.accent }}>ortidagi bazani</b> oching — bir xil ma'lumot, ikki tomondan.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
@@ -328,6 +346,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">{picked === correct ? <>To'g'ri! Ma'lumot <b>bazada</b> (PostgreSQL) saqlanadi. Sayt va server undan o'qib chiqaradi.</> : <>Aslida ma'lumot <b>bazada</b> (PostgreSQL) yashaydi — sayt yopilsa ham yo'qolmaydi. Bugun o'sha bazani o'zimiz boshqarishni o'rganamiz.</>}</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -367,7 +386,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Bugun <span className="italic" style={{ color: T.accent }}>haqiqiy bazani</span> o'zimiz boshqaramiz</h2></div>
         <Mentor>Va'da: dars oxirida siz bazaga <b style={{ color: T.ink }}>o'z mahsulotingizni</b> qo'sha olasiz. SQL — bu baza bilan gaplashish tili. Yoddan bilish shart emas — <b style={{ color: T.ink }}>tushunish va tekshirish</b> muhim, qolganiga AI yordam beradi.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -402,6 +421,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ma'lumotni saqlash uchun avval <span className="italic" style={{ color: T.accent }}>jadval</span> kerak</h2></div>
         <Mentor>Baza — bu jadvallar uyi. Jadval = <b style={{ color: T.ink }}>ustunlar</b> (xususiyatlar: nom, narx, soni) va <b style={{ color: T.ink }}>qatorlar</b> (har bir mahsulot). <span className="mono">CREATE TABLE</span> buyrug'i bo'sh jadval yasaydi. Ustunlarni bosib, har birining tipini ko'ring, keyin jadvalni yarating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">products jadvalining "chizmasi"</p>
@@ -420,6 +440,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 <SqlStatus>Jadval tayyor! Ustunlar bor, lekin hali <b>0 qator</b>. Endi mahsulot qo'shamiz.</SqlStatus></>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -438,6 +459,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Jadvalga mahsulotni <span className="italic" style={{ color: T.accent }}>qanday qo'shamiz?</span></h2></div>
         <Mentor>Yangi qator qo'shish — <span className="mono">INSERT INTO</span> buyrug'i. Qaysi ustunlarga, qanday qiymat: <span className="mono">VALUES (...)</span>. Pastdagi mahsulotlarni bosing — har bosishda bitta INSERT bajariladi va jadvalga yangi qator qo'shiladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qo'shiladigan mahsulotlar</p>
@@ -457,6 +479,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <SqlStatus><b>{rows.length} qator</b> qo'shildi. INSERT — bu jadvalga yangi ma'lumot QO'SHADI.</SqlStatus>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -489,6 +512,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bazadagi ma'lumotni <span className="italic" style={{ color: T.accent }}>qanday ko'ramiz?</span></h2></div>
         <Mentor>Ma'lumotni o'qib olish — <span className="mono">SELECT</span> buyrug'i. <span className="mono">SELECT * FROM products</span> = "products jadvalidagi <b>hamma ustunni</b> ko'rsat" (yulduzcha <b>*</b> = barchasi). Faqat kerakli ustunlarni ham so'rash mumkin: <span className="mono">SELECT nom, narx</span>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">So'rovni tanlang</p>
@@ -506,6 +530,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 110 }}><p className="small" style={{ color: T.ink3, fontStyle: 'italic', textAlign: 'center', margin: 0 }}>← So'rovni tanlang — natija jadval bo'lib chiqadi</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -543,6 +568,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Minglab mahsulotdan <span className="italic" style={{ color: T.accent }}>faqat kerakligini</span> qanday topamiz?</h2></div>
         <Mentor>Bu yerda <span className="mono">WHERE</span> kuchga kiradi — u <b style={{ color: T.ink }}>shart</b> qo'yadi. <span className="mono">SELECT * FROM products WHERE narx &lt; 100000</span> = "faqat narxi 100 000 dan arzonlarini ko'rsat". Shartni tanlang — jadval jonli filtrlanadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Shartni tanlang (WHERE)</p>
@@ -557,6 +583,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <SqlStatus>WHERE — bu <b>shart (filtr)</b>. U faqat mos qatorlarni qaytaradi.</SqlStatus>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -576,6 +603,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Klaviatura narxi tushdi — bazada <span className="italic" style={{ color: T.accent }}>qanday yangilaymiz?</span></h2></div>
         <Mentor>Mavjud qatorni o'zgartirish — <span className="mono">UPDATE</span>. <span className="mono">SET</span> bilan yangi qiymatni, <span className="mono">WHERE</span> bilan <b style={{ color: T.ink }}>qaysi qatorni</b> ko'rsatamiz. <b style={{ color: T.accent }}>Diqqat:</b> WHERE'ni unutsangiz — HAMMA qator o'zgaradi!</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">So'rov: Klaviatura (id=1) narxini yangilash</p>
@@ -589,6 +617,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {ran && <SqlStatus><b>1 qator yangilandi.</b> Klaviatura narxi 120 000 → 99 000 bo'ldi.</SqlStatus>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -607,6 +636,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mahsulot sotuvdan chiqdi — uni <span className="italic" style={{ color: T.accent }}>qanday o'chiramiz?</span></h2></div>
         <Mentor>Qatorni o'chirish — <span className="mono">DELETE FROM</span>. Yana <span className="mono">WHERE</span> bilan <b style={{ color: T.ink }}>qaysi qatorni</b> aniqlaymiz. Bu yerda Quloqchin (id=3) ni o'chiramiz. <b style={{ color: T.accent }}>WHERE'siz DELETE — butun jadvalni tozalab yuboradi!</b></Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">So'rov: Quloqchin (id=3) ni o'chirish</p>
@@ -620,6 +650,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {ran && <SqlStatus><b>1 qator o'chirildi.</b> Quloqchin jadvaldan olib tashlandi.</SqlStatus>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -659,6 +690,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">To'rt buyruq — bazaning <span className="italic" style={{ color: T.accent }}>to'rt asosiy ishi</span></h2></div>
         <Mentor>Ma'lumot bilan qilinadigan har bir ish shu to'rttaga sig'adi — ularni <b style={{ color: T.ink }}>CRUD</b> deyishadi: Create (qo'sh), Read (ko'r), Update (o'zgartir), Delete (o'chir). Har birini bosib ko'ring. <b style={{ color: T.ink }}>Modul 5'da NestJS aynan shu 4 amalni</b> avtomatik bajaradi — siz faqat so'raysiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
@@ -677,6 +709,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="takeaway fade-step"><div className="ta-bulb">🗄️</div><p className="ta-h">CRUD — bazaning 4 asosiy amali</p><p className="ta-sub">Create · Read · Update · Delete</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -701,6 +734,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">SQL'ni yoddan bilish shartmi? <span className="italic" style={{ color: T.accent }}>Yo'q.</span></h2></div>
         <Mentor>Zamonaviy usul: siz <b style={{ color: T.ink }}>oddiy tilda</b> nima xohlashingizni aytasiz — AI SQL yozadi. Lekin muhimi: AI yozgan kodni <b style={{ color: T.accent }}>o'qib, tekshirib</b> ishlatasiz. Bir vazifani tanlang, AI'ning so'rovini ko'ring va bajaring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">AI'ga vazifa bering (oddiy tilda)</p>
@@ -720,6 +754,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 110 }}><p className="small" style={{ color: T.ink3, fontStyle: 'italic', textAlign: 'center', margin: 0 }}>Vazifa tanlang → AI SQL yozadi → tekshirib bajaring</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -751,6 +786,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Boshqa jadvalni ko'rmoqchimisiz? <span className="italic" style={{ color: T.accent }}>Shunchaki so'rang.</span></h2></div>
         <Mentor>Bazada faqat products emas — <span className="mono">users</span> (xaridorlar) jadvali ham bor. Uni ko'rish uchun SQL'ni eslab o'tirmaysiz: <b style={{ color: T.ink }}>AI'ga oddiy tilda aytasiz</b>, u SQL yozadi va bajaradi. Siz esa natijani tekshirasiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Sizning so'rovingiz</p>
@@ -771,6 +807,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 110 }}><p className="small" style={{ color: T.ink3, fontStyle: 'italic', textAlign: 'center', margin: 0 }}>So'rovni AI'ga yuboring → SQL → natija</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -794,6 +831,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI doim to'g'ri yozadimi? <span className="italic" style={{ color: T.accent }}>Keling, tekshiramiz.</span></h2></div>
         <Mentor>AI arzon mahsulotlarni so'radi, lekin so'rov <b style={{ color: T.accent }}>ishlamayapti</b> — baza "bunday jadval yo'q" deyapti. Jadval nomi <span className="mono">products</span> (ko'plik). Xato qatorni toping, tuzating va qaytadan ishga tushiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -819,6 +857,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 : <><DataTable cols={PCOLS} rows={PRODUCTS.filter(r => r.narx < 100000)} /><SqlStatus>Topdingiz va tuzatdingiz! Bitta harf (s) butun so'rovni ishlatdi. <b>AI yozadi — siz tekshirasiz.</b></SqlStatus></>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -846,6 +885,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bazaga <span className="italic" style={{ color: T.accent }}>o'z mahsulotingizni</span> qo'shing</h2></div>
         <Mentor>Mana SQL muharriri. 2-qatorga <b style={{ color: T.ink }}>INSERT</b> yozing — masalan: <span className="mono">INSERT INTO products (nom, narx, soni) VALUES ('Mishka', 50000, 10)</span>. Nomni qo'shtirnoq ichida, narx va sonini raqam bilan yozing. Yozib bo'lgach <b style={{ color: T.ink }}>▶ Run</b> bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-1">
@@ -872,6 +912,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {ran && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 Tabriklaymiz! Siz bazaga <b>"{newRow ? newRow.nom : ''}"</b> ni qo'shdingiz. Endi siz ma'lumotlar bazasini boshqara olasiz!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1013,8 +1054,15 @@ export default function PostgresCrudLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

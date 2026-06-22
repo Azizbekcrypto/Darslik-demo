@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // REACT MODULI · 2-DARS — BIRINCHI KOMPONENT — PLATFORM STANDARD v16
@@ -282,11 +283,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -347,6 +344,26 @@ const TLine = ({ cmd, out, dim }) => (
   </div>
 );
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 // ===== SCREEN 0 — HOOK (bitta buyruq — butun loyiha: fayllar jonli paydo bo'ladi) =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const audio = useAudio([{ id: 's0', text: `Roblox Studio'da yangi o'yin boshlasangiz nima bo'ladi? Tayyor maydoncha keladi: yer, osmon, yorug'lik — hammasini noldan qurmaysiz. Sayt qurishda ham xuddi shunday yordamchi bor. Enter tugmasini bosing va kompyuteringizda nima paydo bo'lishini kuzating.`, trigger: 'on_mount', waits_for: { type: 'option_picked' } }]);
@@ -379,6 +396,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 780 }}>Bitta tugma bilan <span className="italic" style={{ color: T.accent }}>butun loyiha</span> paydo bo'ladimi?</h1>
         <Mentor>Roblox Studio'da yangi o'yin boshlasangiz — <b style={{ color: T.ink }}>tayyor maydoncha</b> keladi: yer, osmon, yorug'lik. Hammasini noldan qurmaysiz-ku! Sayt qurishda ham shunday yordamchi bor. <b style={{ color: T.ink }}>Enter'ni bosing</b> — kompyuteringizda nima paydo bo'lishini kuzating.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="code-box fade-up delay-1" style={{ padding: '11px 14px' }}>
@@ -421,6 +439,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan shunday! Bu yordamchining nomi — <b>Vite</b> (talaffuzi: "vit", fransuzcha "tez"). Xuddi Roblox Studio'ning tayyor maydonchasiday: skelet tayyor — <b>ichini esa siz to'ldirasiz</b>. Bugun shu yerga birinchi komponentingizni yozasiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -467,7 +486,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Va'da beraman: dars oxirida <b style={{ color: T.ink }}>o'z loyihangizni noldan yaratib</b>, mana shu o'yin kartochkasini <b style={{ color: T.ink }}>kod bilan o'zingiz chaqirasiz</b> — xuddi Roblox saytidagidek. Kartochkalardagi 👍 ni bosib ko'ring — ular jonli!</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -502,6 +521,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Loyiha <span className="italic" style={{ color: T.accent }}>to'rt qadamda</span> tug'iladimi?</h2></div>
         <Mentor>Har bir buyruqni <b style={{ color: T.ink }}>tartib bilan</b> bosing va nima qilishini o'qing. Oxirgi buyruqdan keyin loyihangiz brauzerda ochiladi — <span className="mono">localhost:5173</span>. Bu manzil — <b style={{ color: T.ink }}>o'z kompyuteringiz</b>, internet emas.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Terminal — buyruqlarni bosing</p>
@@ -534,6 +554,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">localhost:5173</span> — saytingizning <b>kompyuteringizdagi</b> manzili. Hali internetda emas — faqat siz ko'rasiz. Xuddi Roblox Studio'da hali e'lon qilinmagan o'yiningizday!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -565,6 +586,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu fayllarning qaysi biri <span className="italic" style={{ color: T.accent }}>sizniki</span>?</h2></div>
         <Mentor>Vite yaratgan papkada bir nechta fayl bor. Qo'rqmang — sizga faqat <b style={{ color: T.ink }}>to'rttasi</b> kerak. Har birini bosib, vazifasini bilib oling. Eng muhimi — <span className="mono">App.jsx</span>: <b style={{ color: T.ink }}>siz ishlaydigan joy</b>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">robo-games/ papkasi</p>
@@ -594,6 +616,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yo'l aniq: <span className="mono">index.html</span> → <span className="mono">main.jsx</span> → <span className="mono">App.jsx</span>. Bugun butun ishimiz — <b>App.jsx</b> ichida.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -649,6 +672,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu HTML'mi yoki <span className="italic" style={{ color: T.accent }}>JavaScript'mi</span>?</h2></div>
         <Mentor>Ikkalasi ham! <span className="mono">App.jsx</span> ichida <b style={{ color: T.ink }}>JavaScript ichida HTML teglar</b> yoziladi — bu <b style={{ color: T.ink }}>JSX</b> deyiladi. HTML'ga juda o'xshaydi, lekin <b style={{ color: T.ink }}>3 ta farqli qoidasi</b> bor. Har birini bosib o'rganing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -684,6 +708,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>JSX = HTML ko'rinishli JavaScript. 3 qoida: <b>{'{ }'} ichida JS</b> · <b>className</b> · <b>bitta o'rama</b>. Shu uchtasi bilan deyarli hamma JSX o'qiladi!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -724,6 +749,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Komponent ichida <span className="italic" style={{ color: T.accent }}>nima yashaydi</span>?</h2></div>
         <Mentor>Mana <b style={{ color: T.ink }}>birinchi komponentingiz</b> — <span className="mono">GameCard</span>. Aslida u oddiy <b style={{ color: T.ink }}>JavaScript funksiyasi</b> — funksiyalarni yaxshi bilasiz! Faqat 2 farq: <b style={{ color: T.ink }}>nomi Katta harf</b> bilan, va <b style={{ color: T.ink }}>JSX qaytaradi</b>. O'ngdagi kartochka — shu kodning natijasi. Koddagi 3 qismni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ lineHeight: 1.9 }}>
@@ -754,6 +780,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -771,6 +798,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yozdik — endi qanday <span className="italic" style={{ color: T.accent }}>ekranga chiqaramiz</span>?</h2></div>
         <Mentor>Komponent yozildi, lekin ekranda <b style={{ color: T.ink }}>hali ko'rinmaydi</b>! Uni <b style={{ color: T.ink }}>chaqirish</b> kerak: <span className="mono">App</span> ichida xuddi teg kabi — <span className="mono">{'<GameCard />'}</span>. Qo'shib ko'ring — har chaqiruvda saytda yangi kartochka paydo bo'ladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={add} disabled={n >= 4}>+ {'<GameCard />'} chaqirish</button>
@@ -796,6 +824,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ishladi! Lekin bir muammo bor: hamma kartochka <b>bir xil — Adopt Me!</b>. Blox Fruits va Brookhaven qani? Keyingi ekranda yechamiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -818,6 +847,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta komponent — <span className="italic" style={{ color: T.accent }}>har xil ma'lumot</span>. Qanday?</h2></div>
         <Mentor>Yechim — <b style={{ color: T.ink }}>props</b>: komponentga ma'lumot uzatish, xuddi tegga atribut yozganday: <span className="mono">{'<GameCard name="Blox Fruits" />'}</span>. Nomlarni bosib ko'ring: <b style={{ color: T.ink }}>komponent bitta, ma'lumot har xil</b>!</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -840,6 +870,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>Props</b> — komponentga uzatiladigan ma'lumot. Kartochkalar har xil bo'ldi, kod esa bitta. 1-darsdagi va'da bajarildi: <b>bir marta yoz — ming marta ishlat</b>!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -883,6 +914,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">name="Blox Fruits" komponent ichiga <span className="italic" style={{ color: T.accent }}>qanday yetib boradi</span>?</h2></div>
         <Mentor>Ma'lumot <b style={{ color: T.ink }}>3 qadamlik yo'l</b> bosadi: chaqiruvdagi atribut → <span className="mono">props</span> qutisi → JSX ichidagi <span className="mono">{'{props.name}'}</span>. Tugmani bosib kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run} disabled={running}>{running ? 'Ishlayapti…' : (done ? "↻ Yana ko'rsatish" : "▶ Ma'lumot yo'lini kuzating")}</button>
@@ -912,6 +944,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yo'l aniq: <span className="mono">name="Blox Fruits"</span> → <span className="mono">props</span> → <span className="mono">{'{props.name}'}</span> → ekranda <b>Blox Fruits</b>!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -939,6 +972,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Komponentni <span className="italic" style={{ color: T.accent }}>AI'ga buyurtma</span> qilsak-chi?</h2></div>
         <Mentor>Prompt berishni praktikada o'rgangansiz. Endi katta farq bor: siz <b style={{ color: T.ink }}>React kodini o'qiy olasiz</b>! Buyruq bering, agent rejasini <b style={{ color: T.ink }}>tasdiqlang</b>, keyin yozgan kodini <b style={{ color: T.ink }}>o'zingiz tekshiring</b>: props to'g'rimi, Katta harf joyidami. Boshliq — siz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. Agentga so'z bilan ayting</p>
@@ -980,6 +1014,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Natija shu yerda paydo bo'ladi — keyin uni o'zingiz tekshirasiz.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1018,6 +1053,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'z kartochkangizni <span className="italic" style={{ color: T.accent }}>props bilan</span> sozlay olasizmi?</h2></div>
         <Mentor>Endi o'zingiz boshqaring! 2 ta props bor: <span className="mono">name</span> va <span className="mono">emoji</span>. Qiymatlarni almashtirib, o'z kartochkangizni yasang. <b style={{ color: T.ink }}>Kod qanday o'zgarishini kuzating</b> — komponent esa bitta bo'lib qolaveradi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">name props</p>
@@ -1044,6 +1080,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Siz hozir <b>props bilan boshqardingiz</b>: ma'lumot o'zgardi — ko'rinish o'zgardi, kod esa bitta. Keyingi darsda kartochka <b>bosilganda ham o'zgaradigan</b> bo'ladi (state)!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1070,6 +1107,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — siz esa <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
         <Mentor>AI kod yozishda <b style={{ color: T.ink }}>zo'r yordamchi</b> — yangi komponentni bir zumda yozib berdi. Lekin <b style={{ color: T.ink }}>odamlar ham, AI ham</b> ba'zan kichik xato qiladi. Shuni topib tuzatish — <b style={{ color: T.ink }}>debugging</b>, va bu eng zo'r mahorat. Endi siz JSX qoidalarini bilasiz: bitta qator qoidaga zid — toping-chi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-2">
@@ -1105,6 +1143,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1139,6 +1178,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: komponentni <span className="italic" style={{ color: T.accent }}>o'zingiz</span> chaqiring.</h2></div>
         <Mentor>Mana <b style={{ color: T.ink }}>haqiqiy dasturchi muhiti</b> — VS Code'da <span className="mono">App.jsx</span> ochiq. 4-qatorda komponent chaqiruvi yetishmayapti: <b style={{ color: T.ink }}>{'<GameCard'}</b> + <b style={{ color: T.ink }}>name="…"</b> (istalgan o'yin nomi) + <b style={{ color: T.ink }}>{'/>'}</b> yozing. Yozishingiz bilan o'ngda kartochka jonlanadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-2">
@@ -1177,6 +1217,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1282,6 +1323,12 @@ export default function ReactFirstComponentLesson({ lang: langProp, onFinished }
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
         .el-in { animation: el-pop 0.3s ease-out; }
@@ -1320,8 +1367,8 @@ export default function ReactFirstComponentLesson({ lang: langProp, onFinished }
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // REACT MODULI · 3-DARS — STATE VA EFFECT — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -182,11 +183,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -243,6 +240,26 @@ const TLine = ({ cmd, out, dim }) => (
   </div>
 );
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 // ===== SCREEN 0 — HOOK (oddiy o'zgaruvchi vs state: qaysi tugma tirik?) =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const [deadClicks, setDeadClicks] = useState(storedAnswer ? 3 : 0); // chap karta: xotirada o'sadi, ekranda 0
@@ -260,6 +277,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 780 }}>Nega bu tugma <span className="italic" style={{ color: T.accent }}>ishlamayapti</span>?</h1>
         <Mentor>O'tgan darsda kartochka yasadik — endi unga <b style={{ color: T.ink }}>like tugmasi</b> qo'shdik. Lekin g'alati: <b style={{ color: T.ink }}>ikkita versiya</b> bor. Ikkalasida ham 👍 ni bosib ko'ring — chapdagisida nima bo'layotganiga e'tibor bering.</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -293,6 +311,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Topdingiz! Kod xato emas — son <b>xotirada o'sdi</b>, lekin React bundan <b>bexabar qoldi</b>, shuning uchun ekranni qayta chizmadi. 2-versiyada maxsus xotira ishlatilgan — nomi <b>state</b>. Bugun shuni o'rganamiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -336,7 +355,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Va'da beraman: dars oxirida <b style={{ color: T.ink }}>ishlaydigan like tugmasini</b> o'zingiz yozasiz. Buning kaliti — <b style={{ color: T.ink }}>state</b> (komponent xotirasi) va <b style={{ color: T.ink }}>effect</b>. Yuqoridagi 👍 ni bosib ko'ring — bugun aynan shuni qurasiz.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -363,6 +382,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oddiy o'zgaruvchi nega <span className="italic" style={{ color: T.accent }}>ekranga yetib bormaydi</span>?</h2></div>
         <Mentor>Mana 1-versiyaning kodi: oddiy <span className="mono">let likes</span>. Tugmani bosing va <b style={{ color: T.ink }}>konsolga qarang</b> — son rostdan o'syapti! Lekin React'ga hech kim <b style={{ color: T.ink }}>"qayta chiz"</b> demayapti. Shuning uchun ekran eski holatda qotib qolgan.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1">
@@ -386,6 +406,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? Xotirada <b>likes = {clicks}</b>, ekranda esa <b>0</b>. Oddiy o'zgaruvchi o'zgarganini React <b>sezmaydi</b> — unga maxsus xotira kerak. Keyingi ekranda tanishamiz!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -409,6 +430,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Komponent xotirasi <span className="italic" style={{ color: T.accent }}>qanday tuziladi</span>?</h2></div>
         <Mentor>Mana React'ning maxsus xotirasi — <b style={{ color: T.ink }}>useState</b>. Bitta qator — uch qism: <b style={{ color: T.ink }}>joriy qiymat</b>, <b style={{ color: T.ink }}>yangilovchi funksiya</b> va <b style={{ color: T.ink }}>boshlang'ich qiymat</b>. Har birini bosib o'rganing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ lineHeight: 2.1, fontSize: 'clamp(12.5px,1.6vw,14.5px)' }}>
@@ -433,6 +455,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Formula: <span className="mono">const [qiymat, setQiymat] = useState(boshlang'ich)</span>. Juftlik nomi erkin — <span className="mono">[son, setSon]</span> ham bo'laveradi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -476,6 +499,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">setLikes bosilganda ichkarida <span className="italic" style={{ color: T.accent }}>nima yuz beradi</span>?</h2></div>
         <Mentor><span className="mono">setLikes</span> — oddiy funksiya emas, u <b style={{ color: T.ink }}>React'ga xabar beradi</b>: "xotira o'zgardi — qayta chiz!" Tugmani bosib, 3 qadamlik siklni kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run} disabled={running}>{running ? 'Ishlayapti…' : (done ? '👍 Yana bosing' : '👍 Like bosildi — kuzating')}</button>
@@ -498,6 +522,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Sikl: <b>set chaqirildi → xotira yangilandi → qayta chizildi</b>. Har 👍 bosilganda shu uchlik aylanadi. Mana React'ning tirikligi!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -530,6 +555,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta komponentda <span className="italic" style={{ color: T.accent }}>nechta xotira</span> sig'adi?</h2></div>
         <Mentor>Istalgancha! Kartochkaga <b style={{ color: T.ink }}>ikkinchi state</b> qo'shdik: ⭐ sevimlilar. Har <span className="mono">useState</span> — <b style={{ color: T.ink }}>alohida quti</b>, ular bir-biriga xalaqit bermaydi. Ikkalasini ham bosib sinang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1">
@@ -548,6 +574,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>👍 bosganda ⭐ o'zgarmadi — har state <b>mustaqil quti</b>. <span className="mono">false/true</span> ham xotira bo'la oladi: son, matn, belgi — hammasi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -563,6 +590,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kartochka ekranga chiqishi bilan <span className="italic" style={{ color: T.accent }}>"Salom!" deyishi</span> mumkinmi?</h2></div>
         <Mentor>Mumkin! Buning uchun <b style={{ color: T.ink }}>useEffect</b> bor. Komponentning ekranga birinchi chiqishi dasturchilar tilida <b style={{ color: T.ink }}>tug'ilish (mount)</b> deyiladi — useEffect ichidagi ish xuddi shu paytda bajariladi. <span className="mono">[]</span> bo'sh massiv = "<b style={{ color: T.ink }}>faqat bir marta</b>". Kartochkani sahifaga qo'shib, konsolni kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1">
@@ -588,6 +616,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Kartochka ekranga chiqdi (tug'ildi) → effect <b>bir marta</b> ishladi va salom yozdi. E'tibor bering: 👍 bosilsa effect <b>qayta ishlamaydi</b> — <span className="mono">[]</span> shuni anglatadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -603,6 +632,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Effect state'ni <span className="italic" style={{ color: T.accent }}>kuzata oladimi</span>?</h2></div>
         <Mentor>Eng kuchli juftlik! <span className="mono">[]</span> o'rniga <span className="mono">[likes]</span> yozsak, effect <b style={{ color: T.ink }}>likes'ni kuzatadi</b>: u o'zgargan sari qayta ishlaydi. Misol: like soni brauzer tab sarlavhasiga chiqsin. 👍 bosing va <b style={{ color: T.ink }}>oynaning sarlavhasiga</b> qarang!</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1">
@@ -621,6 +651,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana <b>useState + useEffect birga</b>: state o'zgardi → ekran qayta chizildi → effect ham ishladi → tab sarlavhasi yangilandi. Ma'lumot butun interfeysni boshqaryapti!</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -662,6 +693,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Komponent ham o'yinchiday <span className="italic" style={{ color: T.accent }}>yashaydimi</span>?</h2></div>
         <Mentor>Xuddi Roblox o'yinchisi kabi: <b style={{ color: T.ink }}>serverga kirdi</b> (Mount — tug'ildi), <b style={{ color: T.ink }}>o'ynayapti</b> (Update — har state o'zgarishida), <b style={{ color: T.ink }}>chiqib ketdi</b> (Unmount). Kartochkani shu yo'ldan o'tkazing — konsol hammasini yozib boradi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -697,6 +729,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>To'liq hayot yo'li: <b>Mount → Update → Unmount</b>. Effect'lar shu yo'lga bog'lanadi: <span className="mono">[]</span> — Mount'da, <span className="mono">[likes]</span> — har Update'da.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -725,6 +758,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Jonli tugmani <span className="italic" style={{ color: T.accent }}>AI'ga buyurtma</span> qilsak-chi?</h2></div>
         <Mentor>Endi siz <b style={{ color: T.ink }}>state kodini o'qiy olasiz</b>! Buyruq bering, agent rejasini <b style={{ color: T.ink }}>tasdiqlang</b>, keyin kodini tekshiring: <span className="mono">useState</span> bormi, <span className="mono">set…</span> chaqirilganmi, <span className="mono">[]</span> to'g'rimi. Oxirida natijani <b style={{ color: T.ink }}>o'zingiz bosib sinang</b> — boshliq siz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. Agentga so'z bilan ayting</p>
@@ -765,6 +799,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Natija shu yerda paydo bo'ladi — keyin uni o'zingiz sinaysiz.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -804,6 +839,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'z sanagichingizni <span className="italic" style={{ color: T.accent }}>sozlay olasizmi</span>?</h2></div>
         <Mentor>Endi o'zingiz boshqaring! <b style={{ color: T.ink }}>Boshlang'ich qiymat</b>ni (useState ichidagi son) va <b style={{ color: T.ink }}>qadam</b>ni tanlang, keyin 👍 bosib sinang. Kod qanday o'zgarishini kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Boshlang'ich qiymat — useState(?)</p>
@@ -830,6 +866,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Siz hozir state'ni <b>to'liq boshqardingiz</b>: boshlang'ich qiymat, o'zgarish qadami va qayta chizish — hammasi qo'lingizda.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -850,6 +887,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — siz esa <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
         <Mentor>AI kod yozishda <b style={{ color: T.ink }}>zo'r yordamchi</b> — like tugmasini bir zumda yozib berdi. Lekin <b style={{ color: T.ink }}>odamlar ham, AI ham</b> ba'zan kichik xato qiladi. Shuni topib tuzatish — <b style={{ color: T.ink }}>debugging</b>. Tugma bosilganda ekran yangilanmayapti — siz buni darsda ko'rgansiz! Qaysi qator aybdor?</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-2">
@@ -885,6 +923,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -915,6 +954,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: xotirani <span className="italic" style={{ color: T.accent }}>o'zingiz</span> yarating.</h2></div>
         <Mentor>VS Code'da <span className="mono">GameCard.jsx</span> ochiq — pastdagi tugma <span className="mono">setLikes</span> va <span className="mono">likes</span>'ni kutyapti, lekin <b style={{ color: T.ink }}>xotira qatori yo'q</b>! 2-qatorga yozing: <b style={{ color: T.ink }}>const [likes, setLikes] = useState(0)</b>. Yozishingiz bilan o'ngdagi tugma jonlanadi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-2">
@@ -954,6 +994,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1058,6 +1099,12 @@ export default function ReactStateEffectLesson({ lang: langProp, onFinished }) {
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
         .el-in { animation: el-pop 0.3s ease-out; }
@@ -1096,8 +1143,8 @@ export default function ReactStateEffectLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

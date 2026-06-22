@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // FRONTEND REACT MODULI · PRAKTIKA 2 — REACT ROUTER: KO'P SAHIFALI ILOVA — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -62,6 +63,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
@@ -189,11 +209,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -324,6 +340,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Sahifalar orasida o'tganda nega ekran <span className="italic" style={{ color: T.accent }}>oqarib ketdi</span>?</h1>
         <Mentor>Robo-games hozir <b style={{ color: T.ink }}>bitta sahifa</b>. Lekin haqiqiy ilovada "Bosh", "O'yin", "Qo'shish" sahifalari bor. Menyudagi havolani <b style={{ color: T.ink }}>bosib ko'ring</b> — diqqat qiling: sahifa qanday ochiladi?</Mentor>
+        <Zoomable>
         <Split>
           <Col>
             <p className="flow-label" style={{ margin: 0 }}>Eski usul — har bosishda qayta yuklanadi</p>
@@ -354,6 +371,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {picked !== null && <p className="hook-ack fade-step">Aynan! <b>React Router</b> sahifani butunlay qayta yuklamaydi — u faqat <b>ekranning kerakli qismini</b> almashtiradi. Shuning uchun o'tish bir zumda. Bugun robo-games'ni shunday <b>ko'p sahifali ilovaga</b> aylantiramiz.</p>}
           </Col>
         </Split>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -398,7 +416,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         </div>
         <Mentor>Tartib oddiy: avval <b style={{ color: T.ink }}>siz</b> belgilaysiz — qaysi manzil qaysi sahifani ochadi. Keyin <b style={{ color: T.ink }}>AI</b> kodni yozadi, so'ng <b style={{ color: T.ink }}>siz</b> uni tekshirasiz. Router'ni shu — qurish jarayonida — o'rganasiz.</Mentor>
         {!isNarrow ? (
-          <Split>{PreviewBlock}{StepsBlock}</Split>
+          <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
           <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {PreviewBlock}
@@ -436,6 +454,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qaysi <span className="italic" style={{ color: T.accent }}>manzil</span> qaysi <span className="italic" style={{ color: T.accent }}>sahifaga</span> olib boradi?</h2></div>
         <Mentor>Ilovani qurishdan oldin bitta <b style={{ color: T.ink }}>ro'yxat</b> kerak: qaysi manzil (URL) qaysi sahifani ochadi. Har bir manzil uchun to'g'ri sahifani tanlang — ro'yxatni o'zingiz yig'asiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Manzillar</p>
@@ -477,6 +496,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -500,6 +520,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu ro'yxatni React <span className="italic" style={{ color: T.accent }}>qaysi so'zlar</span> bilan yozadi?</h2></div>
         <Mentor>Atigi ikki teg yetadi: <span className="mono">{'<Routes>'}</span> va <span className="mono">{'<Route>'}</span>. Har <span className="mono">{'<Route>'}</span> — bitta qator: <b style={{ color: T.ink }}>path</b> (manzil) va <b style={{ color: T.ink }}>element</b> (qaysi sahifa). Kodning <b style={{ color: T.ink }}>uchta bo'lagini</b> bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ lineHeight: 2 }}>
@@ -524,6 +545,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Formula oddiy: har sahifa = bitta <span className="mono">{'<Route path="…" element={<… />} />'}</span>. <span className="mono">{'<Routes>'}</span> esa URL'ga qarab qaysi birini ko'rsatishni tanlaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -566,6 +588,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Havolaning <span className="italic" style={{ color: T.accent }}>ikki turi</span> — qaysi biri ekranni qayta yuklamaydi?</h2></div>
         <Mentor>Bu — Router'ning eng muhim siri. Oddiy <span className="mono">{'<a href>'}</span> brauzerni <b style={{ color: T.ink }}>butun sahifani qayta yuklashga</b> majbur qiladi. Router'ning <span className="mono">{'<Link to>'}</span> esa faqat kerakli qismni almashtiradi. <b style={{ color: T.ink }}>Ikkala tugmani</b> sinab, farqni o'z ko'zingiz bilan ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label" style={{ margin: 0 }}><span className="mono">{'<a href="/add">'}</span> bilan</p>
@@ -589,6 +612,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={goLink}>‹Link› bilan o'tish {triedLink ? '✓' : ''}</button>
           </Col>
         </div>
+        </Zoomable>
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? <span className="mono">{'<a>'}</span> — oq ekran, sekin (butun ilova qaytadan yuklandi). <span className="mono">{'<Link>'}</span> — bir zumda, silliq. Shuning uchun React'da <b>doim {'<Link>'}</b> ishlatiladi, <span className="mono">{'<a>'}</span> emas.</p></div>}
       </div>
     </Stage>
@@ -622,6 +646,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta "O'yin" sahifasi <span className="italic" style={{ color: T.accent }}>minglab o'yinga</span> qanday yetadi?</h2></div>
         <Mentor>Har o'yinga alohida sahifa yozmaymiz! Manzilda <b style={{ color: T.ink }}>o'zgaruvchan joy</b> bor: <span className="mono">/game/<span style={{ color: T.accent }}>:id</span></span>. <span className="mono">:id</span> — bo'sh katak. Adopt Me bosilsa <span className="mono">/game/1</span>, Doors bosilsa <span className="mono">/game/4</span>. Bitta sahifa — istalgan o'yin. Kartochkalarni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Bosh sahifa — kartochkani bosing</p>
@@ -645,6 +670,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">:id</span> — manzildagi o'zgaruvchi. Sahifa uni <span className="mono">useParams()</span> bilan o'qiydi va aynan o'sha o'yinni ko'rsatadi. Bitta kod — barcha o'yinlar uchun.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -665,6 +691,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi <span className="italic" style={{ color: T.accent }}>to'liq ilova</span> — sahifalar orasida yuring.</h2></div>
         <Mentor>Mana yig'ilgan ilova: tepada menyu, pastda joriy sahifa. Menyudan bosing yoki o'yin kartochkasini oching — diqqat qiling: <b style={{ color: T.ink }}>manzil (URL) o'zgaradi</b>, lekin ekran <b style={{ color: T.ink }}>oqarmaydi</b>. Har 3 sahifani aylanib chiqing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <Win title="robo-games.uz" minH={190}>
@@ -690,6 +717,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bitta ilova, uchta sahifa, hech qanday qayta yuklanish yo'q. Aynan shu — <b>Single Page App</b> (bir sahifali ilova): brauzer bitta sahifa deb biladi, Router esa ichini almashtiradi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -732,6 +760,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ro'yxat tayyor — endi <span className="italic" style={{ color: T.accent }}>AI quradi</span>.</h2></div>
         <Mentor>Siz qaysi manzil qaysi sahifani ochishini bilasiz, demak agent kodini <b style={{ color: T.ink }}>tekshira olasiz</b>: route'lar to'g'rimi, <span className="mono">{'<Link>'}</span> ishlatilganmi (<span className="mono">{'<a>'}</span> emas), <span className="mono">:id</span> bormi. Buyruq bering, rejani <b style={{ color: T.ink }}>tasdiqlang</b>, kodni o'qing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">1. Agentga so'z bilan ayting</p>
@@ -781,6 +810,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Natija shu yerda paydo bo'ladi — keyin uni o'zingiz tekshirasiz.</p>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -807,6 +837,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">"Saqlash" bosilgach, Bosh sahifaga <span className="italic" style={{ color: T.accent }}>kim olib o'tadi</span>?</h2></div>
         <Mentor>Diqqat qiling: foydalanuvchi hech qanday havolani <b style={{ color: T.ink }}>bosmaydi</b> — u faqat "Saqlash"ni bosadi. Keyin ilova uni <b style={{ color: T.ink }}>o'zi</b> Bosh sahifaga olib o'tishi kerak — yangi o'yinini ko'rsin. Bosadigan havola yo'q, demak <span className="mono">{'<Link>'}</span> ish bermaydi. Bu yerda <b style={{ color: T.ink }}>kodning o'zi</b> sahifani almashtiradi: <span className="mono">useNavigate()</span>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qo'shish sahifasi (/add)</p>
@@ -837,6 +868,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>useNavigate()</b> — tugma bosilgani kabi hodisadan keyin <b>kod orqali</b> sahifa almashtirish. <span className="mono">{'<Link>'}</span> — bosish uchun, <span className="mono">navigate()</span> — kod ichida.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -859,6 +891,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi o'zingiz: ilovaga <span className="italic" style={{ color: T.accent }}>yangi sahifa</span> qo'shing.</h2></div>
         <Mentor>Quruvchi sifatida sinab ko'ring. Bitta yangi sahifa tanlang — u <b style={{ color: T.ink }}>ro'yxatga</b> (yangi <span className="mono">{'<Route>'}</span>) va <b style={{ color: T.ink }}>menyuga</b> (yangi <span className="mono">{'<Link>'}</span>) qo'shiladi. Keyin menyudan o'sha sahifani oching.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Qaysi sahifani qo'shamiz?</p>
@@ -892,6 +925,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana shunday! Yangi sahifa = bitta <span className="mono">{'<Route>'}</span> + bitta <span className="mono">{'<Link>'}</span>. Ilovangiz endi 4 sahifali — va siz uni o'zingiz kengaytirdingiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -928,6 +962,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — siz esa <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
         <Mentor>AI menyuni bir zumda yozib berdi — lekin "Qo'shish"ni bosganda ilova <b style={{ color: T.ink }}>oqarib, qayta yuklanyapti</b>! Holat ham yo'qoladi. <b style={{ color: T.ink }}>Odamlar ham, AI ham</b> ba'zan adashadi. Menyudagi xato qatorni toping.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-2">
@@ -965,6 +1000,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && <div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Topdingiz va tuzatdingiz — bu debugging!</p><p className="ta-sub">AI tez yozadi, siz tekshirib tuzatasiz — zo'r jamoa</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -994,6 +1030,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: <span className="italic" style={{ color: T.accent }}>Qo'shish</span> sahifasini ro'yxatga ulang.</h2></div>
         <Mentor>VS Code'da <span className="mono">App.jsx</span> ochiq: Bosh va O'yin route'lari tayyor — faqat <b style={{ color: T.ink }}>4-qator bo'sh</b>. <span className="mono">/add</span> manzilini <span className="mono">AddPage</span> sahifasiga bog'lang: <b style={{ color: T.ink }}>{'<Route'}</b> + <b style={{ color: T.ink }}>path="/add"</b> + <b style={{ color: T.ink }}>element={'{<AddPage />}'}</b> + <b style={{ color: T.ink }}>{'/>'}</b>.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="vsc fade-up delay-2">
@@ -1030,6 +1067,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Win>
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1173,8 +1211,14 @@ export default function ReactRouterPracticeLesson({ lang: langProp, onFinished }
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }
