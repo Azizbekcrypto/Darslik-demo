@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // TIZIMNI YAXLIT YIG'AMAN MODULI · P3 (LOYIHA KUNI) — TO'LIQ TIZIM — v16 (AUDIOSIZ) — KURS FINALI
@@ -142,6 +143,26 @@ const JOURNEY = [
 const Split = ({ children, refEl }) => <div className="split" ref={refEl}>{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
   const isMobile = useIsMobile();
   const isNarrow = useIsMobile(768);
@@ -258,11 +279,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -303,7 +320,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 900 }}>Hamma qism tayyor. Ishga tushirishdan <span className="italic" style={{ color: T.accent }}>oldingi oxirgi qadam</span> nima?</h1>
         <Mentor>Kurs davomida web, mobil, bot, backend, baza, AI — hammasini qurdingiz. Bugun ularni bitta tizimga yig'amiz va ishga tushiramiz. Lekin avval bitta narsa shart.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <div className="fade-up delay-1 frame" style={{ padding: 'clamp(16px,2.5vw,22px)' }}>
               <p className="flow-label" style={{ marginBottom: 10 }}>Sizda tayyor turgan qismlar</p>
@@ -322,7 +339,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             </div>
             {picked !== null && <p className="hook-ack fade-step">To'g'ri — avval <b>end-to-end test va bug tuzatish</b>. Bugun: hamma qismni yig'amiz, butun tizimni sinaymiz, bug'ni topib tuzatamiz va ishga tushiramiz. Bu — <b>kursning yakuniy loyiha kuni</b>.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -355,7 +372,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Kursning yakuniy loyiha kuni</span></h2></div>
         <Mentor>Bugun yangi narsa o'rganmaymiz — bilganlarimizni <b style={{ color: T.ink }}>bitta to'liq tizimga</b> yig'amiz va ishga tushiramiz. Bu — kursning grand-finali.</Mentor>
-        {!isNarrow ? (<Split>{IdeaBlock}{StepsBlock}</Split>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Maqsadni ko'rish</button>{StepsBlock}</div>)}
+        {!isNarrow ? (<Zoomable><Split>{IdeaBlock}{StepsBlock}</Split></Zoomable>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Maqsadni ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>
   );
@@ -376,7 +393,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bularning <span className="italic" style={{ color: T.accent }}>hammasini siz qurdingiz</span></h2></div>
         <Mentor>Mana to'liq tizim: yuqorida 3 ta kanal (kirish), pastda yadro. Har birini bosing — nima qiladi va qaysi moduldan.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             {groups.map(g => (
               <div key={g} style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -395,7 +412,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {cur ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span style={{ fontSize: 20 }}>{cur.emoji}</span><span className="sk-wordbadge" style={{ color: cur.color, background: cur.color + '1c' }}>{cur.label} · {cur.mod}</span></span><p className="body" style={{ color: T.ink, margin: '12px 0 0' }}>{cur.does}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir komponentni bosing</p></div> : null)}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>6 qism, 6 modul mehnati — bitta tizim. Endi ularni birga ishlatamiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -413,7 +430,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Uch kanal — <span className="italic" style={{ color: T.accent }}>bitta backend</span></h2></div>
         <Mentor>Mijoz web, mobil yoki bot orqali keladi — lekin uchchasi ham o'sha backend va bazadan foydalanadi. Har kanalni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               {CHANNELS.map(c => (<button key={c.id} className={`chip ${active === c.id ? 'chip-on' : ''}`} onClick={() => tap(c.id)}>{seen.has(c.id) && active !== c.id ? '✓ ' : ''}{c.emoji} {c.label}</button>))}
@@ -430,7 +447,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana o'sha g'oya to'liq miqyosda: <b>ko'p eshik, bitta tizim</b>. Ma'lumot bitta joyda — shuning uchun hammasi mos.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -518,7 +535,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Qaysi kanaldan kelsa ham — <span className="italic" style={{ color: T.accent }}>o'sha tizim javob beradi</span></h2></div>
         <Mentor>Kanalni tanlang, «Buyurtma yubor» bosing — buyurtma o'sha backendga borib, bazaga saqlanadi, bot xabar beradi, AI javob qaytaradi. Uchala kanalni sinab ko'ring — natija bir xil!</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               {CHANNELS.map(c => (<button key={c.id} className={`chip ${selected === c.id ? 'chip-on' : ''}`} onClick={() => choose(c.id)}>{tried.has(c.id) ? '✓ ' : ''}{c.emoji} {c.label}</button>))}
@@ -547,7 +564,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             ) : <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Buyurtma yuboring — o'sha bitta backend uni qabul qilib, baza/bot/AI ga tarqatadi.</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Uchala kanal — bitta natija. Mana <b>tirik tizim</b>: kirish ko'p, yadro bitta.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -572,7 +589,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Tizim <span className="italic" style={{ color: T.accent }}>choklarda siniydi</span></h2></div>
         <Mentor>Qismlar yaxshi ishlaydi — lekin ular ULANGAN joyda (chok) bug chiqadi. Har chokni bosing: bu yerda nima buziladi?</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {SEAMS.map(s => { const on = seen.has(s.id); return (
@@ -588,7 +605,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {cur ? (<div className="frame fade-step" key={active} style={{ borderLeft: `4px solid ${T.accent}`, padding: '14px 16px' }}><p className="mono small" style={{ margin: '0 0 6px', color: T.accent, fontWeight: 700 }}>🐞 BU YERDA NIMA BUZILADI</p><p className="body" style={{ margin: 0, color: T.ink }}>{cur.risk}</p></div>) : <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Bir chokni bosing — qaysi sozlama yoki ulanish buzilishini ko'rasiz.</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Aksar bug'lar — bitta yo'qolgan sozlama (.env) yoki yetishmagan maydon. End-to-end test aynan shularni tutadi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -617,7 +634,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">End-to-end test: <span className="italic" style={{ color: T.accent }}>har kanal × har qadam</span></h2></div>
         <Mentor>Har kanaldan butun oqimni sinaymiz. «Test ishga tushir» bosing — kataklar yashil bo'lib boradi. Bittasiga e'tibor bering!</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             <div className="matrix">
               <span className="mx-h" />
@@ -639,7 +656,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame fade-step" style={{ borderLeft: `4px solid ${T.accent}`, padding: '14px 16px' }}><p className="mono small" style={{ margin: '0 0 6px', color: T.accent, fontWeight: 700 }}>🐞 BUG TOPILDI</p><p className="body" style={{ margin: 0, color: T.ink }}><b>Mobil × «Bot xabar»</b> qizil: mobildan buyurtma berilganda admin Telegram xabarini olmadi. Web va bot ishlaydi — demak chok mobilda.</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana end-to-end testning kuchi: 11 katak yashil, lekin 1 qizil — yashirin integratsiya bug'i ko'rindi. Endi tuzatamiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -671,7 +688,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Bug'ni <span className="italic" style={{ color: T.accent }}>topdik → tuzatamiz</span></h2></div>
         <Mentor>Qizil katakni topdik. Endi direktor sifatida sababni aniqlab, aniq tuzatish prompti beramiz va qayta sinaymiz. Bosing.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             <div className="vibe-track">
               {FIX_STEPS.map((s, i) => { const on = i <= step; return (<div key={s.tag} className="vibe-row" style={{ opacity: on ? 1 : 0.32, transition: 'opacity 0.35s' }}><span className="vibe-dot" style={{ background: on ? s.color : T.ink3 }}>{i < step ? Ico.check(11) : i + 1}</span><span className="vibe-tag" style={{ color: on ? s.color : T.ink3 }}>{s.tag}</span></div>); })}
@@ -686,7 +703,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Topildi → sabab → aniq prompt → qayta test. Bitta chok yamaldi, butun tizim yana yashil. Endi ishga tushiramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -703,7 +720,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ishga tushirishdan oldin — <span className="italic" style={{ color: T.accent }}>launch checklist</span></h2></div>
         <Mentor>Tizimni ishga tushirishdan oldin shu ro'yxatni belgilang. Hammasi tayyor bo'lsa — ship!</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="checklist">
               <div className="cl-head"><span style={{ color: T.accent, display: 'inline-flex' }}>{Ico.send(15)}</span><span className="cl-title">Launch checklist</span></div>
@@ -719,7 +736,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {!done ? <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Har bandni bosib belgilang. Bular bo'lmasa — tizim mijozda buziladi.</p></div>
               : <div className="takeaway fade-step"><div className="ta-bulb" style={{ fontSize: 30 }}>🚀</div><p className="ta-h">Ishga tushirishga tayyor!</p><p className="ta-sub">Sozlama to'g'ri, test o'tdi, mobil sinaldi, backend jonli. Endi mijozlar foydalanadi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -749,7 +766,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Tizim <span className="italic" style={{ color: T.accent }}>jonli</span> — bir o'quvchining yo'li</h2></div>
         <Mentor>Mana bir o'quvchi to'liq tizimni qanday yetkazdi — 4 qadam. Har qatorni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="checklist fade-up delay-1">
               <div className="cl-head"><span style={{ color: T.grape, display: 'inline-flex' }}>{Ico.grid(16)}</span><span className="cl-title">Yig'→test→tuzat→ship</span></div>
@@ -760,7 +777,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {cur ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span className="sk-wordbadge" style={{ color: cur.color, background: cur.color + '1c' }}>{cur.tag}</span></span><p style={{ fontFamily: G, fontSize: 14, color: T.ink, margin: '12px 0 0' }}>{cur.text}</p><p className="body" style={{ color: T.ink2, margin: '8px 0 0' }}>{cur.why}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir qatorni bosing</p></div> : null)}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yig' → test → tuzat → ship. Mana to'liq tizimni yetkazish. Endi o'zingiz rejalang.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -772,7 +789,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
     <div className="screen">
       <div className="head"><h2 className="title h-title fade-up">To'liq tizim: <span className="italic" style={{ color: T.accent }}>yig' · test · tuzat · ship</span></h2></div>
       <Mentor>Yodda tuting: hamma qismni yig', butun oqimni end-to-end sinab ko'r, chokdagi bug'ni tuzat, keyin ishga tushir.</Mentor>
-      <div className="split">
+      <Zoomable><div className="split">
         <Col>
           <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 'clamp(18px,2.6vw,26px)' }}>
             <span style={{ fontSize: 40 }}>🎬</span>
@@ -785,7 +802,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
             {[{ ic: Ico.link(18), c: T.grape, t: 'YIG\' — ko\'p kanal, bitta backend' }, { ic: Ico.repeat(18), c: T.blue, t: 'END-TO-END TEST — har kanal × har qadam' }, { ic: Ico.bug(18), c: T.accent, t: 'BUG TUZAT — chokni topib nishonli yama' }, { ic: Ico.send(18), c: T.success, t: 'SHIP — sozlama+test tayyor bo\'lsa ishga tushir' }].map((s, i) => (<React.Fragment key={i}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '10px 13px', boxShadow: `0 5px 14px -8px rgba(${T.shadowBase},0.16)` }}><span style={{ color: s.c, display: 'inline-flex' }}>{s.ic}</span><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, color: T.ink, fontSize: 13.5 }}>{s.t}</span></div>{i < 3 && <span style={{ color: T.ink3, textAlign: 'center', fontSize: 11 }}>↓</span>}</React.Fragment>))}
           </div>
         </Col>
-      </div>
+      </div></Zoomable>
     </div>
   </Stage>
 );
@@ -817,7 +834,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Sizning <span className="italic" style={{ color: T.accent }}>ishga tushirish rejangiz</span></h2></div>
         <Mentor>O'z tizimingiz uchun: qaysi tizimni, qanday end-to-end test bilan sinab, qaysi shart bilan ishga tushirasiz? Kamida 2 qatorni to'ldiring.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             {lines.map((f, i) => { const ok = isComplete(f); return (
               <div key={i} style={{ background: T.paper, borderRadius: 12, padding: '11px 12px', boxShadow: ok ? `inset 0 0 0 1.5px ${T.success}, 0 6px 16px -9px rgba(31,122,77,0.16)` : `0 6px 16px -9px rgba(${T.shadowBase},0.16)`, transition: 'box-shadow 0.2s' }}>
@@ -833,7 +850,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="checklist feat-pop"><div className="cl-head"><span style={{ color: T.success, display: 'inline-flex' }}>{Ico.send(15)}</span><span className="cl-title">Mening launch rejam</span></div>{completeLines.map((f, j) => (<div key={j} className="crit crit-pass"><span className="crit-box">{Ico.check(13)}</span><span className="crit-text">{f.name}</span></div>))}</div>}
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! Shu reja bilan har qanday tizimni yig'ib, sinab, ishga tushira olasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -1011,8 +1028,14 @@ export default function FullSystemProjectLesson({ lang: langProp, onFinished }) 
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -7px rgba(${T.shadowBase},0.16); }

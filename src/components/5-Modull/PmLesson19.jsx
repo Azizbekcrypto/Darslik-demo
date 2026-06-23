@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // PM 19-DARS (Modul 08 · Botlar · PM1) — BIRINCHI FOYDALANUVCHILAR: STRATEGIYA — PLATFORM STANDARD v16
@@ -109,6 +110,26 @@ const CASE_AC = [
 
 const Split = ({ children, refEl }) => <div className="split" ref={refEl}>{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
   const isMobile = useIsMobile();
@@ -226,11 +247,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -275,7 +292,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Bot tayyor, jonli — lekin <span className="italic" style={{ color: T.accent }}>0 foydalanuvchi</span>. Nima qilamiz?</h1>
         <Mentor>Eng zo'r botni ham hech kim bilmasa — u ko'rinmas. Har birini bosing.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'builder' ? 'chip-on' : ''}`} onClick={() => setV('builder')}>Quruvchi 🤩</button>
@@ -293,7 +310,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             </div>
             {picked !== null && <p className="hook-ack fade-step">Foydalanuvchi o'zi kelmaydi — siz <b>birinchilarni topasiz</b>. Va buning uchun pul shart emas: do'stlar, sinf chati, og'izdan-og'iz. Bugun <b>birinchi 20</b>ni yig'ish rejasini tuzamiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -326,7 +343,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Birinchi 20 foydalanuvchini qanday topamiz?</span></h2></div>
         <Mentor>Bot qurish — yarmi. Ikkinchi yarmi — <b style={{ color: T.ink }}>foydalanuvchi topish</b>. Buning ham o'z usuli bor, va u pulsiz.</Mentor>
-        {!isNarrow ? (<Split>{IdeaBlock}{StepsBlock}</Split>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
+        {!isNarrow ? (<Zoomable><Split>{IdeaBlock}{StepsBlock}</Split></Zoomable>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>
   );
@@ -344,7 +361,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">"Sovuq start": <span className="italic" style={{ color: T.accent }}>kutma, o'zing bor</span></h2></div>
         <Mentor>Yangi bot — bo'm-bo'sh do'kon kabi: hech kim bilmaydi. Ikki yo'lni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'wait' ? 'chip-on' : ''}`} onClick={() => set('wait')}>🪑 Kutaman</button>
@@ -363,7 +380,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-success fade-step" key="g"><p className="body" style={{ margin: 0, color: T.ink }}>Faol harakat = birinchi 20. Ular keyin boshqalarni olib keladi.</p></div>}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Birinchi foydalanuvchilar o'z-o'zidan kelmaydi — siz ularni topasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -383,7 +400,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">5 ta <span className="italic" style={{ color: T.accent }}>pulsiz</span> kanal</h2></div>
         <Mentor>Reklama uchun pul shart emas — sizning atrofingizda tayyor odamlar bor. Har kanalni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {CHANNELS.map(c => (<button key={c.id} onClick={() => tap(c.id)} style={{ display: 'flex', alignItems: 'center', gap: 11, textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 12, padding: '12px 14px', background: T.paper, boxShadow: active === c.id ? `inset 0 0 0 2px ${T.accent}, 0 8px 20px -8px rgba(255,79,40,0.22)` : `0 6px 16px -8px rgba(${T.shadowBase},0.16)`, transition: 'all 0.18s' }}><span style={{ fontSize: 20 }}>{c.emoji}</span><span style={{ flex: 1, fontFamily: "'Manrope'", fontWeight: 600, fontSize: 13.5, color: T.ink }}>{c.label}</span><span className="mono" style={{ fontSize: 11, fontWeight: 700, color: T.success }}>~{c.users}</span>{seen.has(c.id) && <span style={{ color: T.success, display: 'inline-flex' }}>{Ico.check(13)}</span>}</button>))}
@@ -393,7 +410,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {cur ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span style={{ fontSize: 20 }}>{cur.emoji}</span><span className="sk-wordbadge">{cur.label} · ~{cur.users} kishi</span></span><p className="body" style={{ color: T.ink, margin: '12px 0 0' }}>{cur.how}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir kanalni bosing</p></div> : null)}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bularni qo'shsangiz — 20 dan oshadi. Hammasi bepul!</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -423,7 +440,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qanday taklif qilish — <span className="italic" style={{ color: T.accent }}>shaxsan</span>, spam emas</h2></div>
         <Mentor>Bir xil xabarni 100 kishiga tashlash ishlamaydi. Bittalab, ism bilan yozish ishlaydi. Ikkalasini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'spam' ? 'chip-on' : ''}`} onClick={() => set('spam')}>📢 Spam (ommaviy)</button>
@@ -439,7 +456,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-success fade-step" key="p"><p className="body" style={{ margin: 0, color: T.ink }}>Shaxsiy xabar — hurmat. Odam javob beradi va sinab ko'radi.</p></div>}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Birinchi 20 uchun: bittalab, samimiy, aniq foyda bilan yoz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -473,7 +490,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Kanallarni tanlang — <span className="italic" style={{ color: T.accent }}>20 ga yeting</span></h2></div>
         <Mentor>Qaysi kanallardan foydalanasiz? Har birini bosing — taxminiy foydalanuvchi qo'shiladi. <b style={{ color: T.ink }}>20 ga yetkazing!</b></Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {CHANNELS.map(c => { const on = sel.has(c.id); return (
@@ -496,7 +513,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               ? <div className="takeaway fade-step"><div className="ta-bulb" style={{ fontSize: 30 }}>🎉</div><p className="ta-h">20 ga yetdingiz — pulsiz!</p><p className="ta-sub">Faqat o'z tarmog'ingizdan. Mana sizning birinchi foydalanuvchilaringiz rejasi</p></div>
               : <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Yana kanal qo'shing. Bir nechta kanal birga 20 dan oshadi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -514,7 +531,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Nega birinchi 20 — <span className="italic" style={{ color: T.accent }}>oltin</span>?</h2></div>
         <Mentor>Birinchilar shunchaki raqam emas — ular ikki narsa beradi. Ikkalasini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'feedback' ? 'chip-on' : ''}`} onClick={() => set('feedback')}>🗣️ Fikr beradi</button>
@@ -531,7 +548,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="frame-success fade-step" key={v}><p className="body" style={{ margin: 0, color: T.ink }}>{v === 'feedback' ? 'Shuning uchun birinchilar bilan gaplashing (keyingi PM darsida — custdev).' : 'Shuning uchun birinchilarni MEMNUN qiling — ular eng kuchli reklama.'}</p></div>
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Birinchi 20 = fikr + tarqalish. Eng qimmat 20 kishi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -554,7 +571,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Yaxshi <span className="italic" style={{ color: T.accent }}>taklif xabarini</span> yig'ing</h2></div>
         <Mentor>Har qism uchun <b style={{ color: T.ink }}>shaxsiy</b> (spam emas) variantni tanlang. O'ngda haqiqiy xabardek ko'rinadi.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             {IKEYS.map(k => (<div key={k}><p className="flow-label" style={{ margin: '0 0 6px' }}>{INVITE[k].label}</p><div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>{['a', 'b'].map(v => { const on = pick[k] === v; return (<button key={v} onClick={() => set(k, v)} style={{ textAlign: 'left', border: 'none', cursor: 'pointer', borderRadius: 10, padding: '10px 13px', fontFamily: G, fontSize: 13, color: on ? '#fff' : T.ink, background: on ? (v === 'b' ? T.success : T.accent) : T.paper, boxShadow: on ? `0 6px 14px -6px ${v === 'b' ? T.success : T.accent}` : `0 5px 14px -8px rgba(${T.shadowBase},0.16)`, transition: 'all 0.16s' }}>{INVITE[k][v]}</button>); })}</div></div>))}
           </Col>
@@ -570,7 +587,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {allGood && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana — samimiy, aniq, oson taklif. Bunga odam javob beradi!</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -631,7 +648,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Reklama uchun pul — <span className="italic" style={{ color: T.accent }}>keyinroq</span></h2></div>
         <Mentor>Pul yomon emas, lekin uni to'g'ri vaqtda sarflash kerak. Ikki holatni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'early' ? 'chip-on' : ''}`} onClick={() => set('early')}>💸 Erta reklama</button>
@@ -650,7 +667,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-success fade-step" key="l"><p className="body" style={{ margin: 0, color: T.ink }}>Avval bepul tasdiqla, keyin pul bilan kuchaytir. To'g'ri tartib.</p></div>}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tartib: tarmoq (bepul) → tasdiq → keyin reklama (pul).</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -680,7 +697,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">To'liq hikoya: <span className="italic" style={{ color: T.accent }}>0 dan 100 gacha</span> — pulsiz</h2></div>
         <Mentor>Bir o'smir bot quruvchining yo'li — 4 qadam. Har qatorni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="checklist fade-up delay-1">
               <div className="cl-head"><span style={{ color: T.blue, display: 'inline-flex' }}>{Ico.users(16)}</span><span className="cl-title">O'smir bot quruvchi — hikoya</span></div>
@@ -691,7 +708,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {cur ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span className="sk-wordbadge" style={{ color: cur.color, background: cur.color + '1c' }}>{cur.tag}</span></span><p style={{ fontFamily: G, fontSize: 14, color: T.ink, margin: '12px 0 0' }}>"{cur.text}"</p><p className="body" style={{ color: T.ink2, margin: '8px 0 0' }}>{cur.why}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir qatorni bosing</p></div> : null)}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>0 → tarmoq → og'iz-og'iz → 100. Bitta so'msiz! Endi o'z rejangizni yozasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -703,7 +720,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
     <div className="screen">
       <div className="head"><h2 className="title h-title fade-up">Birinchi 20: <span className="italic" style={{ color: T.accent }}>o'z tarmoq, pulsiz, shaxsan</span></h2></div>
       <Mentor>Yodda tuting: foydalanuvchi o'zi kelmaydi, o'z tarmoqdan boshla, shaxsiy taklif qil.</Mentor>
-      <div className="split">
+      <Zoomable><div className="split">
         <Col>
           <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 'clamp(18px,2.6vw,26px)' }}>
             <span style={{ fontSize: 40 }}>🌱</span>
@@ -716,7 +733,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
             {[{ ic: Ico.users(18), c: T.accent, t: 'O\'Z TARMOQ — do\'st, sinf, oila' }, { ic: Ico.heart(18), c: T.blue, t: 'PULSIZ — og\'izdan-og\'iz, story' }, { ic: Ico.chat(18), c: T.success, t: 'SHAXSAN — bittalab, aniq foyda' }].map((s, i) => (<React.Fragment key={i}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '10px 13px', boxShadow: `0 5px 14px -8px rgba(${T.shadowBase},0.16)` }}><span style={{ color: s.c, display: 'inline-flex' }}>{s.ic}</span><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, color: T.ink, fontSize: 13.5 }}>{s.t}</span></div>{i < 2 && <span style={{ color: T.ink3, textAlign: 'center', fontSize: 11 }}>↓</span>}</React.Fragment>))}
           </div>
         </Col>
-      </div>
+      </div></Zoomable>
     </div>
   </Stage>
 );
@@ -747,7 +764,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Sizning <span className="italic" style={{ color: T.accent }}>birinchi 20 foydalanuvchi</span> rejangiz</h2></div>
         <Mentor>O'z botingiz uchun: qaysi kanallardan, qancha kishi, qanday taklif qilasiz? Kamida 2 ta kanal yozing.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             {lines.map((f, i) => { const ok = isComplete(f); return (
               <div key={i} style={{ background: T.paper, borderRadius: 12, padding: '11px 12px', boxShadow: ok ? `inset 0 0 0 1.5px ${T.success}, 0 6px 16px -9px rgba(31,122,77,0.16)` : `0 6px 16px -9px rgba(${T.shadowBase},0.16)`, transition: 'box-shadow 0.2s' }}>
@@ -763,7 +780,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="checklist feat-pop"><div className="cl-head"><span style={{ color: T.success, display: 'inline-flex' }}>{Ico.users(15)}</span><span className="cl-title">Birinchi 20 rejasi</span></div>{completeLines.map((f, j) => (<div key={j} className="crit crit-pass"><span className="crit-box">{Ico.check(13)}</span><span className="crit-text">{f.name}</span></div>))}</div>}
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! Bot jonlangach, shu reja bo'yicha birinchi 20 ni yig'asiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -916,8 +933,14 @@ export default function PmLesson19({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -7px rgba(${T.shadowBase},0.16); }

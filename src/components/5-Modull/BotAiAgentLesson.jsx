@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BOTLAR VA AVTOMATIZATSIYA MODULI · DARS 8 (P5, YAKUNIY) — AI-AGENT: IDROK → QAROR → AMAL — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -60,6 +61,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -204,7 +225,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -327,7 +348,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>AI-bot «oshxonaga yubordim» dedi. Lekin oshxona <span className="italic" style={{ color: T.accent }}>bo'sh</span>. Nima yetishmaydi?</h1>
         <Mentor>O'tgan darsni eslang: AI-bot chiroyli javob yozadi, lekin amal qilmaydi. Tugmani bosing — bir vaziyatda AI-bot va AI-agent qanday farq qilishini ko'ring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <TgChat title="AI-bot (faqat gapiradi)" sub="bot · reaktiv" input={false} minH={110}>
               <Bubble from="user">Buyurtmamni oshxonaga yubor</Bubble>
@@ -351,7 +372,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval tugmani bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! AI-bot — og'iz (gapiradi). <b>AI-agent</b> — og'iz + qo'l (asboblar bilan AMAL qiladi). Bugun botingizga maqsad, asboblar va sikl beramiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -388,7 +409,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Bot endi gapiribgina qolmay — <span className="italic" style={{ color: T.accent }}>amal qiladi</span>.</h2></div>
         <Mentor>O'tgan darsda idrok → qaror → amal siklini <b style={{ color: T.ink }}>siz qo'lda</b> bajardingiz (tingla → tuzat → qayta tingla). Bugun aynan shu siklni <b style={{ color: T.ink }}>botning o'ziga</b> beramiz — u maqsad sari avtonom (mustaqil) ishlaydi. Bu — modulning cho'qqisi.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -410,6 +431,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>AI-bot</span> va <span className="italic" style={{ color: T.accent }}>AI-agent</span> — eng muhim farq.</h2></div>
         <Mentor>Bu darsning yuragi shu. AI-bot javob yozadi va to'xtaydi. AI-agent maqsadga qarab qadam-baqadam <b style={{ color: T.ink }}>amal qiladi</b>. Har jihatni bosib, farqni ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -427,6 +449,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Jihatni bosing ←</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -454,6 +477,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           ))}
           <span className="archloop">↺ qayta</span>
         </div></div>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={done} onClick={advance}>{done ? '✓ Sikl aylandi' : step === 0 ? '▶ Siklni boshlash' : 'Keyingi qadam →'}</button>
@@ -465,6 +489,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingiz: bitta «2 pepperoni» buyurtmasi uchun agent ikki marta aylandi (tekshir → saqla). Mana avtonomlik.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -499,6 +524,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Asboblar (tools) — agentning <span className="italic" style={{ color: T.accent }}>qo'li</span>.</h2></div>
         <Mentor>Agent amalni «asbob» orqali qiladi — bu siz yozgan funksiyalar. AI o'zi gapira oladi, lekin <b style={{ color: T.ink }}>ish qilish uchun asboblar</b> kerak. Har asbobni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -512,6 +538,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Asbobni bosing ←</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -535,6 +562,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">«Qaror» qadami: vaziyatga qarab <span className="italic" style={{ color: T.accent }}>to'g'ri asbobni</span> tanlang.</h2></div>
         <Mentor>Bu — agentning miyasi qiladigan ish. Haqiqiy agentda buni AI o'zi qiladi; hozir siz uning o'rnida sinab ko'ring: har vaziyatga mos asbobni tanlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             {cur
@@ -553,6 +581,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {wrong && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bu vaziyatga mos emas — vaziyatni qayta o'qing va boshqa asbobni tanlang.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -569,6 +598,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Agentga qadam emas — <span className="italic" style={{ color: T.accent }}>maqsad</span> berasiz.</h2></div>
         <Mentor>Bu — eng katta o'zgarish. AI-botda har javobni siz yozasiz. Agentga esa <b style={{ color: T.ink }}>maqsad</b> berasiz, qadamlarni u o'zi topadi. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.ink3}` }}>
@@ -589,6 +619,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Siz — direktor: maqsadni aytasiz. Agent — ishchi: yo'lini o'zi tanlaydi. Modulning butun falsafasi shu.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -620,6 +651,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Agentni 3 narsa bilan <span className="italic" style={{ color: T.accent }}>quramiz</span>: maqsad, asboblar, chegaralar.</h2></div>
         <Mentor>Siz direktorsiz — agentni prompt bilan ta'riflaysiz: nima qilsin (maqsad), nima bilan (asboblar), nimaga ruxsat yo'q (chegaralar). AI qolganini yozadi. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <PromptCard who="agent prompti" tone="live">Sen AvtoPizza buyurtma agentisan. MAQSAD: mijoz buyurtmasini to'liq qabul qilib, oshxonaga yubor. ASBOBLAR: checkMenu, saveOrder, sendToKitchen, notifyCourier. QOIDA: faqat menyudagini qabul qil; saqlashdan oldin mijozga tasdiqlat; to'lov/bekor qilishni o'zing qilma — adminga uzat.</PromptCard>
@@ -634,6 +666,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Maqsad + asboblar + chegaralar — agentning butun «ish yo'riqnomasi». Chegaralar nega muhimligini keyin ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -659,6 +692,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Agent sikli kodda — AI yozadi, siz <span className="italic" style={{ color: T.accent }}>o'qiysiz</span>.</h2></div>
         <Mentor>Mana agentning yuragi — oddiy sikl. Bu kodni AI yozadi, lekin har qismni tanishingiz kerak. Pastdagi qismlarni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="agent.ts" minH={160}>
@@ -680,6 +714,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Sikl: idrok → qaror → amal → natijani ko'r → qayta. Maqsad bajarilganda <span className="mono">while</span> to'xtaydi. Mana agent.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -723,6 +758,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta maqsad — agent qolganini <span className="italic" style={{ color: T.accent }}>o'zi</span> bajaradi.</h2></div>
         <Mentor>Mijoz bitta xabar yozdi. Agent endi sikl bo'ylab o'zi yuradi: ko'radi, qaror qiladi, asbob chaqiradi — maqsadga yetguncha. Tugmani bosib, har qadamni kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">agent ichki qadamlari (sahna ortida)</p>
@@ -748,6 +784,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mijoz bitta gap yozdi — agent 3 ta asbobni o'zi chaqirdi va ishni bajardi. Mana AI-agent kuchi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -767,6 +804,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Amal qiladigan agent — kuchli, lekin <span className="italic" style={{ color: T.accent }}>xavfli</span>. Chegara qo'ying.</h2></div>
         <Mentor>Agent real ishlar qiladi: pul, xabar, o'chirish. Xato qilsa — oqibati real. Shuning uchun direktor unga <b style={{ color: T.ink }}>chegara</b> qo'yadi. Har birini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -780,6 +818,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Chegarani bosing ←</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -829,6 +868,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: AI-agent siklini <span className="italic" style={{ color: T.accent }}>to'g'ri tartibda</span> yig'ing.</h2></div>
         <Mentor>Agent qanday ishlaydi? Maqsad oladi, holatni ko'radi, asbob tanlaydi, amal qiladi va natijani ko'rib qaytadi. To'g'ri qadamni o'ng tomondan tanlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">agent sikli (siz yig'yapsiz)</p>
@@ -857,6 +897,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {hint && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>{hint}</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -975,7 +1016,14 @@ export default function BotAiAgentLesson({ lang: langProp, onFinished }) {
         .option-picked-wrong { background: ${T.accentSoft} !important; color: ${T.accent} !important; box-shadow: 0 8px 22px -6px rgba(255,79,40,0.38) !important; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

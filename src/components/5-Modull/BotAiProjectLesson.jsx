@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BOTLAR VA AVTOMATIZATSIYA MODULI · DARS 4 (P1) — LOYIHA KUNI: AI BILAN ISTALGAN BOT — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -58,6 +59,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -202,7 +223,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -290,7 +311,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Bugun AI bilan to'liq bot yasaymiz. Lekin <span className="italic" style={{ color: T.accent }}>qaysi prompt</span> yaxshiroq bot beradi?</h1>
         <Mentor>Bot ichini 2 darsda tushundingiz. Endi kodni AI yozadi — lekin natija sizning <b style={{ color: T.ink }}>buyrug'ingizga</b> bog'liq. Tugmani bosing va ikki promptni solishtiring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <PromptCard who="Noaniq prompt">menga Telegram bot yasab ber</PromptCard>
             {tried && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🤖 AI: tasodifiy til, noma'lum tugma turi, token kodda ochiq, ko'p narsa o'zича to'qildi. Buzilsa — qayerdan ekanini bilmaysiz.</p></div>}
@@ -309,7 +330,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval tugmani bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! <b>Aniq prompt</b> yaxshi bot beradi — chunki siz nima xohlayotganingizni bilasiz. Bugun shunday aniq buyruq yozishni va AI kodini tekshirishni o'rganamiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -346,7 +367,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Bugun siz — <span className="italic" style={{ color: T.accent }}>direktor</span>. AI — ishchi. Birga bot quramiz.</h2></div>
         <Mentor>Loyiha kuni! AI kodni yozadi, lekin <b style={{ color: T.ink }}>rul sizda</b>: rejani siz tuzasiz, buyruqni siz berasiz, kodni siz tekshirasiz. Mana natija va 4 qadam.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -368,7 +389,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Promptdan oldin — <span className="italic" style={{ color: T.accent }}>reja</span>. Bot nimani qiladi?</h2></div>
         <Mentor>AI'ga buyruq berishdan oldin botingizni <b style={{ color: T.ink }}>trigger → action</b> juftliklariga ajrating (1-darsdagidek). Rejasiz prompt — noaniq bot. Har g'oyani bosib, uning rejasini ko'ring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {BOT_IDEAS.map(b => <button key={b.id} className="gchip" onClick={() => tap(b.id)} style={seen.has(b.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, color: T.success } : undefined}>{seen.has(b.id) ? '✓ ' : ''}{b.ico} {b.name}</button>)}
@@ -381,7 +402,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               ? <div className="wire fade-step" key={active}>{cur.pairs.map((p, i) => <div key={i} className="wire-row el-in"><span className="mono" style={{ color: T.accent, fontSize: 11, minWidth: 14 }}>{i + 1}</span><span className="wire-t">{p[0]}</span><span className="wire-arrow">→</span><span className="wire-t" style={{ color: T.success }}>{p[1]}</span></div>)}</div>
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>G'oyani bosing ←</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -401,7 +422,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yaxshi prompt — <span className="italic" style={{ color: T.accent }}>4 qism</span>dan iborat.</h2></div>
         <Mentor>Aniq prompt 4 narsani aytadi: texnologiya, trigger→action, tugma turi va token. Har qismni bosib, nega muhimligini ko'ring — bularning hammasini siz bilasiz, AI emas.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {PROMPT_PARTS.map(p => (
@@ -419,7 +440,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Qismni bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>4 qism = aniq buyruq. AI taxmin qilmaydi, siz aytganini qiladi. Mana bu — direktorlik.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -453,7 +474,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi <span className="italic" style={{ color: T.accent }}>siz</span> viktorina boti uchun aniq prompt yig'ing.</h2></div>
         <Mentor>Pastdagi 4 qismni bosib, promptingizga qo'shing. Har qism qo'shilgani sayin o'ngdagi prompt to'liqlashib boradi — mana shu buyruqni AI'ga berasiz.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">qismlarni qo'shing</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -469,7 +490,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana — aniq, to'liq buyruq. AI endi taxmin qilmaydi. Keyingi ekranda u shu prompt asosida kod yozadi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -492,7 +513,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI kod yozdi. Endi eng muhim qadam: uni <span className="italic" style={{ color: T.accent }}>o'qib tushunish</span>.</h2></div>
         <Mentor>AI kodni soniyalarda yozadi. Lekin uni <b style={{ color: T.ink }}>ko'r-ko'rona qabul qilmang</b> — har qismni tushuning. Yaxshiyamki, bularning hammasini o'tgan darslarda o'rgangansiz. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             {phase === 'idle' && <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={generate}>🤖 AI'ga promptni yuborish</button>}
             {phase === 'gen' && <div className="frame fade-step" style={{ borderLeft: `4px solid ${T.blue}` }}><p className="body" style={{ margin: 0, color: T.ink }}>🤖 AI kod yozyapti<span className="gen-dots"><i /><i /><i /></span></p></div>}
@@ -512,7 +533,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>AI kod yozgach, bu yerda tahlil chiqadi</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har qatorни tanidingiz: <span className="mono">bot.start</span> (trigger), inline tugma, <span className="mono">.env</span> token. Siz so'raganingiz aynan bajarildi — buni tekshira oldingiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -545,7 +566,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kod tayyor — lekin <span className="italic" style={{ color: T.accent }}>ishlaydimi</span>? Test qilib, tuzatamiz.</h2></div>
         <Mentor>AI yozgan kodni doim <b style={{ color: T.ink }}>test qiling</b>. Botni ishga tushiring, tugmalarni bosing. Nimadir ishlamasa — siz tushunganingiz uchun muammoni topasiz va aniq tuzatish promptini berasiz.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <TgChat title="MyQuizBot (test)" input={false} minH={170}>
               <Bubble from="user">/start</Bubble>
@@ -573,7 +594,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && answered === null && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ AI handler qo'shdi! Endi chapda <b>A/B/C tugmasini qayta bosing</b> — ishlaydimi, tekshiring.</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>🎉 Bot to'liq ishladi! Mana sikl: <b>test → muammoni topish → aniq tuzatish prompti → qayta test</b>. Bu — AI bilan ishlashning to'g'ri yo'li.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -614,7 +635,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI ham <span className="italic" style={{ color: T.accent }}>xato qiladi</span>. Tushunsangiz — tutasiz.</h2></div>
         <Mentor>AI kuchli, lekin mukammal emas. Mana eng tez-tez uchraydigan 4 xato. Har birini bosing — va e'tibor bering: ularning hammasini siz <b style={{ color: T.ink }}>tushunganingiz uchun</b> topa olasiz.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {MISTAKES.map(m => <button key={m.id} className="gchip" onClick={() => tap(m.id)} style={seen.has(m.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, color: T.success } : undefined}>{seen.has(m.id) ? '✓ ' : ''}{m.ico} {m.t}</button>)}
@@ -626,7 +647,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Xatoni bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bilim — bu sizning "xato detektoringiz". AI tezligini beradi, siz to'g'riligini ta'minlaysiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -643,7 +664,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ikki xil odam AI ishlatadi. <span className="italic" style={{ color: T.accent }}>Farqni</span> his qiling.</h2></div>
         <Mentor>Bugun siz aniq buyurdingiz, kodni o'qidingiz, test qildingiz, muammoni topib tuzatdingiz. Bu — sizni boshqalardan ajratadigan ko'nikma. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.danger}` }}>
               <p className="note-h" style={{ color: T.danger }}>🙈 Ko'r-ko'rona nusxalovchi</p>
@@ -660,7 +681,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Shuning uchun o'tgan darslarda bot ichini o'rgandik. Tushunish — AI bilan istalgan narsani qurish kalitidir.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -700,7 +721,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Boshqa bot, <span className="italic" style={{ color: T.accent }}>bir xil yo'l</span>: g'oyadan ishlaydigan botgacha.</h2></div>
         <Mentor>Endi eslatma botini ko'ramiz — boshqa g'oya, lekin aynan o'sha 5 qadam. Tugmani bosib har qadamni oching.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {STEPS.slice(0, shown).map((s, i) => (
@@ -714,7 +735,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="agent-card"><span className="agent-lbl">💡 NAQSH</span><p className="agent-msg">G'oya har xil, lekin yo'l doim bir xil: <b>reja → aniq prompt → AI kodi → o'qish → test → tuzatish</b>. Shu naqshni bilsangiz — istalgan botni qurasiz.</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Pizza, viktorina, eslatma — texnologiya bir xil, faqat trigger → action'lar farq qiladi. Siz endi naqshni bilasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -730,7 +751,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi navbat <span className="italic" style={{ color: T.accent }}>sizniki</span>. O'z botingizni o'ylab toping.</h2></div>
         <Mentor>Bugungi naqsh bilan istalgan oddiy botni qura olasiz. Uyga vazifada o'z g'oyangizni hayotga tatbiq qilasiz. Ikki eslatmani esda tuting.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="sk-info"><p className="note-h">🗺️ 1. Avval reja</p><p className="body" style={{ margin: 0, color: T.ink }}>Prompt yozishdan oldin botingizni trigger → action juftliklariga ajrating. Reja qancha aniq — kod shuncha aniq.</p></div>
             <div className="sk-info"><p className="note-h">🖥️ 2. Hozircha lokalda</p><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">bot.launch()</span> bilan bot kompyuteringizda ishlaydi (polling). Doim onlayn bo'lishi uchun <b>hosting</b> kerak — buni keyingi mini-loyiha darsida qilamiz.</p></div>
@@ -740,7 +761,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="agent-card"><span className="agent-lbl">📍 KEYINGI DARSLAR</span><p className="agent-msg"><b>P2:</b> botga <b>AI miya</b> ulaymiz — u tayyor javoblardan emas, o'ylab javob beradi (AI-bot). <b>P3:</b> bot + DB + AI + hosting bilan to'liq mini-loyiha.</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bugun: AI bilan istalgan oddiy botni qura olasiz. Keyin: uni aqlli qilamiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -790,7 +811,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: AI bilan bot qurish jarayonini <span className="italic" style={{ color: T.accent }}>to'g'ri tartibda</span> yig'ing.</h2></div>
         <Mentor>Bugun o'rgangan yo'lni eslang: rejadan boshlanadi, aniq prompt bilan davom etadi, AI yozadi, siz o'qib, test qilib, tuzatasiz. To'g'ri qadamni o'ng tomondan tanlang.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">jarayon (siz yig'yapsiz)</p>
             {placed.length === 0
@@ -817,7 +838,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {hint && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>{hint}</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -947,7 +968,14 @@ export default function BotAiProjectLesson({ lang: langProp, onFinished }) {
         .role-ico { font-size: 20px; flex-shrink: 0; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

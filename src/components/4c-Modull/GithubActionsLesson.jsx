@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // CI/CD + DEPLOY MODULI · DARS 2 — GITHUB ACTIONS: BIRINCHI KONVEYER — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -59,6 +60,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -203,7 +224,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -346,7 +367,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Kodni GitHub'ga push qildingiz — endi testni <span className="italic" style={{ color: T.accent }}>kim ishga tushiradi</span>?</h1>
         <Mentor>O'tgan darsda konveyer g'oyasini tushundik. Endi push qilib ko'ring — va kim testni ishga tushirishini kuzating.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <Term title="bash" minH={120}>
               <TLine cmd="git push origin main" />
@@ -370,7 +391,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval push'ni bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! <b>GitHub Actions</b> — repozitoriyangiz ichidagi bepul robot. Unga bir marta retsept (ci.yml) berasiz, u <b>har push'da</b> testni o'zi ishga tushiradi. Bugun shu robotni quramiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -404,7 +425,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Konveyerni <span className="italic" style={{ color: T.accent }}>o'zimiz</span> qanday quramiz?</h2></div>
         <Mentor>GitHub Actions — konveyerni boshqaradigan robot. Siz unga kichik bir <b style={{ color: T.ink }}>retsept</b> (ci.yml) yozasiz, qolganini u bajaradi. Mana natija va 4 qadam.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -423,6 +444,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">GitHub Actions — bu <span className="italic" style={{ color: T.accent }}>aslida nima</span>?</h2></div>
         <Mentor>GitHub Actions — GitHub'ning o'z xizmati: <b style={{ color: T.ink }}>bepul</b>, alohida server kerak emas. Siz retsept yozasiz, u har push'da o'zi ishlaydi. Natijani <b style={{ color: T.ink }}>Actions</b> bo'limida ko'rasiz. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.danger}` }}><p className="note-h" style={{ color: T.danger }}>🐌 Robotsiz</p><p className="body" style={{ margin: 0, color: T.ink }}>Push qilasiz — keyin o'zingiz eslab, qo'lda <span className="mono">npm test</span> yozasiz. Eslamasangiz — tekshiruv yo'q.</p></div>
@@ -435,6 +457,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Robot tayyor turibdi — faqat unga retsept berishimiz kerak. Bu retsept qayerda saqlanadi?</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -457,6 +480,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Retsept <span className="italic" style={{ color: T.accent }}>qayerda</span> saqlanadi?</h2></div>
         <Mentor>GitHub Actions retsepti aniq bir joyga yoziladi: <span className="mono">.github/workflows/ci.yml</span>. Bu nomlar <b style={{ color: T.ink }}>aniq shunday</b> bo'lishi kerak — GitHub shu papkani o'zi qidiradi. Yo'lni qadam-baqadam oching.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <FileTree revealed={revealed} />
@@ -470,6 +494,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yodda tuting: <span className="mono">.github/workflows/</span> ichidagi har <span className="mono">.yml</span> fayl — alohida workflow. Endi shu faylning ichini yozamiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -509,6 +534,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">YAML nima — nega <span className="italic" style={{ color: T.accent }}>bo'sh joy</span> muhim?</h2></div>
         <Mentor>ci.yml — YAML tilida. Unda qavs yo'q: <b style={{ color: T.ink }}>bo'sh joy (chekinish)</b> qaysi qator qaysining ichida turishini bildiradi. 3 ta qoidani bosib o'rganing — keyin ci.yml tushunarli bo'ladi.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <FullYml minH={180} />
@@ -523,6 +549,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bo'sh joy noto'g'ri bo'lsa — workflow ishlamaydi. Shuning uchun bo'sh joylarga e'tibor bering. Endi ierarxiyaning 3 darajasini ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -547,6 +574,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Konveyer ichida nima — <span className="italic" style={{ color: T.accent }}>Workflow → Job → Step</span> qanday joylashgan?</h2></div>
         <Mentor>Bu darsning markazi. <b style={{ color: T.ink }}>Workflow</b> ichida <b style={{ color: T.ink }}>job</b>, job ichida <b style={{ color: T.ink }}>step</b>. Xuddi: reja → stansiya → harakat. Har darajani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -567,6 +595,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Workflow ⊃ Job ⊃ Step. ci.yml'da bu bo'sh joy orqali ko'rinadi: steps test ichida, test jobs ichida.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -606,6 +635,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>on:</span> — konveyer <span className="italic" style={{ color: T.accent }}>qachon</span> ishga tushadi?</h2></div>
         <Mentor><span className="mono">on:</span> — workflowning <b style={{ color: T.ink }}>triggeri</b>: qaysi hodisa uni ishga tushiradi. Bizning maqsad — <span className="mono">on: push</span>. Uchala variantni bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="ci.yml" minH={90}>
@@ -624,6 +654,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Biz <span className="mono">on: push</span> ishlatamiz — har push'da test ishga tushsin. Endi job qaysi mashinada ishlashini ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -640,6 +671,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>runs-on</span> — job <span className="italic" style={{ color: T.accent }}>qaysi mashinada</span> ishlaydi?</h2></div>
         <Mentor>Test bir joyda ishlashi kerak. <span className="mono">runs-on: ubuntu-latest</span> — GitHub sizga <b style={{ color: T.ink }}>bepul, toza virtual mashina</b> beradi. Har run yangi mashinada — toza muhitda. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="ci.yml" minH={110}>
@@ -658,6 +690,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mashina tayyor — endi unda nima bajarilishini (steplarni) yozamiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -696,6 +729,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Step qanday yoziladi — <span className="italic" style={{ color: T.accent }}>uses</span>mi yoki <span className="italic" style={{ color: T.accent }}>run</span>mi?</h2></div>
         <Mentor>Har step yo tayyor action chaqiradi (<span className="mono">uses</span>), yo buyruq bajaradi (<span className="mono">run</span>). Ikkalasini bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -715,6 +749,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>uses</b> — tayyor detal, <b>run</b> — buyruq. Endi standart 4 qadamni tartibda ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -740,6 +775,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har workflow qaysi <span className="italic" style={{ color: T.accent }}>4 qadam</span>dan boshlanadi?</h2></div>
         <Mentor>Tartib muhim: avval kodni olamiz, Node o'rnatamiz, paketlarni o'rnatamiz, keyin test qilamiz. Har qadamni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -759,6 +795,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>checkout → setup-node → install → test. Endi shu steplarni o'zingiz yig'asiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -820,6 +857,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Push'dan keyin natijani <span className="italic" style={{ color: T.accent }}>qayerda</span> ko'ramiz?</h2></div>
         <Mentor>Push qildingiz → GitHub'da <b style={{ color: T.ink }}>Actions</b> bo'limida run paydo bo'ladi. Hammasi o'tsa — yashil <b style={{ color: T.success }}>✓</b>. Bitta step yiqilsa — qizil <b style={{ color: T.danger }}>✗</b>. "Kodni buzish" tugmasini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <ActionsRun status={broken ? 'fail' : 'pass'} />
@@ -832,6 +870,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Natija doim Actions bo'limida ko'rinadi. Endi birinchi workflowingizni o'zingiz yozasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -858,6 +897,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: birinchi workflowingizni <span className="italic" style={{ color: T.accent }}>to'ldiring</span>.</h2></div>
         <Mentor>Ikki bo'sh joyni to'ldiring: workflow <b style={{ color: T.ink }}>har push'da</b> ishga tushsin (<span className="mono">on:</span>) va <b style={{ color: T.ink }}>testni</b> ishga tushirsin (<span className="mono">run:</span>).</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">.github/workflows/ci.yml — bo'sh joyni to'ldiring</p>
@@ -883,6 +923,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Tabriklaymiz! Bu sizning birinchi konveyeringiz: har push'da kod olinadi va test qilinadi. Robot ishga tushdi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1018,7 +1059,14 @@ export default function GithubActionsLesson({ lang: langProp, onFinished }) {
         .role-ico { font-size: 20px; flex-shrink: 0; } .role-r { font-size: 11.5px; color: ${T.ink2}; font-weight: 600; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

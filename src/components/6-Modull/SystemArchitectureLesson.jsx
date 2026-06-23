@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // TIZIMNI YAXLIT YIG'AMAN MODULI · DARS 1 (T1) — KOMPONENTLARDAN TIZIM — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -59,6 +60,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -203,7 +224,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -286,7 +307,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Bitta oddiy <span className="italic" style={{ color: T.accent }}>online do'kon</span> ortida nechta «qism» ishlayapti?</h1>
         <Mentor>Foydalanuvchi faqat chiroyli sahifani ko'radi. Lekin ortida bir nechta qism bir jamoa bo'lib ishlaydi. Tugmani bosing — pardani ko'taramiz.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <ShopMock minH={150}>
               <div className="sw-row"><b>📱 Telefon</b><span className="sw-price">2 500 000</span></div>
@@ -310,7 +331,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval tugmani bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! Har bir mahsulot — bu <b>komponentlar tizimi</b>: Frontend, Backend, Database, AI va Bot. Bugun ularni va orasidagi bog'lanishni ko'ramiz va chizamiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -346,7 +367,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Bo'laklarni <span className="italic" style={{ color: T.accent }}>yaxlit tizim</span> sifatida ko'ramiz.</h2></div>
         <Mentor>Modul bo'ylab har bir qismni alohida o'rgandingiz: React, Node, PostgreSQL, AI, bot. Bugun ularni <b style={{ color: T.ink }}>birga ulab</b>, bitta tizim sifatida ko'rasiz va chizasiz. Bu — arxitektura fikrlash.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Chizmani ko'rish</button>{StepsB}</div>}
       </div>
@@ -368,7 +389,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Do'kon — bu <span className="italic" style={{ color: T.accent }}>do'kondagi 5 bo'lim</span> kabi.</h2></div>
         <Mentor>Haqiqiy do'konni tasavvur qiling: vitrina, menejer, ombor, maslahatchi va telefon-operator. Mahsulot ham xuddi shunday — har komponent o'z ishini qiladi. Har birini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {COMPONENTS.map(c => <button key={c.id} className="gchip" onClick={() => tap(c.id)} style={seen.has(c.id) ? { boxShadow: `inset 0 0 0 1.5px ${c.color}`, color: c.color } : undefined}>{seen.has(c.id) ? '✓ ' : ''}{c.ico} {c.label}</button>)}
@@ -380,7 +401,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               ? <div className="sk-info fade-step" key={active} style={{ borderLeft: `4px solid ${cur.color}` }}><p className="note-h"><span style={{ fontSize: 18, marginRight: 6 }}>{cur.ico}</span>{cur.label} <span className="mono" style={{ color: cur.color, fontSize: 11, marginLeft: 6 }}>{cur.tech}</span></p><p className="body" style={{ margin: '6px 0 0', color: T.ink }}>{cur.role}</p></div>
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Komponentni bosing ←</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -406,7 +427,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </React.Fragment>
           ))}
         </div></div>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={done} onClick={advance}>{done ? '✓ Sayohat tugadi' : step === 0 ? '▶ So\'rovni yuborish' : 'Keyingi bekat →'}</button>
             {FLOW[step] && <div className="sk-info fade-step" key={step}><p className="note-h">{FLOW[step].ico} {FLOW[step].label}</p><p className="body" style={{ margin: 0, color: T.ink }}>{FLOW[step].say}</p></div>}
@@ -416,7 +437,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               ? <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>To'liq sayohat: <b>Foydalanuvchi → Frontend → Backend → Database → ekran</b>. Har komponent zanjirning bitta halqasi. Bittasi ishlamasa — zanjir uziladi.</p></div>
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing — paket harakatlanadi →</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -455,7 +476,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Eng muhim chegara: <span className="italic" style={{ color: T.accent }}>vitrina</span> va <span className="italic" style={{ color: T.accent }}>menejer</span>.</h2></div>
         <Mentor>Boshlovchilar ko'p adashadi: Frontend <b style={{ color: T.ink }}>ko'rsatadi</b>, Backend <b style={{ color: T.ink }}>qaror qiladi</b>. Vitrina mahsulotni chiroyli qiladi; menejer hisoblaydi va omborga yozadi. Har birini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {PARTS.map(p => <button key={p.id} className={`pick-row ${active === p.id ? 'sel' : ''} ${seen.has(p.id) ? 'done-row' : ''}`} onClick={() => tap(p.id)}><span style={{ fontSize: 18, marginRight: 4 }}>{p.ico}</span><span style={{ flex: 1 }}>{p.label}</span><span className="pick-plus">{seen.has(p.id) ? '✓' : '▶'}</span></button>)}
@@ -470,7 +491,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 </div>
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bo'limni bosing ←</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -487,7 +508,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Database — <span className="italic" style={{ color: T.accent }}>ombor</span>. U bo'lmasa, xotira yo'q.</h2></div>
         <Mentor>PEAN darsidagi misolni eslang: izoh yozib, sahifani yangilasangiz — yo'qoladi. Sababi bazaga yozilmagan. Tugmani bosib, baza bor va yo'q holatni solishtiring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className={`mem-box ${refreshed ? 'gone' : ''}`}>
               <p className="note-h" style={{ color: refreshed ? T.danger : T.ink2 }}>❌ Bazasiz (faqat Frontend)</p>
@@ -507,7 +528,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="sk-info fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Database = ombor/daftar. Frontend = vaqtinchalik ko'rinish. Backend ikkisi orasida ma'lumotni tashiydi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -531,7 +552,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI va Bot — <span className="italic" style={{ color: T.accent }}>tizimga ulanadigan</span> qo'shimcha qismlar.</h2></div>
         <Mentor>Asosiy uchlik (Front+Back+DB) ustiga AI va Bot qo'shiladi. Muhimi: ikkalasi ham <b style={{ color: T.ink }}>o'sha backendga</b> ulanadi — alohida tizim emas. Har birini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {EXTRA.map(e => <button key={e.id} className={`pick-row ${active === e.id ? 'sel' : ''} ${seen.has(e.id) ? 'done-row' : ''}`} onClick={() => tap(e.id)}><span style={{ fontSize: 18, marginRight: 4 }}>{e.ico}</span><span style={{ flex: 1 }}>{e.label}</span><span className="pick-plus">{seen.has(e.id) ? '✓' : '▶'}</span></button>)}
@@ -543,7 +564,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               ? <div className="sk-info fade-step" key={active} style={{ borderLeft: `4px solid ${cur.color}` }}><p className="note-h"><span style={{ fontSize: 18, marginRight: 6 }}>{cur.ico}</span>{cur.label}</p><p className="body" style={{ margin: '6px 0 0', color: T.ink }}>{cur.desc}</p></div>
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Komponentni bosing ←</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -581,7 +602,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="fade-up"><div className="flow-row mini">
           {COMPONENTS.slice(0, 3).map((c, i) => (<React.Fragment key={c.id}>{i > 0 && <span className="fl-track" />}<div className={`fl-node ${active === c.id ? 'broken' : 'done'}`}><span className="fl-node-ico">{active === c.id ? '❌' : c.ico}</span><span className="fl-node-lbl">{c.label}</span></div></React.Fragment>))}
         </div></div>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {BREAKS.map(b => <button key={b.id} className="gchip" onClick={() => tap(b.id)} style={seen.has(b.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.danger}`, color: T.danger } : undefined}>{seen.has(b.id) ? '✗ ' : ''}{b.ico} {b.label} o'chir</button>)}
@@ -593,7 +614,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               ? <div className="frame-warn fade-step" key={active}><p className="note-h" style={{ margin: '0 0 4px', color: T.danger }}>{cur.ico} {cur.label} o'chirildi</p><p className="body" style={{ margin: 0, color: T.ink }}>{cur.effect}</p></div>
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Qismni bosing ←</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -620,7 +641,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <span className="cm-arrow">→</span>
           <div className="cm-core"><div className="cm-core-node">⚙️<span>Backend</span></div><div className="cm-core-node">🗄️<span>Database</span></div></div>
         </div></div>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {CLIENTS.map(c => <button key={c.id} className="gchip" onClick={() => tap(c.id)} style={seen.has(c.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, color: T.success } : undefined}>{seen.has(c.id) ? '✓ ' : ''}{c.ico} {c.label}</button>)}
@@ -632,7 +653,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Eshikni bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Backend va bazani bir marta qurasiz; keyin har xil frontend (web, bot, mobil) ulayversiz. Mobil ilovani T6-T7'da qo'shamiz!</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -673,7 +694,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta buyurtma — <span className="italic" style={{ color: T.accent }}>butun tizim</span> birga ishlaydi.</h2></div>
         <Mentor>Mana hammasi birga: web va bot orqali kelgan buyurtmalar bitta bazada uchrashadi, AI tavsiya beradi. Tugmani bosib, tizimning ishlashini bosqichma-bosqich kuzating.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {STEPS.slice(0, shown).map((s, i) => (
@@ -694,7 +715,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ikki mijoz, ikki eshik, bitta baza. Mana shuni siz yakuniy loyihada (capstone) to'liq quramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -711,7 +732,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kod yozishdan oldin — arxitekturani <span className="italic" style={{ color: T.accent }}>chizing</span>.</h2></div>
         <Mentor>Professional dasturchi avval qog'ozda yoki AI bilan tizim chizmasini chizadi: qaysi komponentlar, qanday ulanadi. Bu — direktor ishi. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="arxitektura.txt" minH={120}>
               <Cm>{'// mini-do\'kon tizimi'}</Cm>{'\n'}
@@ -735,7 +756,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="agent-card fade-step"><span className="agent-lbl">📍 KEYINGI DARS</span><p className="agent-msg">Bu chizmaning «nomi» bor — <b>arxitektura patterni</b> (MVC, mikroservis). Keyingi darsda o'shani o'rganamiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -785,7 +806,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: ma'lumot oqimini <span className="italic" style={{ color: T.accent }}>to'g'ri tartibda</span> yig'ing.</h2></div>
         <Mentor>Mijoz tugma bosganda ma'lumot qayerdan-qayerga boradi? Tartibni eslang: foydalanuvchi → frontend → backend → database → ekranda natija. To'g'ri qadamni o'ng tomondan tanlang.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">ma'lumot oqimi (siz yig'yapsiz)</p>
             {placed.length === 0
@@ -812,7 +833,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {hint && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>{hint}</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -938,7 +959,14 @@ export default function SystemArchitectureLesson({ lang: langProp, onFinished })
         .option-picked-wrong { background: ${T.accentSoft} !important; color: ${T.accent} !important; box-shadow: 0 8px 22px -6px rgba(255,79,40,0.38) !important; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

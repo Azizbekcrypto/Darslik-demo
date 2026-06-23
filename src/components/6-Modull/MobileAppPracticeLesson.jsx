@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // TIZIMNI YAXLIT YIG'AMAN MODULI · P2 (LOYIHA KUNI) — PRAKTIKA: MOBIL ILOVA — v16 (AUDIOSIZ)
@@ -119,6 +120,26 @@ const CASE_AC = [
 
 const Split = ({ children, refEl }) => <div className="split" ref={refEl}>{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 // ===== MOBIL UI YORDAMCHILARI =====
 const Phone = ({ children, screenClass = '', wake = false }) => (
@@ -260,11 +281,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -307,7 +324,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Do'koningiz web'da bor. Lekin mijozlar <span className="italic" style={{ color: T.accent }}>telefonda</span>. Ularga nima beramiz?</h1>
         <Mentor>Web do'kon (o'tgan darsda qurgan) tayyor. Endi o'sha do'konning MOBIL ilovasini quramiz. Ikki holatni bosib solishtiring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${isWeb ? 'chip-on' : ''}`} onClick={() => setV('web')}>🌐 Sayt telefonda</button>
@@ -339,7 +356,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             </div>
             {picked !== null && <p className="hook-ack fade-step">To'g'ri — telefon ekraniga moslangan <b>mobil ilova</b> kerak. Bugun mini-do'konning mobil versiyasini <b>quramiz</b>, <b>telefonda testlaymiz</b> va <b>Expo Go bilan ulashamiz</b>. Va yana o'sha falsafa: siz — direktor.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -372,7 +389,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Loyiha kuni: mobil ilovani quramiz va ulashamiz</span></h2></div>
         <Mentor>Bugun yangi sintaksis emas — <b style={{ color: T.ink }}>amaliyot</b>. Siz direktor sifatida AI'ga buyurib, mobil ilovani qadam-qadam yig'asiz, telefonda testlaysiz.</Mentor>
-        {!isNarrow ? (<Split>{IdeaBlock}{StepsBlock}</Split>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Maqsadni ko'rish</button>{StepsBlock}</div>)}
+        {!isNarrow ? (<Zoomable><Split>{IdeaBlock}{StepsBlock}</Split></Zoomable>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Maqsadni ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>
   );
@@ -393,7 +410,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'sha backend — <span className="italic" style={{ color: T.accent }}>yangi eshik</span></h2></div>
         <Mentor>Mobil ilova noldan backend qurmaydi! U o'tgan darsda qurgan O'SHA Node.js + PostgreSQL'ga ulanadi. Mobil — bitta tizimning yana bir «eshigi». Mobil eshikni ulang.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {DOORS.map(d => (
@@ -420,7 +437,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana o'sha g'oya: <b>ko'p eshik — bitta tizim</b>. Web, bot, mobil — uchchalasi o'sha bazadagi o'sha mahsulot va buyurtmalardan foydalanadi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -451,7 +468,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ilova — <span className="italic" style={{ color: T.accent }}>4 ekran</span></h2></div>
         <Mentor>Mana qurmoqchi bo'lgan ilovamiz. 4 ekranni bosib, telefonda ko'ring: mahsulotlar → detal → savat → buyurtma.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {TABS.map(t => (<button key={t.id} className={`chip ${tab === t.id ? 'chip-on' : ''}`} onClick={() => go(t.id)}>{seen.has(t.id) && tab !== t.id ? '✓ ' : ''}{t.label}</button>))}
@@ -462,7 +479,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             <div key={tab} className="demo-swap" style={{ display: 'flex', justifyContent: 'center' }}>{renderPhone()}</div>
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -489,7 +506,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Ritm: <span className="italic" style={{ color: T.accent }}>prompt → kod → telefonda test → tuzat</span></h2></div>
         <Mentor>Loyiha kunida har qadam shu siklda quriladi. Yangi narsa — <b>telefonda</b> ko'rib test qilish. Bosib oching.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, alignItems: 'center' }}>
               {FLOW.map((f, i) => { const on = i < step; return (<React.Fragment key={f}><span className={`ritm-chip ${on ? 'ritm-on' : ''}`} style={{ transitionDelay: `${i * 0.04}s` }}>{f}</span>{i < FLOW.length - 1 && <span style={{ color: i < step - 1 ? T.accent : T.ink3 }}>→</span>}</React.Fragment>); })}
@@ -503,7 +520,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>«Ishladi» degani — telefonda o'z ko'zingiz bilan ko'rdingiz, degani. Endi quramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -540,7 +557,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Ilovani <span className="italic" style={{ color: T.accent }}>prompt bilan yig'ing</span></h2></div>
         <Mentor>Har qism uchun AI'ga prompt yuborasiz — kod paydo bo'ladi va telefonda o'sha qism ko'rinadi. 4 qadamni quring, keyin «Xarid qil»!</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Phone>
@@ -573,7 +590,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {!cur && !ran && <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Qadamni bosing — promptni va AI yozgan kodni ko'rasiz, telefonda qism paydo bo'ladi.</p></div>}
             {ran && <div className="takeaway fade-step"><div className="ta-bulb" style={{ fontSize: 30 }}>📱</div><p className="ta-h">Ilova ishladi!</p><p className="ta-sub">List → savat → buyurtma → o'sha backend. To'liq mobil ilova tayyor.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -593,7 +610,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Savat va <span className="italic" style={{ color: T.accent }}>jami narx</span></h2></div>
         <Mentor>«+» bosib mahsulot qo'shing — yuqoridagi savat soni (badge) sakraydi, jami narx <b>reduce</b> bilan o'zi hisoblanadi (Modul 2 dagi callback!).</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <Phone>
@@ -611,7 +628,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Badge = <span className="mono">cart.length</span>, jami = <span className="mono">reduce</span>. State o'zgarsa — ekran o'zi yangilanadi. React shu.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -668,7 +685,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">«Ishlaydi» yetarli emas — <span className="italic" style={{ color: T.accent }}>sayqalla</span></h2></div>
         <Mentor>Ilova ishlasa ham, mijoz uni ko'radi. StyleSheet bilan rang, bo'shliq, tartib qo'shamiz. Ikki holatni solishtiring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${isRaw ? 'chip-on' : ''}`} onClick={() => set('raw')}>🩶 Chala (rangsiz)</button>
@@ -688,7 +705,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-success fade-step" key="s"><p className="note-h" style={{ color: T.success }}>Sayqallangan</p><p className="body" style={{ margin: 0, color: T.ink }}>StyleSheet: ranglar, yumshoq burchaklar, bo'shliq, soyalar. O'sha ilova — lekin professional.</p></div>}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Dovodka = sayqal. «Ishlaydi»dan keyin «chiroyli va qulay»ni qo'shing — bu ham direktor ishi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -710,7 +727,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Telefonda test: <span className="italic" style={{ color: T.accent }}>bug topiladi → tuzatiladi</span></h2></div>
         <Mentor>Expo Go'da haqiqiy telefonda sinab ko'rasiz — va bug chiqadi! Bosib, tuzatish siklini ko'ring.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             <div className="vibe-track">
               {BUG_STEPS.map((s, i) => { const on = i <= step; return (<div key={s.k} className="vibe-row" style={{ opacity: on ? 1 : 0.32, transition: 'opacity 0.35s' }}><span className="vibe-dot" style={{ background: on ? s.color : T.ink3 }}>{i < step ? Ico.check(11) : i + 1}</span><span className="vibe-tag" style={{ color: on ? s.color : T.ink3 }}>{s.tag}</span></div>); })}
@@ -725,7 +742,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana dovodka: telefonda test → bug → aniq tuzatish → qayta test. Emulyator emas — <b>haqiqiy qurilma</b> rost bug'larni ko'rsatadi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -759,7 +776,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Expo Go deploy: <span className="italic" style={{ color: T.accent }}>QR → do'st telefonida</span></h2></div>
         <Mentor>Ilova tayyor — endi ulashamiz. «Chiqar» bosing → QR paydo bo'ladi → do'stingiz skanlaydi → uning telefonida ishlaydi!</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, flexWrap: 'wrap', minHeight: 200 }}>
               <div style={{ textAlign: 'center' }}><MiniApp /><p className="small" style={{ color: T.ink2, margin: '6px 0 0' }}>Sizning telefon</p></div>
@@ -788,7 +805,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               </>
             )}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -800,7 +817,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
     <div className="screen">
       <div className="head"><h2 className="title h-title fade-up">Mobil loyiha: <span className="italic" style={{ color: T.accent }}>qur · testla · sayqalla · deploy</span></h2></div>
       <Mentor>Yodda tuting: o'sha backendga ulan, telefonda sinab ko'r, sayqalla, Expo Go bilan ulash.</Mentor>
-      <div className="split">
+      <Zoomable><div className="split">
         <Col>
           <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 'clamp(18px,2.6vw,26px)' }}>
             <span style={{ fontSize: 40 }}>🎬</span>
@@ -813,7 +830,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
             {[{ ic: Ico.link(18), c: T.grape, t: 'O\'SHA BACKEND — yangi server qurmaysiz' }, { ic: Ico.phone(18), c: T.blue, t: 'TELEFONDA TEST — Expo Go, haqiqiy qurilma' }, { ic: Ico.sparkle(18), c: T.honey, t: 'SAYQALLA — StyleSheet bilan chiroyli qil' }, { ic: Ico.send(18), c: T.success, t: 'DEPLOY — Expo Go QR bilan ulash' }].map((s, i) => (<React.Fragment key={i}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '10px 13px', boxShadow: `0 5px 14px -8px rgba(${T.shadowBase},0.16)` }}><span style={{ color: s.c, display: 'inline-flex' }}>{s.ic}</span><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, color: T.ink, fontSize: 13.5 }}>{s.t}</span></div>{i < 3 && <span style={{ color: T.ink3, textAlign: 'center', fontSize: 11 }}>↓</span>}</React.Fragment>))}
           </div>
         </Col>
-      </div>
+      </div></Zoomable>
     </div>
   </Stage>
 );
@@ -845,7 +862,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Sizning <span className="italic" style={{ color: T.accent }}>mobil build rejangiz</span></h2></div>
         <Mentor>Qaysi o'tgan loyihani mobilga aylantirasiz va 2 ta ekran/funksiya uchun qanday aniq prompt yozasiz? Kamida 2 qatorni to'ldiring.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             {lines.map((f, i) => { const ok = isComplete(f); return (
               <div key={i} style={{ background: T.paper, borderRadius: 12, padding: '11px 12px', boxShadow: ok ? `inset 0 0 0 1.5px ${T.success}, 0 6px 16px -9px rgba(31,122,77,0.16)` : `0 6px 16px -9px rgba(${T.shadowBase},0.16)`, transition: 'box-shadow 0.2s' }}>
@@ -861,7 +878,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="checklist feat-pop"><div className="cl-head"><span style={{ color: T.success, display: 'inline-flex' }}>{Ico.phone(15)}</span><span className="cl-title">Mening mobil rejam</span></div>{completeLines.map((f, j) => (<div key={j} className="crit crit-pass"><span className="crit-box">{Ico.check(13)}</span><span className="crit-text">{f.name}</span></div>))}</div>}
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! Shu reja bilan AI'ga buyurib, mobil ilovangizni qadam-qadam qurib, telefonda test qilasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -1055,8 +1072,14 @@ export default function MobileAppPracticeLesson({ lang: langProp, onFinished }) 
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -7px rgba(${T.shadowBase},0.16); }

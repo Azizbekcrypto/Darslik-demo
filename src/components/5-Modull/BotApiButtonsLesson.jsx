@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BOTLAR VA AVTOMATIZATSIYA MODULI · DARS 2 — TELEGRAM BOT API + TUGMALAR — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -58,6 +59,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -202,7 +223,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -297,7 +318,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>1-darsda botning sxemasini chizdingiz. Lekin u qog'ozda. Haqiqiy bot <span className="italic" style={{ color: T.accent }}>qanday tug'iladi</span>?</h1>
         <Mentor>Telegram'da bot yaratadigan rasmiy bot bor — <b style={{ color: T.ink }}>@BotFather</b>. U bilan suhbatlashib bot ochasiz. Tugmani bosib, butun jarayonni ko'ring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <TgChat title="BotFather" sub="rasmiy · bot yaratuvchi" ava="🧙" verified input={false} minH={170}>
               {BF_STEPS.slice(0, step).map((s, i) => (
@@ -323,7 +344,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!revealed && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval BotFather suhbatini oching ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! <b>Token</b> — eng muhim narsa. Bugun: token olish, uni xavfsiz saqlash, Telegraf bilan botni yozish va <b>tugmalar</b> qo'shishni o'rganamiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -360,7 +381,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Endi sxemani <span className="italic" style={{ color: T.accent }}>tirik kodga</span> aylantiramiz.</h2></div>
         <Mentor>1-darsda <b style={{ color: T.ink }}>trigger → action</b>ni tushundingiz. Bugun shuni haqiqiy Telegram botida quramiz: token olamiz, Telegraf'ni Nest bilan ulaymiz, /start handler yozamiz va tugmalar qo'shamiz. Mana natija va 4 qadam.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -379,6 +400,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Token — botning kaliti. Uni <span className="italic" style={{ color: T.accent }}>qayerda saqlash</span> kerak?</h2></div>
         <Mentor>Token maxfiy. Agar uni to'g'ridan-to'g'ri kodga yozsangiz va git'ga yuborsangiz — <b style={{ color: T.danger }}>hamma ko'radi</b> va botingizni o'g'irlaydi. To'g'ri usulni ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label" style={{ color: T.danger }}>❌ Xato — kodda ochiq</p>
@@ -403,6 +425,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Token <span className="mono">.env</span>'da yashaydi (4-modulda auth'da ko'rgansiz). Kod undan <span className="mono">process.env.BOT_TOKEN</span> orqali o'qiydi. Token hech qachon git'ga tushmaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -430,6 +453,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </React.Fragment>
           ))}
         </div></div>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -443,6 +467,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Siz faqat <b>Bot Service</b>ga handler yozasiz (trigger → action). Telegraf va Telegram aloqasini o'zi hal qiladi. Nest bilimingiz to'g'ridan-to'g'ri ishlaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -477,6 +502,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Birinchi handler: <span className="italic" style={{ color: T.accent }}>/start</span> kelganda bot javob bersin.</h2></div>
         <Mentor>Mana 1-darsdagi "<b style={{ color: T.ink }}>/start → salom</b>" sxemasi tirik kodda. Pastdagi 3 qismni bosib, har biri nima qilishini oching.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <CodeFile name="bot.service.ts" minH={120}>
@@ -495,6 +521,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">bot.start</span> = trigger, <span className="mono">ctx.reply</span> = action. Aynan 1-darsdagi mantiq — faqat endi Telegraf sintaksisida.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -519,6 +546,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>ctx</span> — har xabar bilan keladigan <span className="italic" style={{ color: T.accent }}>konvert</span>.</h2></div>
         <Mentor>Har handler'ga <b style={{ color: T.ink }}>ctx</b> (context) keladi — bu signal bilan birga kelgan "konvert": kim yozdi, nima yozdi va qanday javob berish. Ichidagi 3 narsani bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="env-card">
@@ -535,6 +563,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Demak <span className="mono">ctx</span> orqali botingiz kim bilan, nima haqida gaplashayotganini biladi va javob bera oladi. Har handler shu konvert bilan ishlaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -561,6 +590,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <button className={`seg-btn ${mode === 'inline' ? 'on' : ''}`} onClick={() => switchMode('inline')}>🔘 Inline tugmalar {tried.has('inline') && '✓'}</button>
           <button className={`seg-btn ${mode === 'reply' ? 'on' : ''}`} onClick={() => switchMode('reply')}>⌨️ Reply tugmalar {tried.has('reply') && '✓'}</button>
         </div>
+        <Zoomable>
         <div className="split">
           <Col>
             {mode === 'inline'
@@ -586,6 +616,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qoida: tez tanlov/menyu uchun <b>inline</b>, doimiy klaviatura (asosiy buyruqlar) uchun <b>reply</b> ishlatiladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -617,6 +648,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Tugma bosildi — kod uni <span className="italic" style={{ color: T.accent }}>qanday ushlaydi</span>?</h2></div>
         <Mentor>Tugma bosilishi ham — bu trigger. Lekin inline va reply tugmalar har xil handler bilan ushlanadi. Tugmani bosib ikkalasini solishtiring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">🔘 inline → callback'ni ushlaydi</p>
@@ -639,6 +671,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">bot.action('pizza')</span> — inline callback'ni ushlaydi. <span className="mono">bot.hears('🍕 Pizza')</span> — reply matnni ushlaydi. Ikkalasi ham: trigger → action.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -655,6 +688,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu kodni <span className="italic" style={{ color: T.accent }}>AI yozadi</span> — lekin buyruqni siz berasiz.</h2></div>
         <Mentor>Endi tushunasiz: handler, ctx, inline, reply, action, hears. Shuning uchun AI'ga <b style={{ color: T.ink }}>aniq</b> buyruq bera olasiz — va u qaytargan kodni o'qib, to'g'ri-noto'g'riligini bilasiz. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.danger}` }}>
@@ -673,6 +707,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="sk-info fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>💡 <b>Eslatma:</b> <span className="mono">bot.launch()</span> botni "polling" rejimida ishga tushiradi — u sizning kompyuteringizda ishlaydi. Noutbukni yopsangiz — bot to'xtaydi. Doim ishlashi uchun <b>hosting</b> kerak (keyingi darslarda).</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -710,6 +745,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">1-darsdagi pizza boti — endi <span className="italic" style={{ color: T.accent }}>tirik kodda</span> va tugmalar bilan.</h2></div>
         <Mentor>Chapda — foydalanuvchi ko'radigan chat (tugmalar bilan). O'ngda — har xabar ortida ishlagan kod. Tugmani bosib, ikkalasini birga kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <TgChat minH={180} input={false}>
@@ -733,6 +769,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana — tugmali ishlaydigan bot. 3 ta handler, har biri trigger → action. Siz buni tushunasiz, demak AI bilan istalganini qura olasiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -748,6 +785,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bot ishladi — lekin u hali hech narsani <span className="italic" style={{ color: T.accent }}>eslab qolmaydi</span>.</h2></div>
         <Mentor><span className="mono">bot.launch()</span> botni ishga tushiradi. Lekin ikki cheklov bor — ularni bilsangiz, keyingi qadamlarga tayyor bo'lasiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="sk-info"><p className="note-h">🖥️ 1. Hozircha lokalda (polling)</p><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">bot.launch()</span> — bot sizning kompyuteringizda ishlaydi. Yopsangiz — to'xtaydi. Doim onlayn bo'lishi uchun <b>hosting</b> kerak (keyingi darslarda).</p></div>
@@ -759,6 +797,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bugun: bot tug'ildi, gapira oladi, tugmalari bor. Ertaga: u eslab qoladigan bo'ladi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -808,6 +847,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: <span className="italic" style={{ color: T.accent }}>bot.ts</span>ni to'g'ri tartibda yig'ing.</h2></div>
         <Mentor>Bot fayli aniq tartibda yoziladi: avval token o'qiladi, bot yaratiladi, handlerlar qo'shiladi va oxirida ishga tushiriladi. To'g'ri qatorni o'ng tomondan tanlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">bot.ts (siz yig'yapsiz)</p>
@@ -833,6 +873,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {hint && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>{hint}</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -964,7 +1005,14 @@ export default function BotApiButtonsLesson({ lang: langProp, onFinished }) {
         .vlbl { font-family: 'Manrope'; font-weight: 700; font-size: 13.5px; color: ${T.ink}; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

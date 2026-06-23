@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // TIZIMNI YAXLIT YIG'AMAN MODULI · DARS 6 (T6) — REACT NATIVE ASOSLARI — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -59,6 +60,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -203,7 +224,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -294,7 +315,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Web do'koningiz tayyor. Mijoz <span className="italic" style={{ color: T.accent }}>telefon ilovasi</span> istaydi. Yasay olasizmi?</h1>
         <Mentor>Modul 3'da React o'rgandingiz. Endi savol: telefon ilovasi uchun hammasini noldan o'rganasizmi? Tugmani bosing — javobni ko'ring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <Phone label={tried ? 'React Native bilan — mumkin!' : 'telefon ekrani'} lit={tried}>
               {tried
@@ -314,7 +335,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval tugmani bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! <b>React Native</b> — React bilimingiz bilan haqiqiy telefon ilovasi yasash. Deyarli o'sha kod, faqat bir nechta tag o'zgaradi (div→View, p→Text). Bugun birinchi ekranni telefonga chiqaramiz!</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -347,7 +368,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">React bilimingizni <span className="italic" style={{ color: T.accent }}>telefonga</span> olib chiqamiz.</h2></div>
         <Mentor>Yaxshi xabar: mobil ilova — bu butunlay yangi dunyo emas. <b style={{ color: T.ink }}>React tafakkuringiz</b> o'sha qoladi; faqat bir nechta yangi komponent va Expo vositasini o'rganasiz.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -366,7 +387,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">React Native — <span className="italic" style={{ color: T.accent }}>React bilan</span> haqiqiy mobil ilova.</h2></div>
         <Mentor>React Native — bu React bilimi bilan iOS va Android uchun <b style={{ color: T.ink }}>haqiqiy</b> (web-sayt emas) ilova yasash. Bitta kod — ikki platforma. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.accent}` }}><p className="note-h" style={{ color: T.accent }}>📱 React Native nima?</p><p className="body" style={{ margin: 0, color: T.ink }}>React'ning «mobil ukasi». Siz React komponentlari yozasiz, ular telefonda <b>haqiqiy mobil ilova</b> bo'lib ishlaydi (iOS + Android).</p></div>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={show} onClick={() => { setShow(true); setSc(n => n + 1); }}>{show ? '✓ Ko\'rdingiz' : "Metafora?"}</button>
@@ -381,7 +402,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>RN ≠ web-sayt. U haqiqiy mobil ilova — telefon kamerasi, bildirishnomalar va h.k. bilan ishlay oladi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -401,7 +422,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Web → mobil <span className="italic" style={{ color: T.accent }}>tarjimon</span>: faqat 3 narsa o'zgaradi.</h2></div>
         <Mentor>Tuzilma o'sha (komponent, JSX, props) — faqat «so'zlar» o'zgaradi. Har tarjimani bosib, web va mobil farqini ko'ring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="trans-row"><CodeFile name="React (web)" minH={0}><Kw>{'<div '}</Kw><At>className</At>{'='}<St>"box"</St><Kw>{'>'}</Kw>{'\n'}{'  '}<Kw>{'<p>'}</Kw>{'Salom'}<Kw>{'</p>'}</Kw>{'\n'}<Kw>{'</div>'}</Kw></CodeFile></div>
             <div style={{ textAlign: 'center', color: T.accent, fontWeight: 700 }}>↓ tarjima ↓</div>
@@ -416,7 +437,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tarjimani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tuzilma bir xil! div→View, p→Text, CSS→StyleSheet. Qolgan hammasi — komponent, props, state — o'sha React.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -448,7 +469,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">2 asosiy komponent: <span className="italic" style={{ color: T.accent }}>View</span> va <span className="italic" style={{ color: T.accent }}>Text</span>.</h2></div>
         <Mentor>RN'da deyarli hamma narsa shu ikkitadan quriladi. <b style={{ color: T.ink }}>View</b> — quti (div kabi), <b style={{ color: T.ink }}>Text</b> — matn. Muhim qoida bor — tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="App.js" minH={110}>
               <Kw>import</Kw>{' { View, Text } '}<Kw>from</Kw>{' '}<St>'react-native'</St>{'\n\n'}
@@ -464,7 +485,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="sk-info fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>View = konteyner (qatorlar, qutilar). Text = ko'rinadigan har bir harf. Boshqa komponentlar (Image, Button) ham bor, lekin shu ikkitasi asos.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -481,7 +502,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bezash — <span className="mono" style={{ color: T.accent }}>StyleSheet</span> (CSS fayl emas).</h2></div>
         <Mentor>RN'da alohida CSS fayl yo'q. Stillar JS obyekt sifatida yoziladi — lekin nomlar deyarli o'sha (padding, color, fontSize). Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="styles" minH={120}>
               <Kw>const</Kw>{' s = StyleSheet.'}<At>create</At>{'({'}{'\n'}
@@ -501,7 +522,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>CSS bilimingiz deyarli o'sha — faqat camelCase va JS obyekt. Qiyin emas.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -519,7 +540,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Birinchi ekraningizni <span className="italic" style={{ color: T.accent }}>yig'ing</span> — telefonda paydo bo'ladi.</h2></div>
         <Mentor>Har bo'lakni qo'shing va o'ng tomonda telefonda jonli paydo bo'lishini kuzating. View qutisini va ikkita Text'ni qo'shing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {BUILD.map(b => <button key={b.id} className="pick-row" disabled={added.has(b.id)} onClick={() => add(b.id)} style={added.has(b.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, background: T.successSoft, color: T.success } : undefined}><span style={{ fontSize: 17, marginRight: 4 }}>{b.ico}</span><span style={{ flex: 1 }}>{b.label}</span><span className="pick-plus">{added.has(b.id) ? '✓' : '+'}</span></button>)}
@@ -543,7 +564,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Phone>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana — birinchi mobil ekraningiz! View ichida Text'lar. Aynan React kabi, faqat View/Text bilan.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -575,7 +596,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Expo</span> — RN'ni osonlashtiruvchi vosita.</h2></div>
         <Mentor>RN'ni «yalang'och» o'rnatish murakkab (Xcode, Android Studio…). Expo bularning hammasini o'zi qiladi — siz faqat kod yozasiz. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.accent}` }}><p className="note-h" style={{ color: T.accent }}>🚀 Expo nima?</p><p className="body" style={{ margin: 0, color: T.ink }}>RN loyihasini yaratish, ishga tushirish va telefonda ko'rishni juda osonlashtiruvchi tayyor toolkit. Yangi boshlovchilar uchun ideal.</p></div>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={show} onClick={() => { setShow(true); setSc(n => n + 1); }}>{show ? '✓ Ko\'rdingiz' : "Nega Expo qulay?"}</button>
@@ -590,7 +611,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Expo = mobil ishlab chiqishning «oson rejimi». Aynan u tufayli bugun darrov natija ko'rasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -607,7 +628,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">QR skanerlang — ilova <span className="italic" style={{ color: T.accent }}>telefoningizda</span> paydo bo'ladi.</h2></div>
         <Mentor>Expo Go ilovasini telefoningizga o'rnatasiz, kompyuterdagi QR kodni skanerlaysiz — va ilovangiz darrov telefonda ochiladi. Tugmani bosib ko'ring!</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">kompyuterdagi QR kod</p>
             <QrBox scanning={!scanned} />
@@ -621,7 +642,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Phone>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana natija! Kodni o'zgartirsangiz, Expo o'zgarishni telefonga darrov yuboradi. Hech qanday murakkab o'rnatish yo'q.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -654,7 +675,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">mini-do'kon mobil — <span className="italic" style={{ color: T.accent }}>to'liq birinchi ekran</span>.</h2></div>
         <Mentor>Endi to'liqroq ekran quramiz: sarlavha, mahsulot, narx va tugma. Har qatorni qo'shing va telefonda jonlanishini kuzating.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="ShopScreen.js" minH={130}>
               <Kw>{'<View '}</Kw><At>style</At>{'={s.card}'}<Kw>{'>'}</Kw>{'\n'}
@@ -673,7 +694,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </Phone>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>To'liq ekran! View ichida Text'lar va Pressable (tugma). Aynan React mantiqida — faqat mobil komponentlar bilan.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -698,7 +719,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Eng yaxshi xabar: <span className="italic" style={{ color: T.accent }}>React miyangiz</span> o'sha ishlaydi.</h2></div>
         <Mentor>View/Text va Expo'ni o'rgandingiz. Qolgan hammasi — Modul 3'dagi React. Har birini bosib, ishonch hosil qiling.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {SAME.map(s => <button key={s.id} className="gchip" onClick={() => tap(s.id)} style={seen.has(s.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, color: T.success } : undefined}>{seen.has(s.id) ? '✓ ' : ''}{s.ico} {s.label}</button>)}
@@ -710,7 +731,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               ? <div className="sk-info fade-step" key={active}><p className="note-h"><span style={{ fontSize: 17, marginRight: 6 }}>{cur.ico}</span>{cur.label}</p><p className="body" style={{ margin: '6px 0 0', color: T.ink }}>{cur.desc}</p></div>
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Narsani bosing ←</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -760,7 +781,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: birinchi RN ilova qadamlarini <span className="italic" style={{ color: T.accent }}>tartibda</span> yig'ing.</h2></div>
         <Mentor>Bo'sh loyihadan telefondagi ilovagacha yo'l: Expo loyiha → View/Text bilan ekran → StyleSheet bilan bezab → QR skan → telefonda jonli. To'g'ri qadamni o'ng tomondan tanlang.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">RN ilova oqimi (siz yig'yapsiz)</p>
             {placed.length === 0
@@ -787,7 +808,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {hint && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>{hint}</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -913,7 +934,14 @@ export default function ReactNativeBasicsLesson({ lang: langProp, onFinished }) 
         .option-picked-wrong { background: ${T.accentSoft} !important; color: ${T.accent} !important; box-shadow: 0 8px 22px -6px rgba(255,79,40,0.38) !important; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

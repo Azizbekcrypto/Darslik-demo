@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // PM 20-DARS (Modul 08 · Botlar · PM2) — CUSTDEV: JONLI FOYDALANUVCHILAR BILAN — PLATFORM STANDARD v16
@@ -121,6 +122,26 @@ const CASE_AC = [
 const Split = ({ children, refEl }) => <div className="split" ref={refEl}>{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
+
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
   const isMobile = useIsMobile();
   const isNarrow = useIsMobile(768);
@@ -237,11 +258,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40">
-          <circle cx="20" cy="20" r="20" fill={T.accentSoft} />
-          <circle cx="20" cy="16" r="6" fill={T.accent} />
-          <path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} />
-        </svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -286,7 +303,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>20 foydalanuvchingiz bor. Nimani <span className="italic" style={{ color: T.accent }}>tuzatish</span> kerak?</h1>
         <Mentor>Bot jonli, birinchi 20 foydalanuvchi bor. Endi nimani yaxshilash kerakligini qanday bilasiz — taxminmi yoki so'rabmi? Ikkalasini bosing.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'guess' ? 'chip-on' : ''}`} onClick={() => setV('guess')}>🤔 Taxmin</button>
@@ -304,7 +321,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             </div>
             {picked !== null && <p className="hook-ack fade-step">Taxmin ko'pincha noto'g'ri — siz o'zingiz foydalanuvchi emassiz. <b>Custdev</b> = real foydalanuvchilar bilan suhbat. Bugun ularni <b>bezovta qilmasdan</b>, to'g'ri savollar bilan so'rashni o'rganamiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -337,7 +354,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Foydalanuvchidan qanday to'g'ri so'rash kerak?</span></h2></div>
         <Mentor>Custdev — bu so'roq emas, <b style={{ color: T.ink }}>suhbat</b>. Maqsad: haqiqatni bilish, xushomad emas. Buning o'z san'ati bor.</Mentor>
-        {!isNarrow ? (<Split>{IdeaBlock}{StepsBlock}</Split>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
+        {!isNarrow ? (<Zoomable><Split>{IdeaBlock}{StepsBlock}</Split></Zoomable>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>
   );
@@ -355,7 +372,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Shifokor <span className="italic" style={{ color: T.accent }}>so'ramasdan dori yozmaydi</span></h2></div>
         <Mentor>Yaxshi shifokor avval so'raydi: "qayeringiz og'riyapti?". Siz ham mahsulotni "davolashdan" oldin so'rashingiz kerak. Ikkalasini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'guess' ? 'chip-on' : ''}`} onClick={() => set('guess')}>🤔 Taxmin bilan</button>
@@ -374,7 +391,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-success fade-step" key="a"><p className="body" style={{ margin: 0, color: T.ink }}>Real foydalanuvchi — haqiqatning yagona manbai. Ulardan o'rganing.</p></div>}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qoida: mahsulot haqida taxmin qilma — foydalanuvchidan so'ra.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -394,7 +411,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Fikr so'rang — <span className="italic" style={{ color: T.accent }}>lekin bezovta qilmasdan</span></h2></div>
         <Mentor>Odamlar yordam berishni xohlaydi — agar siz ularni hurmat qilsangiz. 5 ta oltin qoida. Har birini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {RESPECT.map(r => (<button key={r.id} onClick={() => tap(r.id)} style={{ display: 'flex', alignItems: 'center', gap: 11, textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 12, padding: '12px 14px', background: T.paper, boxShadow: active === r.id ? `inset 0 0 0 2px ${T.grape}, 0 8px 20px -8px ${T.grape}55` : `0 6px 16px -8px rgba(${T.shadowBase},0.16)`, transition: 'all 0.18s' }}><span style={{ fontSize: 19 }}>{r.emoji}</span><span style={{ flex: 1, fontFamily: "'Manrope'", fontWeight: 600, fontSize: 13.5, color: T.ink }}>{r.label}</span>{seen.has(r.id) && <span style={{ color: T.success, display: 'inline-flex' }}>{Ico.check(13)}</span>}</button>))}
@@ -404,7 +421,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {cur ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span style={{ fontSize: 20 }}>{cur.emoji}</span><span className="sk-wordbadge" style={{ color: T.grape, background: T.grapeSoft }}>{cur.label}</span></span><p className="body" style={{ color: T.ink, margin: '12px 0 0' }}>{cur.how}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir qoidani bosing</p></div> : null)}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Hurmat bilan so'rasangiz — odamlar mamnuniyat bilan yordam beradi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -434,7 +451,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Savolingiz <span className="italic" style={{ color: T.accent }}>javobni belgilaydi</span></h2></div>
         <Mentor>Yomon savol — yolg'on (xushomad) javob keltiradi. Yaxshi savol — haqiqat. Ikkalasini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'bad' ? 'chip-on' : ''}`} onClick={() => set('bad')}>🚫 Yomon savol</button>
@@ -450,7 +467,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-success fade-step" key="g"><p className="body" style={{ margin: 0, color: T.ink }}>Ochiq savollar (qaysi? qachon? nima?) real tajriba va muammoni ochadi.</p></div>}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ochiq so'rang, o'tmish xulqi haqida — kelajak yoki fikr haqida emas.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -484,7 +501,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Jonli intervyu: <span className="italic" style={{ color: T.accent }}>savolni sinab ko'ring</span></h2></div>
         <Mentor>Foydalanuvchi bilan suhbatdasiz. Savolni tanlang — u <b style={{ color: T.ink }}>chat'da javob beradi</b>. Yaxshi savol insayt, yomon savol xushomad keltiradi. Hammasini sinang!</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             <p className="flow-label">Savolingizni tanlang</p>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -501,7 +518,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {cur && <div className={`fade-step ${cur.good ? 'frame-success' : 'frame-warn'}`} key={'v' + active}><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 700, color: cur.good ? T.success : T.accent, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{cur.good ? '✅ Insayt!' : '❌ Foydasiz'}</p><p className="body" style={{ margin: 0, color: T.ink }}>{cur.why}</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -519,7 +536,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">"Qachon ishlatdingiz?" &gt; <span className="italic" style={{ color: T.accent }}>"Ishlatasizmi?"</span></h2></div>
         <Mentor>Odamlar kelajak haqida xato bashorat qiladi, lekin o'tmishni aniq eslaydi. Shuning uchun real xulq haqida so'rang. Ikkalasini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'future' ? 'chip-on' : ''}`} onClick={() => set('future')}>🔮 Kelajak/fikr</button>
@@ -538,7 +555,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-success fade-step" key="p"><p className="body" style={{ margin: 0, color: T.ink }}>O'tmish xulqi — yolg'on gapirib bo'lmaydigan haqiqat. Eng ishonchli signal.</p></div>}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Savolni o'tmishga yo'naltiring: "qachon?", "qanday qildingiz?", "nima bo'ldi?".</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -568,7 +585,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">O'zingizning <span className="italic" style={{ color: T.accent }}>5-savol shabloningiz</span></h2></div>
         <Mentor>8 savoldan eng yaxshi <b style={{ color: T.ink }}>5 tasini</b> tanlab, custdev skriptingizni yig'ing. Yetaklovchi savollarni qo'shmang!</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             <p className="flow-label">Savollar to'plami — yaxshilarini tanlang</p>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -590,7 +607,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor shablon! Shu 5 savol bilan istalgan foydalanuvchidan insayt olasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -618,7 +635,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kritikaga <span className="italic" style={{ color: T.accent }}>bahslashma — yoz</span></h2></div>
         <Mentor>Foydalanuvchi kamchilikni aytsa, uni himoya qilish yoki bahslashish — eng katta xato. Ikkalasini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'defend' ? 'chip-on' : ''}`} onClick={() => set('defend')}>🛡️ Himoyalanish</button>
@@ -637,7 +654,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-success fade-step" key="l"><p className="body" style={{ margin: 0, color: T.ink }}>Tinglash = hurmat. Kritika — sovg'a, mahsulotni yaxshilash imkoni.</p></div>}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qoida: bahslashma, oqlama — faqat tingla va yozib ol.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -655,7 +672,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">5-10 ta samimiy intervyu <span className="italic" style={{ color: T.accent }}>yetarli</span></h2></div>
         <Mentor>Minglab odam bilan gaplashish shart emas. 5-10 ta diqqat bilan o'tkazilgan intervyu naqshni ko'rsatadi. Ikkalasini bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               <button className={`chip ${v === 'few' ? 'chip-on' : ''}`} onClick={() => set('few')}>🎯 5-10 chuqur</button>
@@ -674,7 +691,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-warn fade-step" key="m"><p className="body" style={{ margin: 0, color: T.ink }}>Katta raqam — yaxshi ko'rinadi, lekin "nega" javobsiz qoladi.</p></div>}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Birinchi 20 dan 5-10 tasi bilan gaplashing — yetarli boshlanish.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -704,7 +721,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">To'liq hikoya: <span className="italic" style={{ color: T.accent }}>taxmin emas — so'rab topdi</span></h2></div>
         <Mentor>Bir bot quruvchining custdev yo'li — 4 qadam. Har qatorni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="checklist fade-up delay-1">
               <div className="cl-head"><span style={{ color: T.grape, display: 'inline-flex' }}>{Ico.mic(16)}</span><span className="cl-title">Bot quruvchi — custdev hikoyasi</span></div>
@@ -715,7 +732,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {cur ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span className="sk-wordbadge" style={{ color: cur.color, background: cur.color + '1c' }}>{cur.tag}</span></span><p style={{ fontFamily: G, fontSize: 14, color: T.ink, margin: '12px 0 0' }}>"{cur.text}"</p><p className="body" style={{ color: T.ink2, margin: '8px 0 0' }}>{cur.why}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir qatorni bosing</p></div> : null)}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Taxmin → intervyu → naqsh → tuzatish. Mana custdev kuchi. Endi o'z rejangizni tuzasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -727,7 +744,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
     <div className="screen">
       <div className="head"><h2 className="title h-title fade-up">Custdev: <span className="italic" style={{ color: T.accent }}>so'ra · ochiq · tingla</span></h2></div>
       <Mentor>Yodda tuting: taxmin qilma so'ra, ochiq savol ber, tingla va himoyalanma.</Mentor>
-      <div className="split">
+      <Zoomable><div className="split">
         <Col>
           <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 'clamp(18px,2.6vw,26px)' }}>
             <span style={{ fontSize: 40 }}>🎤</span>
@@ -740,7 +757,7 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
             {[{ ic: Ico.search(18), c: T.accent, t: 'SO\'RA — taxmin qilma, foydalanuvchidan o\'rgan' }, { ic: Ico.chat(18), c: T.blue, t: 'OCHIQ SAVOL — o\'tmish xulqi haqida' }, { ic: Ico.ear(18), c: T.success, t: 'TINGLA — bahslashma, yozib ol' }].map((s, i) => (<React.Fragment key={i}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '10px 13px', boxShadow: `0 5px 14px -8px rgba(${T.shadowBase},0.16)` }}><span style={{ color: s.c, display: 'inline-flex' }}>{s.ic}</span><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, color: T.ink, fontSize: 13.5 }}>{s.t}</span></div>{i < 2 && <span style={{ color: T.ink3, textAlign: 'center', fontSize: 11 }}>↓</span>}</React.Fragment>))}
           </div>
         </Col>
-      </div>
+      </div></Zoomable>
     </div>
   </Stage>
 );
@@ -772,7 +789,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Sizning <span className="italic" style={{ color: T.accent }}>5 mini-intervyu</span> rejangiz</h2></div>
         <Mentor>Birinchi 20 dan kimni so'rasiz va qaysi 2 savolni berasiz? Real custdev rejangizni yozing. Kamida 2 qatorni to'ldiring.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
-        <div className="split" ref={workRef}>
+        <Zoomable><div className="split" ref={workRef}>
           <Col>
             {lines.map((f, i) => { const ok = isComplete(f); return (
               <div key={i} style={{ background: T.paper, borderRadius: 12, padding: '11px 12px', boxShadow: ok ? `inset 0 0 0 1.5px ${T.success}, 0 6px 16px -9px rgba(31,122,77,0.16)` : `0 6px 16px -9px rgba(${T.shadowBase},0.16)`, transition: 'box-shadow 0.2s' }}>
@@ -788,7 +805,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="checklist feat-pop"><div className="cl-head"><span style={{ color: T.success, display: 'inline-flex' }}>{Ico.mic(15)}</span><span className="cl-title">Mening custdev rejam</span></div>{completeLines.map((f, j) => (<div key={j} className="crit crit-pass"><span className="crit-box">{Ico.check(13)}</span><span className="crit-text">{f.name}</span></div>))}</div>}
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! Shu reja bilan 5 ta foydalanuvchidan haqiqiy insayt yig'asiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -944,8 +961,14 @@ export default function PmLesson20({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava svg { display: block; }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -7px rgba(${T.shadowBase},0.16); }

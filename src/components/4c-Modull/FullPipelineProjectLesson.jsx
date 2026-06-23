@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // CI/CD + DEPLOY MODULI · DARS 3 (P1) — LOYIHA KUNI: TO'LIQ KONVEYER — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -60,6 +61,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -204,7 +225,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -306,6 +327,7 @@ const PickLines = ({ fileName, scaffoldTop, candidates, agent, instruction, onCo
   };
   const pickedCorrect = correct.filter(c => picked.has(c.id));
   return (
+    <Zoomable>
     <div className="split">
       <Col>
         <p className="flow-label">{fileName}</p>
@@ -331,6 +353,7 @@ const PickLines = ({ fileName, scaffoldTop, candidates, agent, instruction, onCo
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Frontend job yig'ildi — build qilinadi va Netlify'ga chiqadi.</p></div>}
       </Col>
     </div>
+    </Zoomable>
   );
 };
 
@@ -378,7 +401,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>AvtoIjara tayyor — lekin har yangilanishda <span className="italic" style={{ color: T.accent }}>ikkalasini qo'lda</span> deploy qilyapsiz.</h1>
         <Mentor>Frontend Netlify'da, backend Render'da. Mashina narxini o'zgartirdingiz — endi ikkalasini ham qayta deploy qilish kerak: build, token, yuklash... ikki marta, qo'lda. Bir martani bosib ko'ring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <Term title="qo'lda fullstack deploy" minH={155}>
               <TLine cmd="cd frontend && npm run build" />
@@ -404,7 +427,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval qo'lda deploy'ni bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! 2-darsda faqat <b>testni</b> avtomatlashtirdik. Bugun <b>to'liq konveyer</b>: frontend ham, backend ham — har push'da test/build/deploy o'zi bo'ladi. Loyiha kuni boshlandi.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -439,7 +462,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">AvtoIjara'ga <span className="italic" style={{ color: T.accent }}>to'liq konveyerni</span> qanday ulaymiz?</h2></div>
         <Mentor>Bugun nazariya emas — <b style={{ color: T.ink }}>quramiz</b>. Real loyihaga ikki tomonlama pipeline ulaymiz. Mana natija va 5 qadam.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -465,6 +488,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AvtoIjara — nechta qism, <span className="italic" style={{ color: T.accent }}>nechta konveyer</span>?</h2></div>
         <Mentor>Fullstack loyiha = ikki mustaqil qism. Har biri <b style={{ color: T.ink }}>boshqa joyga</b> va <b style={{ color: T.ink }}>boshqa qadamlar</b> bilan chiqadi. Ikkalasini bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -485,6 +509,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Frontend: <b>build → Netlify</b>. Backend: <b>test → Render</b>. Ikki liniya — bitta workflowda. Keyin shuni ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -508,6 +533,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta <span className="mono" style={{ color: T.accent }}>ci.yml</span> ichida <span className="italic" style={{ color: T.accent }}>ikki job</span> qanday ishlaydi?</h2></div>
         <Mentor>2-darsda bitta job (test) bor edi. Endi <b style={{ color: T.ink }}>jobs:</b> ostida ikkita: <span className="mono">frontend</span> va <span className="mono">backend</span>. Ular <b style={{ color: T.ink }}>parallel</b> ishlaydi. Jobni bosib, ci.yml'da yoritib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <TwoJobYml minH={230} hi={active} />
@@ -522,6 +548,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ikki job — ikki mustaqil liniya. Biri yiqilsa, ikkinchisi davom etadi. Endi frontend liniyasini batafsil ko'ramiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -563,6 +590,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Frontend liniyasida nima bo'ladi — <span className="italic" style={{ color: T.accent }}>build → deploy</span>?</h2></div>
         <Mentor>Frontendning o'zagi — <b style={{ color: T.ink }}>build</b>. React kodi to'g'ridan-to'g'ri chiqmaydi: avval <span className="mono">dist/</span>ga yig'iladi, keyin o'sha papka Netlify'ga ketadi. Har stansiyani bosing.</Mentor>
         <div className="fade-up"><Pipeline stations={FE_STATIONS} statuses={statuses} live={done} /></div>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -576,6 +604,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>install → build → deploy. Endi shu steplarni o'zingiz yig'asiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -640,6 +669,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Backend liniyasi nega <span className="italic" style={{ color: T.accent }}>test → deploy</span> tartibida?</h2></div>
         <Mentor>Backend foydalanuvchi ma'lumotlari bilan ishlaydi — shuning uchun avval <b style={{ color: T.ink }}>test</b>. 4b-modulda yozgan testlar o'tsa, Render'ga deploy bo'ladi. Test qizil bo'lsa — deploy <b style={{ color: T.ink }}>to'xtaydi</b>. "Testni buzish"ni bosing.</Mentor>
         <div className="fade-up"><Pipeline stations={BE_STATIONS} statuses={statuses} live={!broken} /></div>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={broken} onClick={() => { setBroken(true); setSc(n => n + 1); }}>{broken ? '✓ Test qizil → deploy to\'xtadi' : '🔨 Testni buzish (FAIL)'}</button>
@@ -652,6 +682,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Backend uchun test — himoya darvozasi. Endi deploy uchun zarur narsa: maxfiy token.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -668,6 +699,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Deploy tokeni — uni <span className="italic" style={{ color: T.accent }}>ochiq yozamizmi</span>?</h2></div>
         <Mentor>Netlify/Render'ga deploy uchun maxfiy <b style={{ color: T.ink }}>token</b> kerak. Uni ci.yml'ga ochiq yozsangiz — repongizni ko'rgan har kim o'g'irlaydi. To'g'risi: <b style={{ color: T.ink }}>GitHub Secrets</b>'da saqlash. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">{safe ? "xavfsiz — ${{ secrets }}" : "xavfli — ochiq token"}</p>
@@ -681,6 +713,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qoida: <b>hech qachon</b> token/parol kodga yoki ci.yml'ga ochiq yozilmaydi. Doim Secrets.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -719,6 +752,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Frontend backendni <span className="italic" style={{ color: T.accent }}>qayerdan topadi</span>?</h2></div>
         <Mentor>Frontend API manzilini bilishi kerak. Lokalda u <span className="mono">localhost:3000</span>, productionda esa real Render URL. Manzilni kodga yozib qo'ymaymiz — <b style={{ color: T.ink }}>env o'zgaruvchisi</b> (<span className="mono">VITE_API_URL</span>) orqali beramiz. Ikkalasini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -733,6 +767,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bitta kod — ikki muhit. Faqat <span className="mono">VITE_API_URL</span> o'zgaradi. Shuning uchun manzil hech qachon kodga qattiq yozilmaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -756,6 +791,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Frontend va backend <span className="italic" style={{ color: T.accent }}>har xil joyga</span> chiqadi — nega?</h2></div>
         <Mentor>Frontend = statik fayllar, backend = doimiy server. Ular tabiatan boshqacha, shuning uchun boshqa joylarga deploy bo'ladi. Ikkalasini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -775,6 +811,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Frontend → Netlify (statik), Backend → Render (server). Boshqa nomlar ham bor (Vercel, Railway), lekin mantiq bir xil.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -791,6 +828,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mashina narxini o'zgartirdingiz va <span className="italic" style={{ color: T.accent }}>push qildingiz</span>. Keyin?</h2></div>
         <Mentor>Bitta <span className="mono">git push</span> — qolgani o'zidan. Tugmani bosib konveyerni kuzating.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">🖥 frontend liniyasi</p>
@@ -806,6 +844,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>~3 daqiqada ikkala tomon ham yangilandi — siz boshqa ish bilan band edingiz. Qo'lda bu 30 daqiqa va ko'p xato edi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -837,6 +876,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Push'dan keyin <span className="italic" style={{ color: T.accent }}>ikki job</span> qayerda ko'rinadi?</h2></div>
         <Mentor>Push'dan keyin Actions'da ikkala job: frontend va backend. Endi <b style={{ color: T.ink }}>backendni buzib</b>, job'lar bir-biridan mustaqilligini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <ActionsRun jobs={broken ? [FE_JOB, BE_JOB_FAIL] : [FE_JOB, BE_JOB]} />
@@ -849,6 +889,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana to'liq konveyer: ikki job, har biri o'z liniyasi. Endi hammasini o'zingiz yig'asiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -875,6 +916,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: to'liq konveyerni <span className="italic" style={{ color: T.accent }}>o'zingiz to'ldiring</span>.</h2></div>
         <Mentor>Ikki bo'sh joy: frontend qaysi buyruq bilan <b style={{ color: T.ink }}>build</b> qilinadi va deploy tokeni <b style={{ color: T.ink }}>qayerdan</b> olinadi (xavfsiz).</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">.github/workflows/ci.yml — bo'sh joyni to'ldiring</p>
@@ -900,6 +942,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Tabriklaymiz! To'liq konveyer tayyor: frontend build+deploy (token xavfsiz) va backend test+deploy. Har push'da o'zi ishlaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1033,7 +1076,14 @@ export default function FullPipelineProjectLesson({ lang: langProp, onFinished }
         .role-ico { font-size: 20px; flex-shrink: 0; } .role-r { font-size: 11.5px; color: ${T.ink2}; font-weight: 600; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // CI/CD + DEPLOY MODULI · DARS 1 — CI/CD NIMA VA NEGA KERAK — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -57,6 +58,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -201,7 +222,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -280,7 +301,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Kodni yangiladingiz — endi uni internetga chiqarish uchun <span className="italic" style={{ color: T.accent }}>nechta amal</span> kerak?</h1>
         <Mentor>Kod tayyor, test ham yashil. Endi uni foydalanuvchiga yetkazish kerak. Bir martani <b style={{ color: T.ink }}>qo'lda</b> bajarib ko'ring — tugmani bosing.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <Term title="qo'lda deploy" minH={150}>
               <TLine cmd="npm test" />
@@ -307,7 +328,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval qo'lda deploy'ni bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! 4b-modulda <b>test</b> yozdingiz, 1-modulda Netlify'ga <b>qo'lda deploy</b> qildingiz. Bugun shularni bitta <b>robot</b> — CI/CD — har o'zgarishda avtomatik bajarishini o'rganamiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -341,7 +362,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Deploy'ni har safar qo'lda qilamizmi — yoki <span className="italic" style={{ color: T.accent }}>konveyerga topshiramizmi</span>?</h2></div>
         <Mentor>CI/CD — bu kodingizni avtomatik tekshiradigan va internetga chiqaradigan <b style={{ color: T.ink }}>konveyer</b>. Bir marta sozlaysiz, u har push'da o'zi ishlaydi. Mana natija va unga olib boradigan 4 qadam.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Konveyerni ko'rish</button>{StepsB}</div>}
       </div>
@@ -370,6 +391,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta deploy — aslida <span className="italic" style={{ color: T.accent }}>nechta qadam</span>?</h2></div>
         <Mentor>Sayt internetga chiqishi uchun bir nechta amal ketma-ket bajariladi. Har qadamni bosib ko'ring — va bu <b style={{ color: T.ink }}>har push'da</b> qaytarilishini his qiling.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -384,6 +406,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>5 qadam — har push'da takrorlanadi. Sekin, zerikarli, va bir kuni bittasini unutasiz. Buni avtomatlashtirsak-chi?</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -400,6 +423,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bir marta sozlasangiz — keyin <span className="italic" style={{ color: T.accent }}>o'zi ishlasa-chi</span>?</h2></div>
         <Mentor>Zavodni tasavvur qiling: <b style={{ color: T.ink }}>kod = detal</b>. Siz uni push qilasiz, u <b style={{ color: T.ink }}>konveyerga</b> tushadi. Har stansiya detalni tekshiradi, oxirida tayyor mahsulot avtomatik mijozga jo'natiladi. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.danger}` }}><p className="note-h" style={{ color: T.danger }}>🐌 Qo'lda</p><p className="body" style={{ margin: 0, color: T.ink }}>Har push'dan keyin 5 qadamni o'zingiz bajarasiz. Sekin, xatoga moyil — va bir kuni <b>unutib qo'yasiz</b>.</p></div>
@@ -412,6 +436,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana CI/CD'ning butun g'oyasi: <b>qo'l mehnatini konveyerga aylantirish</b>. Endi CI va CD nimaligini ajratamiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -451,6 +476,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">CI — <span className="italic" style={{ color: T.accent }}>Continuous Integration</span>: nima birlashtiriladi?</h2></div>
         <Mentor><b style={{ color: T.ink }}>CI = uzluksiz birlashtirish.</b> Jamoadagi har kishi kod yozadi. Har push'da CI kodni umumiy loyihaga birlashtiradi va <b style={{ color: T.ink }}>darhol avtomatik tekshiradi</b> (test, lint). Maqsad — xatoni erta tutish. Har dasturchini bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -465,6 +491,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana CI: 3 kishining kodi bir joyga birlashdi va har biri avtomatik tekshirildi. Hech kim "mening kompimda ishlayapti-ku" demaydi — konveyer hammasini bir xil sinaydi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -481,6 +508,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">CD — <span className="italic" style={{ color: T.accent }}>Continuous Deployment</span>: test o'tgach nima bo'ladi?</h2></div>
         <Mentor><b style={{ color: T.ink }}>CD = uzluksiz yetkazish.</b> Test yashil bo'lsa, kod <b style={{ color: T.ink }}>avtomatik</b> internetga (production) chiqadi — siz hech narsa qilmaysiz. Tugmani bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <Pipeline statuses={show ? ALL_PASS : { install: 'pass', test: 'pass', lint: 'pass', build: 'pass' }} />
@@ -494,6 +522,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>CI tekshirdi, CD chiqardi. Ikkalasi birga — CI/CD konveyeri.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -515,6 +544,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Konveyerda qanday <span className="italic" style={{ color: T.accent }}>stansiyalar</span> bor?</h2></div>
         <Mentor>Pipeline (konveyer) — ketma-ket stansiyalar. Detal (kod) har biridan o'tadi. Har stansiyani bosib, u nima qilishini ko'ring.</Mentor>
         <div className="fade-up"><Pipeline statuses={statuses} showLive={false} /></div>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
@@ -528,6 +558,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tartibi muhim: <b>Install → Test → Lint → Build → Deploy</b>. Avval tekshiramiz, keyin chiqaramiz — hech qachon teskari emas.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -563,6 +594,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Test <span className="italic" style={{ color: T.accent }}>qizil</span> bo'lsa — buzuq kod foydalanuvchiga chiqadimi?</h2></div>
         <Mentor>Konveyerning eng muhim qoidasi: bir stansiya <b style={{ color: T.danger }}>qizil</b> bersa — konveyer <b style={{ color: T.ink }}>to'xtaydi</b>. Keyingi stansiyalar (Build, Deploy) bajarilmaydi. Buzuq detal mijozga chiqmaydi. "Kodni buzish" tugmasini bosing.</Mentor>
         <div className="fade-up"><Pipeline statuses={statuses} /></div>
+        <Zoomable>
         <div className="split">
           <Col>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={broken} onClick={() => { setBroken(true); setSc(n => n + 1); }}>{broken ? '✓ Test qizil → konveyer to\'xtadi' : '🔨 Kodni buzish (test FAIL)'}</button>
@@ -575,6 +607,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana CI/CD'ning asosiy himoyasi: <b>buzuq kod hech qachon avtomatik deploy bo'lmaydi</b>. Xato sizgacha keladi — mijozgacha emas.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -599,6 +632,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Nega bu mehnatni <span className="italic" style={{ color: T.accent }}>avtomatlashtiramiz</span>?</h2></div>
         <Mentor>CI/CD uchta katta narsani beradi: <b style={{ color: T.ink }}>tezlik, ishonch va jamoa hamohangligi</b>. Har birini bosib ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -618,6 +652,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tezlik · Ishonch · Jamoa. Shuning uchun professional jamoalarning deyarli barchasi CI/CD ishlatadi.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -649,6 +684,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Juma, soat 18:00 — kod push qilindi. <span className="italic" style={{ color: T.accent }}>CI/CD bormi</span>?</h2></div>
         <Mentor>Bir xil vaziyat, ikki xil yakun. Avval CI/CD <b style={{ color: T.danger }}>bo'lmagan</b> holatni o'qing, keyin tugmani bosib <b style={{ color: T.success }}>bor</b> holatni ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.danger}` }}>
@@ -667,6 +703,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir xil xato — butunlay boshqa yakun. CI/CD xatoni <b>productionga chiqishidan oldin</b> tutadi. Mana shuning uchun kerak.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -688,6 +725,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu konveyerni <span className="italic" style={{ color: T.accent }}>kim quradi</span>?</h2></div>
         <Mentor>Konveyer o'z-o'zidan paydo bo'lmaydi — uni siz <b style={{ color: T.ink }}>bir marta</b> sozlaysiz. Eng mashhuri va bepuli — <b style={{ color: T.ink }}>GitHub Actions</b>: kichik bir "retsept" fayli yozasiz, qolganini robot bajaradi. Keyingi darsda buni o'zimiz quramiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">.github/workflows/ci.yml — konveyer retsepti (namuna)</p>
@@ -711,6 +749,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Hozir har qatorni tushunish shart emas — keyingi darsda <span className="mono">name</span>, <span className="mono">on</span>, <span className="mono">jobs</span>, <span className="mono">steps</span>ni birma-bir o'rganamiz.</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -762,6 +801,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: konveyerni <span className="italic" style={{ color: T.accent }}>to'g'ri tartibda</span> yig'ing.</h2></div>
         <Mentor>Stansiyalarni to'g'ri ketma-ketlikda joylang: avval kerakli paketlar o'rnatiladi, keyin kod tekshiriladi, oxirida internetga chiqadi. To'g'ri stansiyani o'ng tomondan tanlang.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">konveyer (siz yig'yapsiz)</p>
@@ -788,6 +828,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {hint && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>{hint}</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -828,10 +869,12 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
     <Stage eyebrow="Tayyor" screen={screen} navContent={<><NavBack onPrev={onPrev} /><button className="btn-ghost" onClick={onReset} style={{ padding: 'clamp(11px,1.6vw,13px) clamp(16px,2.2vw,22px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Qaytadan</button><button className="btn-white-accent" onClick={onFinish} style={{ marginLeft: 'auto', padding: 'clamp(11px,1.6vw,13px) clamp(22px,2.6vw,30px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Yakunlash ✓</button></>}>
       <div className="screen">
         <div className="hero"><div className="hero-l"><span className="done-chip fade-up"><span className="tick">✓</span> CI/CD konveyerini tushundingiz</span><h2 className="title h-title fade-up d1">Endi kod o'zgarishini <span className="italic" style={{ color: T.accent }}>robot</span> chiqaradi.</h2><p className="body h-sub fade-up d2">{PASSED ? "Tabriklaymiz! CI va CD farqini, pipeline stansiyalarini va konveyer qachon to'xtashini bilib oldingiz." : "Yaxshi harakat! CI/CD farqi va pipeline tartibini mustahkamlash uchun bir-ikki ekranni qayta ko'ring."}</p></div><ScoreRing correct={correct} total={total} /></div>
+        <Zoomable>
         <div className="split">
           <div className="card fade-up d3"><div className="card-lbl" style={{ color: T.success }}><span className="tick" style={{ width: 16, height: 16, borderRadius: '50%', background: T.success, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>✓</span> Endi siz bilasiz</div><ul className="recap">{RECAP.map((r, i) => (<li key={i} style={{ animationDelay: `${0.3 + i * 0.07}s` }}><span className="ck">✓</span><span>{r}</span></li>))}</ul></div>
           <div className="card hw fade-up d4"><div className="card-lbl" style={{ color: T.accent }}>📝 Uyga vazifa</div><ul>{HOMEWORK.map((h, i) => (<li key={i}><b>{h.b}</b> <span className="t">{h.t}</span></li>))}</ul><p className="hw-note">🚀 Keyingi dars — GitHub Actions: birinchi workflow'ni o'zimiz yozamiz va har push'da testlarni avtomatik ishga tushiramiz!</p></div>
         </div>
+        </Zoomable>
         <div ref={glossRef} className="gloss fade-up d4" style={{ scrollMarginBottom: 16 }}><div className="gloss-head" onClick={toggleGloss}><span className="lbl">💡 Kalit so'zlar (takrorlash)</span><span className="gloss-toggle">{open ? '−' : '+'}</span></div>{open && (<div className="gloss-body">{GLOSSARY.map((g, i) => (<span key={i}><b>{g.b}</b> {g.t}{i < GLOSSARY.length - 1 ? ' · ' : ''}</span>))}</div>)}</div>
       </div>
     </Stage>
@@ -921,7 +964,14 @@ export default function CiCdIntroLesson({ lang: langProp, onFinished }) {
         .role-ico { font-size: 20px; flex-shrink: 0; } .role-r { font-size: 11.5px; color: ${T.ink2}; font-weight: 600; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

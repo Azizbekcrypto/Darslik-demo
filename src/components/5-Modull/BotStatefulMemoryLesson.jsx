@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BOTLAR VA AVTOMATIZATSIYA MODULI · DARS 3 (T3) — STATEFUL LOGIKA + POSTGRESQL — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -59,6 +60,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -203,7 +224,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -328,7 +349,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Botga ismingizni aytdingiz. Bir xabardan keyin u <span className="italic" style={{ color: T.accent }}>yana so'raydi</span>. Nega?</h1>
         <Mentor>Botingiz tugmalar va javoblarni biladi (o'tgan darsda) — lekin u <b style={{ color: T.ink }}>hech narsani eslab qolmaydi</b>. Tugmani bosing va o'z ko'zingiz bilan ko'ring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <TgChat title="Xotirasiz bot" sub="bot · onlayn" input={false} minH={150}>
               <Bubble from="bot">Salom! Ismingiz nima?</Bubble>
@@ -350,7 +371,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval tugmani bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! Bot tabiatan <b>xotirasiz (stateless)</b> — har xabar u uchun «birinchi marta». Bugun unga <b>xotira</b> beramiz: suhbat holati va PostgreSQL.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -387,7 +408,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Botingizga <span className="italic" style={{ color: T.accent }}>xotira</span> beramiz.</h2></div>
         <Mentor>Bu modulning eng «texnik» darsi — lekin qo'rqmang. G'oya oddiy: bot xotirasiz, biz unga <b style={{ color: T.ink }}>daftar</b> (baza) beramiz. Yaxshi xabar — PostgreSQL'ni <b style={{ color: T.ink }}>Modul 04'da</b> o'rgangansiz, endi uni botga ulaymiz.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -409,7 +430,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bot — <span className="italic" style={{ color: T.accent }}>xotirasi yo'q xizmatchi</span>. Unga 2 xil daftar kerak.</h2></div>
         <Mentor>Tasavvur qiling: xizmatchingiz juda xushmuomala, lekin har xabardan keyin hammasini unutadi. Eslab qolishi uchun ikki xil daftar beramiz. Ikkalasini ham bosib ko'ring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {MEMORY_TYPES.map(m => <button key={m.id} className={`pick-row ${active === m.id ? 'sel' : ''} ${seen.has(m.id) ? 'done-row' : ''}`} onClick={() => tap(m.id)}><span style={{ fontSize: 18, marginRight: 4 }}>{m.ico}</span><span style={{ flex: 1 }}>{m.label}</span><span className="pick-plus">{seen.has(m.id) ? '✓' : '▶'}</span></button>)}
@@ -424,7 +445,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 </div>
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Xotira turini bosing ←</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -451,7 +472,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </React.Fragment>
           ))}
         </div></div>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <TgChat input={false} minH={150}>
               {SM_MSGS.slice(0, step).map((m, i) => (<React.Fragment key={i}><Bubble from="user">{m.u}</Bubble><Bubble from="bot">{m.b}</Bubble></React.Fragment>))}
@@ -463,7 +484,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="sk-info"><p className="note-h">📍 Hozirgi holat</p><p className="holat-badge">{SM_STATES.find(s => s.id === curStateId).label}</p><p className="body" style={{ margin: '8px 0 0', color: T.ink }}>{SM_STATES.find(s => s.id === curStateId).note}</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir xil bot, bir xil kod — lekin javob <b>holatga</b> bog'liq edi. Bu — stateful logika. Endi savol: bu holatni qayerda saqlaymiz?</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -495,7 +516,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Holatni saqlashning eng <span className="italic" style={{ color: T.accent }}>sodda</span> yo'li — oddiy obyekt.</h2></div>
         <Mentor>Holatni shunchaki kod ichidagi obyektda saqlash mumkin — chat raqamiga qarab holatni eslab turamiz. Ishlaydi, lekin bitta jiddiy kamchiligi bor. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="holat.ts" minH={130}>
               <Cm>{'// Holatni oddiy obyektda saqlash'}</Cm>{'\n'}
@@ -513,7 +534,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="agent-card fade-step"><span className="agent-lbl">📍 YECHIM</span><p className="agent-msg">RAM emas — <b>diskka</b> yozish kerak. Mana shu yerda <b>PostgreSQL</b> kiradi. Keyingi ekranda nega kerakligini o'z ko'zingiz bilan ko'rasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -530,7 +551,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Botni <span className="italic" style={{ color: T.accent }}>o'chir-yoqing</span> — nima qoladi, nima yo'qoladi?</h2></div>
         <Mentor>Serverlar har kuni qayta ishga tushadi (yangilanish, nosozlik, deploy). Tugmani bosib, restart paytida ikki xotiraga nima bo'lishini ko'ring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className={`mem-box ${restarted ? 'gone' : ''}`}>
               <p className="note-h" style={{ color: restarted ? T.danger : T.ink2 }}>📝 RAM — in-memory obyekt</p>
@@ -550,7 +571,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing — restart qiling ←</p></div>}
             {done && <div className="sk-info fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Xulosa: <b>RAM — vaqtinchalik</b>, <b>baza — doimiy</b>. Ishonchli bot ma'lumotni bazaga yozadi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -570,7 +591,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>PostgreSQL</span> — eski do'st. Botning <span className="italic" style={{ color: T.accent }}>users</span> jadvali.</h2></div>
         <Mentor>Buni <b style={{ color: T.ink }}>Modul 04'da</b> o'rgangansiz: jadval, ustunlar, qatorlar. Yangilik faqat shuki — endi bu jadvalga <b style={{ color: T.ink }}>bot</b> yozadi. Har ustunni bosib, nima saqlashini eslang.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="schema.sql" minH={150}>
               <Kw>CREATE TABLE</Kw>{' users ('}{'\n'}
@@ -591,7 +612,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Ustunni bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Diqqat: <span className="mono">holat</span> ham shu yerda — suhbat holatini ham bazaga yozamiz, restart'da yo'qolmasin. Endi bot bu jadval bilan qanday ishlashini ko'ramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -624,7 +645,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yangi foydalanuvchi <span className="mono" style={{ color: T.accent }}>/start</span> bosdi — bazaga <span className="italic" style={{ color: T.accent }}>yoziladi</span>.</h2></div>
         <Mentor>Foydalanuvchi birinchi marta botni ochganda (<span className="mono">/start</span>), uni jadvalga qo'shamiz — <b style={{ color: T.ink }}>INSERT</b>. Bu — «daftarga yangi mijoz qo'shish». Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="start.ts" minH={90}>
               <Kw>bot</Kw>{'.'}<At>start</At>{'('}<Kw>async</Kw>{' (ctx) => {'}{'\n'}
@@ -641,7 +662,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yangi qator paydo bo'ldi — endi bot bu foydalanuvchini «taniydi». <span className="mono">INSERT</span> = bazaga yangi qator qo'shish.</p></div>}
             {!done && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: '4px 2px' }}>Jadval hozircha bo'sh — tugmani bosing ←</p>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -665,7 +686,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>SELECT</span> — eslash, <span className="mono" style={{ color: T.accent }}>UPDATE</span> — saqlash.</h2></div>
         <Mentor>Xabar kelganda bot avval foydalanuvchini <b style={{ color: T.ink }}>o'qiydi</b> (SELECT — «bu kim, holati nima?»), keyin yangi holatni <b style={{ color: T.ink }}>yozadi</b> (UPDATE). Ikkala tugmani ham bosib, jadvalga e'tibor bering.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button className={`gchip ${seen.has('select') ? '' : ''}`} onClick={doSelect} style={{ padding: '10px 15px', ...(seen.has('select') ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, color: T.success } : {}) }}>{seen.has('select') ? '✓ ' : ''}🔍 SELECT (eslash)</button>
@@ -679,7 +700,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <DbTable rows={rows} hlRow={hlRow} hlCol={hlCol} />
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana botning xotira mexanizmi: <b>SELECT</b> bilan eslaydi, <b>UPDATE</b> bilan yangi holatni saqlaydi. INSERT, SELECT, UPDATE — uchovi yetarli.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -724,7 +745,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AvtoPizza buyurtma boti — har javob <span className="italic" style={{ color: T.accent }}>saqlanadi</span>, holat siljiydi.</h2></div>
         <Mentor>Bu — to'liq stateful suhbat. Bot har javobni bazaga yozadi va keyingi bosqichga o'tadi. O'ng tomonda holat qanday o'zgarishini kuzating. Tugmani bosib buyurtmani yig'ing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <TgChat minH={210} input={false}>
               {STEPS.slice(0, shown).map((s, i) => (<React.Fragment key={i}><Bubble from="user">{s.u}</Bubble><Bubble from="bot">{s.b}</Bubble></React.Fragment>))}
@@ -738,7 +759,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="sk-info"><p className="note-h">🧠 Har qadamda</p><p className="body" style={{ margin: 0, color: T.ink }}>Bot javobni <b>UPDATE</b> bilan saqlaydi, <span className="mono">holat</span>ni keyingisiga o'tkazadi. Keyingi xabarda <b>SELECT</b> bilan shu holatni o'qiydi.</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Buyurtma bosqichma-bosqich yig'ildi — chunki bot har lahzada «qayerda turganini» esladi. Bot restart bo'lsa ham, holat bazada — suhbat davom etadi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -758,7 +779,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Mana to'liq <span className="italic" style={{ color: T.accent }}>stateful</span> handler — AI yozadi, siz tushunasiz.</h2></div>
         <Mentor>Bu kodni AI yozib beradi — lekin har qismni o'qiy olishingiz kerak (siz direktorsiz). Pastdagi 4 qismni bosib, har biri nima qilishini oching.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="handler.ts" minH={180}>
               <Kw>bot</Kw>{'.'}<At>on</At>{'('}<St>'text'</St>{', '}<Kw>async</Kw>{' (ctx) => {'}{'\n'}
@@ -781,7 +802,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Kod qismini bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Naqsh aniq: <b>SELECT</b> (o'qi) → <b>holatni tekshir</b> → <b>action</b> → <b>UPDATE</b> (saqla). Har xabar shu yo'ldan o'tadi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -831,7 +852,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: stateful xabar oqimini <span className="italic" style={{ color: T.accent }}>to'g'ri tartibda</span> yig'ing.</h2></div>
         <Mentor>Xabar kelganda bot nima qiladi? Tartibni eslang: xabar keladi, userni o'qiydi (SELECT), holatni tekshiradi, action bajaradi, yangi holatni saqlaydi (UPDATE). To'g'ri qadamni o'ng tomondan tanlang.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">stateful oqim (siz yig'yapsiz)</p>
             {placed.length === 0
@@ -858,7 +879,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {hint && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>{hint}</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -987,7 +1008,14 @@ export default function BotStatefulMemoryLesson({ lang: langProp, onFinished }) 
         .vcard:hover:not(:disabled) { transform: translateY(-1px); }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

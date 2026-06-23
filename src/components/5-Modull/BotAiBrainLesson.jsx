@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // BOTLAR VA AVTOMATIZATSIYA MODULI · DARS 5 (P2) — AI-BOT: BOTGA AI MIYA ULASH — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -59,6 +60,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -203,7 +224,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -297,7 +318,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Mijoz <span className="italic" style={{ color: T.accent }}>kutilmagan</span> savol berdi. Sizning botingiz javob bera oladimi?</h1>
         <Mentor>Hozirgacha botingiz faqat tayyor javoblarni qaytardi (rule-bot). Lekin mijoz har doim "menyu" deb yozmaydi. Tugmani bosing — bir savolga ikki xil bot qanday javob berishini ko'ring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <TgChat title="Rule-bot (tayyor javoblar)" sub="bot · AI yo'q" input={false} minH={120}>
               <Bubble from="user">Bolalarim uchun nimani tavsiya qilasiz?</Bubble>
@@ -320,7 +341,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval tugmani bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! Rule-bot faqat siz kodlagan javoblarni biladi. <b>AI-bot</b> esa <b>o'ylab</b>, har savolga yangi javob yozadi. Bugun botimizga shunday AI miya ulaymiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -357,7 +378,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Botingizga <span className="italic" style={{ color: T.accent }}>o'ylaydigan miya</span> beramiz.</h2></div>
         <Mentor>Hozirgacha botingiz refleks bilan ishladi: trigger → tayyor action. Bugun unga <b style={{ color: T.ink }}>AI miya</b> ulaymiz — endi u tushunadi va o'ylab javob yozadi. Mana natija va 4 qadam.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -385,7 +406,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Rule-bot</span> va <span className="italic" style={{ color: T.accent }}>AI-bot</span> — qaysi biri qachon?</h2></div>
         <Mentor>AI-bot rule-bot'dan yaxshiroq degani emas — ular har xil. Rule-bot tez va aniq, AI-bot moslashuvchan. Har jihatni bosib, farqni ko'ring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {ROWS.map(r => <button key={r.id} className="gchip" onClick={() => tap(r.id)} style={seen.has(r.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, color: T.success } : undefined}>{seen.has(r.id) ? '✓ ' : ''}{r.k}</button>)}
@@ -401,7 +422,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 </div>
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Jihatni bosing ←</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -429,7 +450,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </React.Fragment>
           ))}
         </div></div>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {AI_ARCH.map(a => <button key={a.id} className="gchip" onClick={() => tap(a.id)} style={seen.has(a.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, color: T.success } : undefined}>{seen.has(a.id) ? '✓ ' : ''}{a.ico} {a.label}</button>)}
@@ -441,7 +462,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Qismni bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Endi 2 ta kalit kerak: <span className="mono">BOT_TOKEN</span> (Telegram) va <span className="mono">ANTHROPIC_API_KEY</span> (AI). Ikkalasi ham <span className="mono">.env</span>'da.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -476,7 +497,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bot xabarni AI'ga shunday <span className="italic" style={{ color: T.accent }}>yuboradi</span>.</h2></div>
         <Mentor>Mana o'tgan darsdagi <span className="mono">bot.on('text')</span> handleri — endi ichida AI'ga so'rov bor. Pastdagi qismlarni bosib, har biri nima qilishini oching. Hammasi tanish bo'lsin — yozishni AI bilan birga qilasiz.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="ai-bot.ts" minH={170}>
               <Kw>bot</Kw>{'.'}<At>on</At>{'('}<St>'text'</St>{', '}<Kw>async</Kw>{' ('}<Kw>ctx</Kw>{') => {'}{'\n'}
@@ -499,7 +520,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Kod qismini bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Xabar keldi → AI'ga yuborildi (system + xabar) → AI javob yozdi → <span className="mono">ctx.reply</span> bilan qaytdi. Eng muhim qism — <b>system</b>.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -516,7 +537,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>system prompt</span> — botning <span className="italic" style={{ color: T.accent }}>shaxsi va xulqi</span>.</h2></div>
         <Mentor><b style={{ color: T.ink }}>system prompt</b> — bu AI'ga bergan "ish yo'riqnomasi": kim bo'lishi, qanday gapirishi, nimaga ruxsat borligi. Aynan shu yerda botning xulqini <b style={{ color: T.ink }}>sozlaysiz</b>. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <PromptCard who="system prompt — namuna">Sen AvtoPizza'ning samimiy yordamchisisan. Faqat pizza va buyurtma haqida gaplash. Qisqa, iliq javob ber, emoji ishlat. Narxni so'rashsa, menyuga yo'naltir.</PromptCard>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={show} onClick={() => { setShow(true); setSc(n => n + 1); }}>{show ? '✓ Ko\'rdingiz' : "Bu nimani belgilaydi?"}</button>
@@ -529,7 +550,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div> : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>system prompt'ni o'zgartirsangiz — botning butun xulqi o'zgaradi. Keyingi ekranda buni o'z ko'zingiz bilan ko'rasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -554,7 +575,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta savol, uch xil xulq. <span className="italic" style={{ color: T.accent }}>system prompt</span> qanday o'zgartirishini ko'ring.</h2></div>
         <Mentor>Pastdagi xulqni tanlang — bot <b style={{ color: T.ink }}>aynan bir xil savolga</b> ("Salom, nima bor?") system prompt'ga qarab boshqacha javob beradi. Kamida 2 ta xulqni sinab ko'ring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">botning xulqini tanlang (system prompt)</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -572,7 +593,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </TgChat>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir xil savol, bir xil AI — lekin <b>system prompt</b> javobni butunlay o'zgartirdi. Mana shu — "xulqni sozlash".</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -604,7 +625,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Diqqat: AI-bot <span className="italic" style={{ color: T.accent }}>faqat gapiradi</span> — amal qilmaydi.</h2></div>
         <Mentor>Bu juda muhim tushuncha. AI-bot chiroyli javob yozadi, lekin u <b style={{ color: T.ink }}>matndan boshqa hech narsa qilmaydi</b>: bazaga yozmaydi, buyurtmani saqlamaydi. Tugmani bosib, haqiqatni ko'ring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <TgChat input={false} minH={120}>
               <Bubble from="user">Buyurtmamni saqlab qo'y!</Bubble>
@@ -617,7 +638,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="agent-card fade-step"><span className="agent-lbl">📍 KEYINGI BOSQICH — AI-AGENT</span><p className="agent-msg">AI-bot faqat <b>gapiradi</b>. <b>AI-agent</b> esa o'ylab <b>amal ham qiladi</b>: bazaga yozadi, API chaqiradi, qadamlar bajaradi (idrok → qaror → amal). Buni keyingi darsda quramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -634,7 +655,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">system prompt — sizning <span className="italic" style={{ color: T.accent }}>AI ishchingizga</span> bergan yo'riqnomangiz.</h2></div>
         <Mentor>Siz direktorsiz, AI — ishchi. Aniq yo'riqnoma (system prompt) bersangiz — aniq xulq olasiz. Noaniq bersangiz — bot adashadi. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.danger}` }}>
               <p className="note-h" style={{ color: T.danger }}>🙈 Noaniq yo'riqnoma</p>
@@ -653,7 +674,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yaxshi AI-bot = yaxshi system prompt. Uni yozasiz, test qilasiz, javoblar yoqmasa — aniqlashtirasiz. Bu ham direktorlik.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -696,7 +717,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Erkin suhbat — AI-bot har savolga <span className="italic" style={{ color: T.accent }}>tabiiy</span> javob beradi.</h2></div>
         <Mentor>Mijoz hech qanday tugma bosmaydi — shunchaki gaplashadi. AI-bot system prompt asosida har gapni tushunib, tabiiy javob beradi. Tugmani bosib suhbatni davom ettiring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <TgChat minH={200} input={false}>
               {STEPS.slice(0, shown).map((s, i) => (
@@ -714,7 +735,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="sk-info"><p className="note-h">🧠 Har javob ortida</p><p className="body" style={{ margin: 0, color: T.ink }}>Bot mijoz gapini AI'ga yuboradi → AI system prompt'ni eslab (samimiy, faqat pizza) tabiiy javob yozadi → ctx.reply qaytaradi.</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Hech bir javob oldindan kodlanmagan — AI har gapni tushunib o'zi yozdi. Mana AI-bot kuchi. (Eslang: buyurtmani saqlash uchun hali kod kerak — buni keyingi darsda quramiz.)</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -730,7 +751,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI ulashdan oldin — <span className="italic" style={{ color: T.accent }}>2 ta</span> amaliy nuqta.</h2></div>
         <Mentor>AI-bot zo'r, lekin ikki narsani yodda tuting: kalit xavfsizligi va xarajat.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="sk-info"><p className="note-h">🔑 1. API kalit — .env'da</p><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">ANTHROPIC_API_KEY</span> ham token kabi maxfiy — <span className="mono">.env</span>'da saqlanadi, kodda ochiq emas, git'ga tushmaydi (o'tgan darsdagi qoida).</p></div>
             <div className="sk-info"><p className="note-h">💰 2. Har so'rov — xarajat</p><p className="body" style={{ margin: 0, color: T.ink }}>AI'ga har murojaat ozgina pul/token sarflaydi. Shuning uchun oddiy ishlarni (tugmalar) rule bilan, faqat erkin savollarni AI bilan qiling.</p></div>
@@ -740,7 +761,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="agent-card"><span className="agent-lbl">📍 KEYINGI DARSLAR</span><p className="agent-msg"><b>P3:</b> bot + <b>DB</b> (eslab qoladi) + <b>AI</b> (o'ylaydi) + <b>hosting</b> — to'liq mini-loyiha. <b>P5:</b> AI-agent — bot endi gapiribgina qolmay, <b>amal</b> ham qiladi.</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bugun: botingiz o'ylaydigan bo'ldi. Keyin: eslab qoladi va amal qiladi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -790,7 +811,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: AI-bot oqimini <span className="italic" style={{ color: T.accent }}>to'g'ri tartibda</span> yig'ing.</h2></div>
         <Mentor>Xabar kelganda nima sodir bo'ladi? Tartibni eslang: xabar keladi, AI'ga yuboriladi, AI o'ylaydi, javob qaytadi, foydalanuvchiga boradi. To'g'ri qadamni o'ng tomondan tanlang.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">AI-bot oqimi (siz yig'yapsiz)</p>
             {placed.length === 0
@@ -817,7 +838,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {hint && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>{hint}</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -948,7 +969,14 @@ export default function BotAiBrainLesson({ lang: langProp, onFinished }) {
         .role-ico { font-size: 20px; flex-shrink: 0; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

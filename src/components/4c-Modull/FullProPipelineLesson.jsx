@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo, Fragment } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // CI/CD + DEPLOY MODULI · DARS 5 (P3) — LOYIHA KUNI: TO'LIQ PROFESSIONAL KONVEYER — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -58,7 +59,25 @@ const TOTAL_SCREENS = SCREEN_META.length;
 const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => i !== null);
 
 const Split = ({ children }) => <div className="split">{children}</div>;
-const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -203,7 +222,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -319,7 +338,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Konveyer test va deploy qiladi — nega kod hali ham <span className="italic" style={{ color: T.accent }}>buzilib chiqdi</span>?</h1>
         <Mentor>P1 va P2'da konveyer qurdingiz: test → build → deploy. Yaxshi ishlayapti. Lekin o'tgan hafta <b style={{ color: T.ink }}>2 ta muammo</b> yuz berdi. Tugmani bosing — nimaligini ko'ramiz.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <Term title="o'tgan hafta" minH={130}>
               <TLine cmd="git push" />
@@ -342,7 +361,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval tugmani bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! Professional pipeline 2 narsa qo'shadi: deploydan OLDIN <b>lint</b> (sifat darvozasi), deploydan KEYIN <b>monitoring</b> (tirik kuzatuv). Bugun to'liq konveyerni yig'amiz.</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -377,7 +396,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Konveyerni qanday <span className="italic" style={{ color: T.accent }}>to'liq professional</span> qilamiz?</h2></div>
         <Mentor>Konveyerga <b style={{ color: T.ink }}>2 narsa</b> qo'shamiz: deploydan oldin <b style={{ color: T.ink }}>lint</b> (kod tozami?), deploydan keyin <b style={{ color: T.ink }}>monitoring</b> (sayt tirikmi?). Mana to'liq natija va unga olib boradigan 5 qadam.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -404,7 +423,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Hozirgi konveyerda <span className="italic" style={{ color: T.accent }}>nima yetishmayapti</span>?</h2></div>
         <Mentor>Konveyeringiz test va deploy qiladi — bu yaxshi. Lekin <b style={{ color: T.ink }}>2 narsa</b> yetishmayapti: deploydan <b style={{ color: T.ink }}>oldin</b> sifat tekshiruvi, deploydan <b style={{ color: T.ink }}>keyin</b> tiriklik kuzatuvi. Ikkalasini bosib ko'ring.</Mentor>
         <div className="fade-up"><Pipeline stations={FULL_STATIONS.filter(s => s.id !== 'lint')} statuses={{ install: 'pass', test: 'pass', build: 'pass', deploy: 'pass' }} live /></div>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {GAPS.map(g => (
@@ -422,7 +441,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Teshikni bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Lint = sifat darvozasi (oldin). Monitoring = tiriklik qo'riqchisi (keyin). Ikkalasini qo'shamiz. Avval lint.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -439,7 +458,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kod <span className="italic" style={{ color: T.accent }}>toza yozilganini</span> kim tekshiradi?</h2></div>
         <Mentor>Test kod <b style={{ color: T.ink }}>to'g'ri ishlashini</b> tekshiradi. Lekin kod <b style={{ color: T.ink }}>toza yozilganini</b> kim ko'radi? Buni <b style={{ color: T.ink }}>Lint</b> (ESLint) qiladi: ishlatilmagan o'zgaruvchi, typo, <span className="mono">==</span> o'rniga <span className="mono">===</span>. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="cars.js" minH={100}>
               <At>const</At>{' total = 0;  '}<Cm>{'// ishlatilmagan'}</Cm>{'\n'}
@@ -456,7 +475,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Lintni ishga tushiring ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Lint 2 muammoni topdi — kod ishlaydi, lekin toza emas. Bu xatolar erta tutilsa, kod sifatli qoladi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -500,7 +519,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">To'liq konveyer tartibi — <span className="italic" style={{ color: T.accent }}>lint qayerda</span>?</h2></div>
         <Mentor>Lint <b style={{ color: T.ink }}>erta</b> turadi (install'dan keyin): u eng tez va arzon. Mayda xato bo'lsa — sekin test/build'ga o'tmasdan darrov to'xtatadi. Har stansiyani bosing.</Mentor>
         <div className="fade-up"><Pipeline stations={FULL_STATIONS} statuses={statuses} live={done} /></div>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {ST.map(s => <button key={s.id} className="gchip" onClick={() => tap(s.id)} style={seen.has(s.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, color: T.success } : undefined}>{s.ico} {s.label}</button>)}
@@ -512,7 +531,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Stansiyani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>install → lint → test → build → deploy. Lint erta — tez fikr-mulohaza. Endi lint qizil bo'lsa nima bo'lishini ko'ramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -531,7 +550,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Sifatsiz kod — <span className="italic" style={{ color: T.accent }}>konveyerdan o'tadimi</span>?</h2></div>
         <Mentor>Lint ham xuddi test kabi darvoza: <b style={{ color: T.ink }}>qizil bo'lsa konveyer to'xtaydi</b>. Sifatsiz kod deploy bo'lmaydi. "Kodni buzish (lint)"ni bosing.</Mentor>
         <div className="fade-up"><Pipeline stations={FULL_STATIONS} statuses={statuses} live={!broken} /></div>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={broken} onClick={() => { setBroken(true); setSc(n => n + 1); }}>{broken ? '✓ Lint qizil → konveyer to\'xtadi' : '🔨 Kodni buzish (lint xatosi)'}</button>
             {broken && <div className="frame-warn fade-step"><p className="body mono" style={{ margin: 0, color: T.ink, fontSize: 13 }}>🔍 Lint: <b style={{ color: T.danger }}>FAIL</b><br />→ Test, Build, Deploy: <b>o'tkazib yuborildi</b></p></div>}
@@ -542,7 +561,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame fade-step" style={{ borderLeft: `4px solid ${T.success}` }}><p className="body" style={{ margin: 0, color: T.ink }}>Lint Install'dan darrov keyin to'xtadi — sekin test/build'ga umuman o'tmadi. Tez va arzon. Sifatsiz kod chiqmadi.</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Lint — sifat darvozasi. Endi deploydan keyingi qism: monitoring.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -574,7 +593,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Deploy bo'ldi — endi <span className="italic" style={{ color: T.accent }}>kim kuzatadi</span>?</h2></div>
         <Mentor>Deploy — mahsulot chiqdi. Lekin server o'chishi, baza uzilishi mumkin. <b style={{ color: T.ink }}>Health-check</b> endpoint qo'shamiz: <span className="mono">/health</span> → 200 OK. Tashqi xizmat (UptimeRobot) uni har 5 daqiqada so'raydi. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <CodeFile name="server.js" minH={90}>
               <At>app</At>{'.get('}<St>'/health'</St>{', (req, res) => {'}{'\n'}
@@ -589,7 +608,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Health-check — saytning "puls"i. Tashqi monitor uni so'rab, tirikligini biladi. Endi monitorni ish ustida ko'ramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -606,7 +625,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Monitor — sayt <span className="italic" style={{ color: T.accent }}>tirikmi</span>?</h2></div>
         <Mentor>Monitor har 5 daqiqada <span className="mono">/health</span>'ni so'raydi. Javob bo'lsa — <b style={{ color: T.success }}>UP</b>. Javob bo'lmasa — <b style={{ color: T.danger }}>DOWN</b>. "Saytni o'chirish"ni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <MonitorPanel status={down ? 'down' : 'up'} />
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={down} onClick={() => { setDown(true); setSc(n => n + 1); }}>{down ? '✓ Monitor o\'chishni sezdi' : '⚡ Saytni o\'chirish'}</button>
@@ -617,7 +636,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame fade-step" style={{ borderLeft: `4px solid ${T.danger}` }}><p className="body" style={{ margin: 0, color: T.ink }}>🔴 Sayt DOWN — health-check javob bermadi (timeout). Monitor buni <b>02:05</b>da, ya'ni darrov sezdi.</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Monitor o'chishni soniyalarda sezdi. Lekin siz uxlab yotsangiz — qanday bilasiz? Ogohlantirish kerak.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -649,7 +668,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sayt o'chdi — <span className="italic" style={{ color: T.accent }}>kim xabar oladi</span>?</h2></div>
         <Mentor>Monitor o'chishni sezsa — darhol <b style={{ color: T.ink }}>Telegram/email</b> xabar yuboradi. Yarim tunda ham. Siz uxlasangiz ham, telefoningiz jiringlaydi. "Ogohlantirishni yoqish"ni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <MonitorPanel status="down" alerted={alerted} />
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={alerted} onClick={() => { setAlerted(true); setSc(n => n + 1); }}>{alerted ? '✓ Telegram xabar keldi' : '🔔 Ogohlantirishni yoqish'}</button>
@@ -660,7 +679,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Monitor + alert = tinch uyqu. Muammo bo'lsa, birinchi siz bilasiz — mijoz emas.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -679,7 +698,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Loyiha sog'ligini <span className="italic" style={{ color: T.accent }}>bir qarashda</span> qanday bilamiz?</h2></div>
         <Mentor>README'ga kichik <b style={{ color: T.ink }}>CI badge</b> qo'yasiz — u oxirgi push barcha tekshiruvlardan o'tganini ko'rsatadi: yashil <b style={{ color: T.success }}>passing</b> yoki qizil <b style={{ color: T.danger }}>failing</b>. Bir qarashda hamma biladi loyiha sog'lommi. Tugma bilan almashtiring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="frame" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <p className="flow-label">README.md</p>
@@ -692,7 +711,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="sk-info"><p className="body" style={{ margin: 0, color: T.ink }}>💡 <b>Branch protection:</b> sozlash mumkin — CI yashil bo'lmasa, kodni <span className="mono">main</span>'ga birlashtirib bo'lmaydi. Buzuq kod umuman kirmaydi.</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Badge — loyiha sog'lig'ining yorlig'i. Endi hammasini birga ko'ramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -709,7 +728,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yarim tunda, 02:00 — sayt o'chdi. <span className="italic" style={{ color: T.accent }}>Monitoring bormi</span>?</h2></div>
         <Mentor>Bir xil tun, ikki xil yakun. Avval monitoring <b style={{ color: T.danger }}>bo'lmagan</b> holatni o'qing, keyin <b style={{ color: T.success }}>bor</b> holatni bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.danger}` }}>
               <p className="note-h" style={{ color: T.danger }}>❌ Monitoring yo'q</p>
@@ -726,7 +745,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>7 soat vs 10 daqiqa. Farq — monitoring va alert. Mahsulot tirik bo'lishi — deploy bilan tugamaydi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -758,7 +777,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Sifat, to'g'rilik, chiqarish, kuzatuv — <span className="italic" style={{ color: T.accent }}>hammasi qanday birlashadi</span>?</h2></div>
         <Mentor>Mana to'liq rasm: konveyer (<b style={{ color: T.ink }}>lint → test → build → deploy</b>), keyin <b style={{ color: T.ink }}>monitoring</b> 24/7 kuzatadi, README'da yashil badge. Bu — productionga tayyor, professional loyiha.</Mentor>
         <div className="fade-up"><Pipeline stations={FULL_STATIONS} statuses={ALL} live /></div>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <ActionsRun steps={[{ label: 'Lint', ok: true }, { label: 'Test', ok: true }, { label: 'Build', ok: true }, { label: 'Deploy', ok: true }]} />
             {!done && <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => { setDone(true); setSc(n => n + 1); }}>Tushundim ✓</button>}
@@ -768,7 +787,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span className="flow-label" style={{ margin: 0 }}>README:</span><CIBadge ok={true} /></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Sifat (lint) + to'g'rilik (test) + chiqarish (deploy) + kuzatuv (monitoring). To'liq professional konveyer. Endi o'zingiz yig'asiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -804,7 +823,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: to'liq professional konveyerni <span className="italic" style={{ color: T.accent }}>tartibda yig'ing</span>.</h2></div>
         <Mentor>Hamma narsani to'g'ri ketma-ketlikda joylang: paketlardan boshlab, sifat va to'g'rilik tekshiruvi, yig'ish, chiqarish — va oxirida kuzatuv. To'g'ri stansiyani o'ng tomondan tanlang.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">konveyer (siz yig'yapsiz)</p>
             {placed.length === 0
@@ -829,7 +848,7 @@ const Screen16 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {hint && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>{hint}</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -869,10 +888,10 @@ const Screen17 = ({ screen, answers, onReset, onPrev, onFinish }) => {
     <Stage eyebrow="Modul yakuni" screen={screen} navContent={<><NavBack onPrev={onPrev} /><button className="btn-ghost" onClick={onReset} style={{ padding: 'clamp(11px,1.6vw,13px) clamp(16px,2.2vw,22px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Qaytadan</button><button className="btn-white-accent" onClick={onFinish} style={{ marginLeft: 'auto', padding: 'clamp(11px,1.6vw,13px) clamp(22px,2.6vw,30px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Yakunlash ✓</button></>}>
       <div className="screen">
         <div className="hero"><div className="hero-l"><span className="done-chip fade-up"><span className="tick">✓</span> CI/CD modulini yakunladingiz</span><h2 className="title h-title fade-up d1">Bu AvtoIjara edi — endi <span className="italic" style={{ color: T.accent }}>o'z loyihangizga</span>.</h2><p className="body h-sub fade-up d2">{PASSED ? "Tabriklaymiz! Lint, monitoring, alert va CI badge bilan to'liq professional pipeline — endi qo'lingizda. Har loyihangiz shunday quriladi." : "Yaxshi harakat! Lint va monitoring qismlarini mustahkamlash uchun bir-ikki ekranni qayta ko'ring."}</p></div><ScoreRing correct={correct} total={total} /></div>
-        <div className="split">
+        <Zoomable><div className="split">
           <div className="card fade-up d3"><div className="card-lbl" style={{ color: T.success }}><span className="tick" style={{ width: 16, height: 16, borderRadius: '50%', background: T.success, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>✓</span> Endi siz bilasiz</div><ul className="recap">{RECAP.map((r, i) => (<li key={i} style={{ animationDelay: `${0.3 + i * 0.07}s` }}><span className="ck">✓</span><span>{r}</span></li>))}</ul></div>
           <div className="card hw fade-up d4"><div className="card-lbl" style={{ color: T.accent }}>📝 Capstone vazifa</div><ul>{HOMEWORK.map((h, i) => (<li key={i}><b>{h.b}</b> <span className="t">{h.t}</span></li>))}</ul><p className="hw-note">🎓 CI/CD + Deploy moduli tamom! Endi har push'da kodingiz o'zi tekshiriladi, chiqadi va kuzatiladi — professional dasturchidek.</p></div>
-        </div>
+        </div></Zoomable>
         <div ref={glossRef} className="gloss fade-up d4" style={{ scrollMarginBottom: 16 }}><div className="gloss-head" onClick={toggleGloss}><span className="lbl">💡 Kalit so'zlar (takrorlash)</span><span className="gloss-toggle">{open ? '−' : '+'}</span></div>{open && (<div className="gloss-body">{GLOSSARY.map((g, i) => (<span key={i}><b>{g.b}</b> {g.t}{i < GLOSSARY.length - 1 ? ' · ' : ''}</span>))}</div>)}</div>
       </div>
     </Stage>
@@ -962,7 +981,14 @@ export default function FullProPipelineLesson({ lang: langProp, onFinished }) {
         .role-ico { font-size: 20px; flex-shrink: 0; } .role-r { font-size: 11.5px; color: ${T.ink2}; font-weight: 600; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, createContext, useContext, useCallback, useMemo } from 'react';
+import mentorImg from '../../assets/common/mentor.png';
 
 // ============================================================
 // TIZIMNI YAXLIT YIG'AMAN MODULI · DARS 5 (T5) — O'Z SKILL'INGIZNI YOZISH — PLATFORM STANDARD v16 (AUDIOSIZ)
@@ -58,6 +59,26 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
+
+const Zoomable = ({ children }) => {
+  const [big, setBig] = useState(false);
+  useEffect(() => {
+    if (!big) return;
+    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
+  }, [big]);
+  return (
+    <>
+      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
+      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
+        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
+        {children}
+      </div>
+    </>
+  );
+};
 
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, scrollSignal }) => {
   const isMobile = useIsMobile();
@@ -202,7 +223,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="40" height="40"><circle cx="20" cy="20" r="20" fill={T.accentSoft} /><circle cx="20" cy="16" r="6" fill={T.accent} /><path d="M8 36 a12 9 0 0 1 24 0 Z" fill={T.accent} /></svg>
+        <img src={mentorImg} alt="" />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -290,7 +311,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 880 }}>Tez skill yozdingiz: <span className="italic" style={{ color: T.accent }}>«muloyim javob yoz»</span>. Natija — bo'sh. Nima qilasiz?</h1>
         <Mentor>O'tgan darsda skill o'qidingiz. Endi yozasiz — bu mahorat. Birinchi qoralama ko'pincha chala chiqadi. Tugmani bosing — natijani ko'ring.</Mentor>
-        <Split>
+        <Zoomable><Split>
           <Col>
             <CodeFile name="SKILL.md (1-urinish)" minH={0}>
               <Cm>{'---'}</Cm>{'\n'}<At>name</At>{': mijoz-javobi'}{'\n'}<At>description</At>{': '}<St>javob yozish</St>{'\n'}<Cm>{'---'}</Cm>{'\n'}{'Muloyim javob yoz.'}
@@ -309,7 +330,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             {!tried && <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Avval tugmani bosing ←</p>}
             {picked !== null && <p className="hook-ack fade-step">Aynan! Skill yozish — bu <b>jarayon</b>: yoz → test → kamchilikni top → aniqlashtir → qayta test. Bugun o'z skillingizni shu yo'l bilan yozasiz (kontekst-injiniring).</p>}
           </Col>
-        </Split>
+        </Split></Zoomable>
       </div>
     </Stage>
   );
@@ -344,7 +365,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">O'z <span className="italic" style={{ color: T.accent }}>SKILL.md</span>'ingizni yozasiz.</h2></div>
         <Mentor>O'tgan darsda tayyor skillni o'qidingiz. Bugun — yozuvchi sifatida ishlaysiz: aniq description, aniq qadamlar, test va <b style={{ color: T.ink }}>kontekst-injiniring</b> bilan sayqallash.</Mentor>
-        {!isNarrow ? <Split>{Preview}{StepsB}</Split>
+        {!isNarrow ? (<Zoomable><Split>{Preview}{StepsB}</Split></Zoomable>)
           : !showSteps ? <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{Preview}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>4 qadamni ko'rish</button></div>
             : <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Natijani ko'rish</button>{StepsB}</div>}
       </div>
@@ -363,7 +384,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Har skill — <span className="italic" style={{ color: T.accent }}>3 qism</span>: description, qadamlar, misol.</h2></div>
         <Mentor>O'tgan darsdan eslang: SKILL.md'da description (qachon) va body (qanday) bor. Yaxshi skill yozish uchun uchta narsa kerak. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={show} onClick={() => { setShow(true); setSc(n => n + 1); }}>{show ? '✓ Ko\'rdingiz' : "3 qismni ko'rsat"}</button>
           </Col>
@@ -377,7 +398,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Shu uchtasi aniq bo'lsa — skill ishlaydi. Endi har birini qanday yozishni ko'ramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -394,7 +415,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yaxshi <span className="mono" style={{ color: T.accent }}>description</span> — nima va <span className="italic" style={{ color: T.accent }}>qachon</span>.</h2></div>
         <Mentor>Description Claude'ga «qachon meni ishlat» deydi. Noaniq description → skill noto'g'ri vaqtda ishlaydi yoki umuman ishlamaydi. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="sk-info" style={{ borderLeft: `4px solid ${T.danger}` }}><p className="note-h" style={{ color: T.danger }}>❌ Noaniq</p><p className="prompt-text" style={{ margin: 0 }}>{DESC_BAD}</p><p className="body" style={{ margin: '6px 0 0', color: T.ink }}>→ Qanaqa javob? Qachon? Claude bilmaydi.</p></div>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={show} onClick={() => { setShow(true); setSc(n => n + 1); }}>{show ? '✓ Ko\'rdingiz' : "Aniq description-chi?"}</button>
@@ -405,7 +426,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qoida: description'da NIMA qilishi va QACHON ishlatilishi bo'lsin. Bu — eng muhim qator.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -437,7 +458,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Body — <span className="italic" style={{ color: T.accent }}>aniq qadamlar</span> + misol.</h2></div>
         <Mentor>Body'da «yaxshi javob yoz» deb yozsangiz — AI taxmin qiladi. Aniq, raqamlangan qadamlar yozsangiz — aniq bajaradi. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="sk-info" style={{ borderLeft: `4px solid ${T.danger}` }}><p className="note-h" style={{ color: T.danger }}>❌ Noaniq body</p><p className="prompt-text" style={{ margin: 0 }}>«Mijozga yaxshi javob yoz.»</p></div>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={show} onClick={() => { setShow(true); setSc(n => n + 1); }}>{show ? '✓ Ko\'rdingiz' : "Aniq body-chi?"}</button>
@@ -453,7 +474,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Raqamlangan qadamlar + misol = AI taxmin qilmaydi, aniq bajaradi. Misol eng kuchli qism.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -472,7 +493,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'z skillingizni <span className="italic" style={{ color: T.accent }}>yig'ing</span> — jonli to'lib boradi.</h2></div>
         <Mentor>Endi amalda: har qismni qo'shing va SKILL.md o'ng tomonda jonli to'lib borishini kuzating. Uchala qismni ham qo'shing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {BUILD_PARTS.map(p => <button key={p.id} className="pick-row" disabled={added.has(p.id)} onClick={() => add(p.id)} style={added.has(p.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, background: T.successSoft, color: T.success } : undefined}><span style={{ fontSize: 17, marginRight: 4 }}>{p.ico}</span><span style={{ flex: 1 }}>{p.label}</span><span className="pick-plus">{added.has(p.id) ? '✓' : '+'}</span></button>)}
@@ -490,7 +511,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               {slot(added.has('example'), <Cm>{'Misol: ' + BODY_EXAMPLE}</Cm>, '(misol hali yo\'q)')}
             </CodeFile>
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -507,7 +528,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yozdingiz — endi <span className="italic" style={{ color: T.accent }}>test</span> qiling.</h2></div>
         <Mentor>Skill yozish — taxmin. U rostan ishlaydimi? Buni faqat sinab ko'rib bilasiz. Haqiqiy shikoyat berib, natijani ko'ramiz. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.accent}` }}><p className="note-h" style={{ color: T.accent }}>🧪 Sinov: shikoyat</p><p className="body" style={{ margin: 0, color: T.ink }}>«Telefonim buzuq keldi! Pulimni qaytaring!»</p></div>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={show} onClick={() => { setShow(true); setSc(n => n + 1); }}>{show ? '✓ Sinaldi' : "▶ Skill bilan javob"}</button>
@@ -521,7 +542,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yaxshi chiqdi! Lekin har doim shunday emas — keyingi ekranda chala chiqqan holatni va uni tuzatishni ko'ramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -553,7 +574,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Kontekst-injiniring</span> — skillni aniq sozlash.</h2></div>
         <Mentor>Natija chala chiqsa, hammasini qaytadan yozmaysiz. <b style={{ color: T.ink }}>Aniq nuqtani</b> tuzatasiz — bitta qoida qo'shasiz yoki so'zni o'tkirlashtirasiz. Bu — kontekst-injiniring. Tugmani bosing.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="frame" style={{ borderLeft: `4px solid ${T.accent}` }}><p className="note-h" style={{ color: T.accent }}>🔧 Kontekst-injiniring nima?</p><p className="body" style={{ margin: 0, color: T.ink }}>AI'ga beradigan ko'rsatma/kontekstni aniq sozlash san'ati — kerakli natijaga yetguncha kichik, aniq o'zgartirishlar.</p></div>
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={show} onClick={() => { setShow(true); setSc(n => n + 1); }}>{show ? '✓ Ko\'rdingiz' : "Qanday qilinadi?"}</button>
@@ -568,7 +589,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Tugmani bosing ←</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Kichik, aniq tuzatish — katta natija. Endi buni amalda ko'ramiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -586,7 +607,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Chala natija → <span className="italic" style={{ color: T.accent }}>aniq tuzatish</span> → yaxshi natija.</h2></div>
         <Mentor>Mana yaxshilash sikli amalda: v1 chala chiqdi, kamchilikni topamiz, aniq qoida qo'shamiz, v2 tuzaladi. Tugmani bosib bosqichlarni kuzating.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {ITER.slice(0, step).map((s, i) => (
@@ -603,7 +624,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="agent-card"><span className="agent-lbl">🔁 YAXSHILASH SIKLI</span><p className="agent-msg">Yoz → test → kamchilik → aniq tuzat → qayta test. Birinchi qoralama hech qachon mukammal emas — sikl uni yaxshilaydi.</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bitta aniq qoida (yechim+muddat) qo'shildi — natija butunlay yaxshilandi. Hammasini qayta yozmadingiz. Mana kontekst-injiniring kuchi.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -643,7 +664,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Boshidan oxirigacha: <span className="italic" style={{ color: T.accent }}>yoz → test → tuzat</span>.</h2></div>
         <Mentor>Mana to'liq jarayon bitta misolda. Tugmani bosib, skill qanday yozilib, sinab ko'rilib va yaxshilanishini kuzating.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {STEPS.slice(0, shown).map((s, i) => (
@@ -660,7 +681,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="sk-info"><p className="note-h">💡 Diqqat</p><p className="body" style={{ margin: 0, color: T.ink }}>Birinchi versiya yechim berdi-yu, muddatni unutdi. Bitta qoidani o'tkirlash bilan skill to'liq bo'ldi — hammasini qayta yozmasdan.</p></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana skill yozish mahorati: birinchi qoralama → test → aniq tuzatish → tayyor. Endi o'z vazifangizga skill yoza olasiz.</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -680,7 +701,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Zo'r skill yozishning <span className="italic" style={{ color: T.accent }}>4 maslahati</span>.</h2></div>
         <Mentor>Bu maslahatlar har qanday skillni yaxshiroq qiladi. Har birini bosib ko'ring.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
               {TIPS.map(t => <button key={t.id} className="gchip" onClick={() => tap(t.id)} style={seen.has(t.id) ? { boxShadow: `inset 0 0 0 1.5px ${T.success}`, color: T.success } : undefined}>{seen.has(t.id) ? '✓ ' : ''}{t.ico} {t.label}</button>)}
@@ -692,7 +713,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               ? <div className="sk-info fade-step" key={active}><p className="note-h"><span style={{ fontSize: 17, marginRight: 6 }}>{cur.ico}</span>{cur.label}</p><p className="body" style={{ margin: '6px 0 0', color: T.ink }}>{cur.desc}</p></div>
               : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Maslahatni bosing ←</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -742,7 +763,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: skill yozish jarayonini <span className="italic" style={{ color: T.accent }}>to'g'ri tartibda</span> yig'ing.</h2></div>
         <Mentor>Skillni qanday yozasiz? Eslang: description → body (qadam+misol) → test → kontekst-injiniring (tuzat) → qayta test. To'g'ri qadamni o'ng tomondan tanlang.</Mentor>
-        <div className="split">
+        <Zoomable><div className="split">
           <Col>
             <p className="flow-label">skill yozish oqimi (siz yig'yapsiz)</p>
             {placed.length === 0
@@ -769,7 +790,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {hint && !done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>{hint}</p></div>}
           </Col>
-        </div>
+        </div></Zoomable>
       </div>
     </Stage>
   );
@@ -895,7 +916,14 @@ export default function WriteSkillLesson({ lang: langProp, onFinished }) {
         .option-picked-wrong { background: ${T.accentSoft} !important; color: ${T.accent} !important; box-shadow: 0 8px 22px -6px rgba(255,79,40,0.38) !important; }
 
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .zoomable { position: relative; }
+        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
+        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
+        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
+        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.accent}; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }
