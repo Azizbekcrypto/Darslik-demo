@@ -322,7 +322,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   return (
     <Stage eyebrow="Kirish" screen={screen} audioState={audio} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
-        <h1 className="title h-title fade-up" style={{ maxWidth: 760 }}>Yugurganda faqat <span className="italic" style={{ color: T.accent }}>oyoq</span> ishlaydimi?</h1>
+        <h1 className="title h-title fade-up" style={{ maxWidth: 760 }}>Yugurganda tanangizda <span className="italic" style={{ color: T.accent }}>faqat oyoq</span> ishlaydimi?</h1>
         <Mentor>Yugurib ketayotganingizni tasavvur qiling. Faqat oyoq ishlayaptimi? Yo'q — yurak tezroq uradi, nafas tezlashadi, miya har bir qadamni boshqaradi. Hammasi bir vaqtda, <b style={{ color: T.ink }}>siz buyurmasdan ham</b>. Bu qanday bo'ladi? <b style={{ color: T.ink }}>"Yugur"</b> tugmasini bosib ko'ring.</Mentor>
         <Zoomable>
         <Split>
@@ -333,9 +333,19 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             </div>
             <div className="demo-swap" key={view} style={{ background: T.paper, borderRadius: 14, padding: '18px 16px', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
               <p className="flow-label" style={{ marginBottom: 12 }}>{view === 'run' ? '🏃 Yugurmoqda — a’zolar birga ishlayapti' : '🧍 Tinch holatda'}</p>
+              <div className="bpm-row">
+                <span className="bpm-heart" style={{ animationDuration: view === 'run' ? '0.42s' : '1s' }}>❤️</span>
+                <div className="bpm-info">
+                  <span className="bpm-num" style={{ color: view === 'run' ? T.accent : T.ink2 }}>{view === 'run' ? '140' : '72'}</span>
+                  <span className="bpm-unit">zarba / daqiqa</span>
+                </div>
+                <div className="eq">
+                  {[0, 1, 2, 3, 4].map(i => (<span key={i} className="eq-bar" style={{ animationDuration: view === 'run' ? '0.5s' : '1.4s', animationDelay: `${i * 0.08}s`, opacity: view === 'run' ? 1 : 0.45 }} />))}
+                </div>
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                 {ORGANS.map((o, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '10px 12px', borderRadius: 10, background: view === 'run' ? T.accentSoft : T.bg, transition: 'all 0.3s' }}>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '10px 12px', borderRadius: 10, background: view === 'run' ? T.accentSoft : T.bg, boxShadow: view === 'run' ? '0 6px 16px -5px rgba(255,79,40,0.4)' : 'none', transition: 'all 0.3s' }}>
                     <span style={{ fontSize: 22, animation: view === 'run' ? `dl-pulse 0.7s ease-in-out infinite ${i * 0.12}s` : 'none', display: 'inline-block' }}>{o.ic}</span>
                     <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, fontSize: 13, color: view === 'run' ? T.accent : T.ink2 }}>{o.n}</span>
                   </div>
@@ -367,7 +377,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
 
 // ===== SCREEN 1 — REJA =====
 const Screen1 = ({ screen, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's1', text: `Sizga bir sirni aytaman: dasturchilar kod yozishdan oldin boshqacha fikrlaydi. Ularning butun ishi ikkita g'oyaga tayanadi — sistema va algoritm. Bugun aynan shu ikkalasini ochamiz, 5 ta qadamda. Keyin esa — haqiqiy JavaScript.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's1', text: `Sizga bir sirni aytaman: dasturchilar kod yozishdan oldin boshqacha fikrlaydi. Ularning butun ishi ikkita asosiy tushunchaga — ya'ni 2 ta muhim fikrga — tayanadi: sistema va algoritm. Bugun aynan shu ikkalasini, birma-bir va oddiy misollar bilan o'rganamiz, 5 ta qadamda. Keyin esa — haqiqiy JavaScript.`, trigger: 'on_mount', waits_for: null }]);
   const STEPS = [
     { text: 'Sistema nima? — komponentlar', tag: '' },
     { text: 'Bog\'lanishlar — qismlar qanday ulanadi', tag: '' },
@@ -379,14 +389,14 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   const [showSteps, setShowSteps] = useState(false);
   const PreviewBlock = (
     <Col>
-      <p className="flow-label">Bugungi 2 katta g'oya</p>
+      <p className="flow-label">Bugungi 2 ta asosiy tushuncha</p>
       <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}>
-          <span style={{ fontSize: 32 }}>🧩</span>
+          <span className="idea-ic idea-ic-sys">🧩</span>
           <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>SISTEMA</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Birga ishlaydigan qismlar + bog'lanishlar</p></div>
         </div>
         <div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}>
-          <span style={{ fontSize: 32 }}>📋</span>
+          <span className="idea-ic idea-ic-algo">📋</span>
           <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>ALGORITM</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Retsept: ketma-ketlik, shart, sikl</p></div>
         </div>
       </div>
@@ -407,7 +417,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head">
           <h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Bugun dasturchidek fikrlashni o'rganamiz!</span></h2>
         </div>
-        <Mentor>Sizga bir sirni aytaman: dasturchilar kod yozishdan oldin boshqacha <b style={{ color: T.ink }}>fikrlaydi</b>. Ularning butun ishi ikkita g'oyaga tayanadi — <b style={{ color: T.ink }}>sistema</b> va <b style={{ color: T.ink }}>algoritm</b>. Bugun aynan shu ikkalasini ochamiz, 5 ta qadamda. Keyin esa — haqiqiy <b style={{ color: T.ink }}>JavaScript</b>.</Mentor>
+        <Mentor>Sizga bir sirni aytaman: dasturchilar kod yozishdan oldin boshqacha <b style={{ color: T.ink }}>fikrlaydi</b>. Ularning butun ishi ikkita asosiy <b style={{ color: T.ink }}>tushunchaga</b> — ya'ni 2 ta muhim fikrga — tayanadi: <b style={{ color: T.ink }}>sistema</b> va <b style={{ color: T.ink }}>algoritm</b>. Bugun aynan shu ikkalasini <b style={{ color: T.ink }}>birma-bir</b>, oddiy misollar bilan o'rganamiz. Keyin esa — haqiqiy <b style={{ color: T.ink }}>JavaScript</b>.</Mentor>
         {!isNarrow ? (
           <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
@@ -562,10 +572,10 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 <span className="sk-tagbig"><span style={{ fontSize: 24 }}>{EX[active].ic}</span><span className="sk-wordbadge">{EX[active].title}</span></span>
                 <p className="flow-label" style={{ margin: '13px 0 7px' }}>Komponentlar (qismlar)</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {EX[active].parts.map((p, i) => (<span key={i} style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, fontSize: 12.5, color: T.ink, background: T.bg, padding: '6px 12px', borderRadius: 99 }}>{p}</span>))}
+                  {EX[active].parts.map((p, i) => (<span key={i} className="el-in" style={{ animationDelay: `${i * 0.07}s`, fontFamily: "'Manrope',sans-serif", fontWeight: 600, fontSize: 12.5, color: T.ink, background: T.bg, padding: '6px 12px', borderRadius: 99 }}>{p}</span>))}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 12, background: T.successSoft, borderRadius: 10, padding: '10px 13px' }}>
-                  <span style={{ fontSize: 17 }}>🔗</span>
+                <div className="el-in" style={{ animationDelay: '0.28s', display: 'flex', alignItems: 'center', gap: 9, marginTop: 12, background: T.successSoft, borderRadius: 10, padding: '10px 13px' }}>
+                  <span className="lnk-pulse" style={{ fontSize: 17 }}>🔗</span>
                   <span className="body" style={{ margin: 0, color: T.ink }}><b>Bog'lanish:</b> {EX[active].conn}</span>
                 </div>
                 <p className="body" style={{ color: T.ink2, margin: '10px 0 0', fontStyle: 'italic' }}>{EX[active].note}</p>
@@ -681,12 +691,16 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             <div className="demo-swap" key={order} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {list.map((s, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 15px', borderRadius: 12, background: T.paper, boxShadow: `0 6px 16px -6px rgba(${T.shadowBase},0.14)` }}>
+                <div key={i} className="el-in" style={{ animationDelay: `${i * 0.12}s`, display: 'flex', alignItems: 'center', gap: 12, padding: '12px 15px', borderRadius: 12, background: T.paper, boxShadow: `0 6px 16px -6px rgba(${T.shadowBase},0.14)` }}>
                   <span style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, color: T.accent }}>{i + 1}</span>
                   <span style={{ fontSize: 22 }}>{s.ic}</span>
                   <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, color: T.ink }}>{s.h}</span>
                 </div>
               ))}
+              <div className="seq-result" style={{ background: order === 'correct' ? T.successSoft : T.accentSoft, color: order === 'correct' ? T.success : T.accent }}>
+                <span style={{ fontSize: 26 }}>{order === 'correct' ? '🙂' : '🙈'}</span>
+                <span>{order === 'correct' ? 'Tartibli — hammasi joyida' : "Pijamada ko'chada qoldingiz!"}</span>
+              </div>
             </div>
           </Col>
           <Col>
@@ -722,10 +736,13 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="split">
           <Col>
             <p className="flow-label">Tashqarida hozir:</p>
-            <button onClick={toggle} className="fade-up delay-1" style={{ cursor: 'pointer', border: 'none', borderRadius: 16, padding: '24px', background: rain ? '#dce6ef' : '#fff4d6', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.16)`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, transition: 'all 0.3s' }}>
-              <span style={{ fontSize: 48 }}>{rain ? '🌧️' : '☀️'}</span>
-              <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, color: T.ink }}>{rain ? 'Yomg\'ir yog\'yapti' : 'Quyoshli'}</span>
-              <span className="mono small" style={{ color: T.ink3 }}>↻ almashtirish uchun bosing</span>
+            <button onClick={toggle} className="weather-btn fade-up delay-1" style={{ cursor: 'pointer', border: 'none', borderRadius: 16, padding: '24px', background: rain ? '#dce6ef' : '#fff4d6', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.16)`, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, transition: 'all 0.3s', width: '100%' }}>
+              {rain
+                ? <span className="wx-fx">{[8, 26, 44, 62, 80, 92].map((l, i) => (<i key={i} style={{ left: `${l}%`, animationDelay: `${i * 0.13}s` }} />))}</span>
+                : <span className="sun-fx" />}
+              <span style={{ fontSize: 48, position: 'relative', zIndex: 1 }}>{rain ? '🌧️' : '☀️'}</span>
+              <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, color: T.ink, position: 'relative', zIndex: 1 }}>{rain ? 'Yomg\'ir yog\'yapti' : 'Quyoshli'}</span>
+              <span className="mono small" style={{ color: T.ink3, position: 'relative', zIndex: 1 }}>↻ almashtirish uchun bosing</span>
             </button>
           </Col>
           <Col>
@@ -734,6 +751,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <div className={`cond-line ${rain ? 'on' : ''}`}><span className="cond-kw">AGAR</span> yomg'ir 🌧️ <span className="cond-kw">BO'LSA</span> → <b>soyabon ol ☂️</b></div>
               <div className={`cond-line ${!rain ? 'on' : ''}`}><span className="cond-kw">AKS HOLDA</span> ☀️ → <b>soyabonsiz chiq</b></div>
             </div>
+            <div className="cond-result" key={`r${weather}`} style={{ color: rain ? T.blue : T.accent }}><span style={{ fontSize: 20 }}>{rain ? '☂️' : '🚶'}</span>{rain ? 'Soyabon olindi' : 'Soyabonsiz chiqildi'}</div>
             <div className="frame-success fade-step" key={weather}><p className="body" style={{ margin: 0, color: T.ink }}>Hozir {rain ? '🌧️ yomg\'irli' : '☀️ quyoshli'} — algoritm <b>{rain ? 'soyabon olishni' : 'soyabonsiz chiqishni'}</b> tanladi.</p></div>
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bitta algoritm — vaziyatga qarab ikki xil ishladi. Mana <b>shart</b>ning kuchi!</p></div>}
           </Col>
@@ -785,13 +803,17 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             <div className="loop-card fade-up delay-1">
               <p className="loop-kw"><span className="cond-kw">TAKRORLA 10 marta:</span></p>
-              <p className="loop-act">🏋️ o'tirib-tur</p>
+              <div className="squat-stage" key={count}>
+                <span className="squat-fig">🏋️</span>
+                <span className="loop-spin">🔁</span>
+                <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, color: T.ink }}>o'tirib-tur</span>
+              </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginTop: 6 }}>
                 <span style={{ fontFamily: "'Fraunces',serif", fontSize: 'clamp(40px,8vw,60px)', color: count > 0 ? T.accent : T.ink3, lineHeight: 1 }}>{count}</span>
-                <span style={{ fontFamily: "'JetBrains Mono',monospace", color: T.ink3, fontSize: 18 }}>/ {TOTAL}</span>
+                <span style={{ fontFamily: "'JetBrains Mono',monospace", color: T.ink3, fontSize: 18 }}>/ {TOTAL} marta</span>
               </div>
               <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 8 }}>
-                {Array.from({ length: TOTAL }).map((_, i) => (<span key={i} style={{ width: 16, height: 16, borderRadius: '50%', background: i < count ? T.accent : T.ink3 + '33', transition: 'all 0.2s' }} />))}
+                {Array.from({ length: TOTAL }).map((_, i) => (<span key={i} style={{ width: 16, height: 16, borderRadius: '50%', background: i < count ? T.accent : T.ink3 + '33', transform: i === count - 1 && running ? 'scale(1.45)' : 'scale(1)', boxShadow: i === count - 1 && running ? '0 0 10px rgba(255,79,40,0.6)' : 'none', transition: 'all 0.2s' }} />))}
               </div>
             </div>
             <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Bajarilmoqda…' : (done ? '↻ Yana' : '▶ Siklni boshlash')}</button>
@@ -812,7 +834,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 11 — ALGORITMNING 3 G'ISHTI =====
 const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's11', text: `Mana sir, juda oddiy: butun dunyodagi har bir dastur — o'yinmi, ilovami, sayt-mi — atigi uchta asosiy qismdan quriladi: ketma-ketlik, shart va sikl. Siz ularning uchalasini ham ko'rib bo'ldingiz! Har birini bosib, yodga oling.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's11', text: `Mana eng qiziq haqiqat — va u juda oddiy: butun dunyodagi har bir dastur — o'yinmi, ilovami, sayt-mi — atigi uchta asosiy qismdan quriladi: ketma-ketlik, shart va sikl. Siz ularning uchalasini ham ko'rib bo'ldingiz! Har birini bosib, yodga oling.`, trigger: 'on_mount', waits_for: null }]);
   const BRICKS = {
     seq: { ic: '📋', name: 'Ketma-ketlik', ex: 'Qadamlar aniq tartibda: uyg\'on → yuvin → kiyin.' },
     cond: { ic: '🔀', name: 'Shart', ex: 'Vaziyatga qarab qaror: agar yomg\'ir bo\'lsa — soyabon ol.' },
@@ -828,7 +850,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Algoritm asoslari" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/3 eslang`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Algoritm <span className="italic" style={{ color: T.accent }}>nimalardan</span> quriladi?</h2></div>
-        <Mentor>Mana sir, juda oddiy: butun dunyodagi <b style={{ color: T.ink }}>har bir dastur</b> — o'yinmi, ilovami — atigi uchta asosiy qismdan quriladi: <b style={{ color: T.ink }}>ketma-ketlik</b>, <b style={{ color: T.ink }}>shart</b> va <b style={{ color: T.ink }}>sikl</b>. Siz uchalasini ko'rib bo'ldingiz! Har birini bosing.</Mentor>
+        <Mentor>Mana eng qiziq haqiqat — va u juda oddiy: butun dunyodagi <b style={{ color: T.ink }}>har bir dastur</b> — o'yinmi, ilovami — atigi uchta asosiy qismdan quriladi: <b style={{ color: T.ink }}>ketma-ketlik</b>, <b style={{ color: T.ink }}>shart</b> va <b style={{ color: T.ink }}>sikl</b>. Siz uchalasini ham ko'rib bo'ldingiz! Har birini bosing.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -1144,6 +1166,43 @@ export default function JsIntroLesson({ lang: langProp, onFinished }) {
         @keyframes dl-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.18); } }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
         .el-in { animation: el-pop 0.3s ease-out; }
+
+        /* === OPTIMALLASHTIRISH (2026) — yangi animatsiyalar === */
+        /* p1: yurak urishi / tezlik indikatori */
+        .bpm-row { display: flex; align-items: center; gap: 12px; background: ${T.bg}; border-radius: 12px; padding: 10px 14px; margin-bottom: 12px; }
+        .bpm-heart { font-size: 24px; display: inline-block; animation: heart-beat 1s ease-in-out infinite; }
+        @keyframes heart-beat { 0%,100% { transform: scale(1); } 14% { transform: scale(1.3); } 28% { transform: scale(1); } 42% { transform: scale(1.18); } 56% { transform: scale(1); } }
+        .bpm-info { display: flex; flex-direction: column; line-height: 1.05; }
+        .bpm-num { font-family: 'Fraunces', serif; font-size: 26px; transition: color 0.3s; }
+        .bpm-unit { font-family: 'JetBrains Mono'; font-size: 9px; color: ${T.ink3}; text-transform: uppercase; letter-spacing: 0.07em; }
+        .eq { display: flex; align-items: flex-end; gap: 3px; height: 26px; margin-left: auto; }
+        .eq-bar { width: 5px; height: 100%; background: ${T.accent}; border-radius: 2px; transform-origin: bottom; animation: eq-bounce 1s ease-in-out infinite; }
+        @keyframes eq-bounce { 0%,100% { transform: scaleY(0.28); } 50% { transform: scaleY(1); } }
+        /* p2: g'oya emoji badge */
+        .idea-ic { width: 54px; height: 54px; border-radius: 15px; display: inline-flex; align-items: center; justify-content: center; font-size: 30px; flex-shrink: 0; animation: idea-float 3.2s ease-in-out infinite; }
+        .idea-ic-sys { background: ${T.accentSoft}; }
+        .idea-ic-algo { background: ${T.blueSoft}; animation-delay: 0.8s; }
+        @keyframes idea-float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-5px) rotate(-4deg); } }
+        /* p6: bog'lanish pulsi */
+        .lnk-pulse { display: inline-block; animation: lnk-pulse 1.3s ease-in-out infinite; }
+        @keyframes lnk-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.22); } }
+        /* p7: ketma-ketlik natija */
+        .seq-result { display: flex; align-items: center; gap: 10px; margin-top: 4px; padding: 10px 13px; border-radius: 12px; font-family: 'Manrope'; font-weight: 600; font-size: 13.5px; animation: fade-step 0.35s ease-out; }
+        /* p8: ob-havo effektlari */
+        .weather-btn { position: relative; overflow: hidden; }
+        .wx-fx { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+        .wx-fx i { position: absolute; top: -14%; width: 2px; height: 15px; background: rgba(1,154,203,0.6); border-radius: 2px; animation: rain-fall 0.85s linear infinite; }
+        @keyframes rain-fall { to { transform: translateY(170px); opacity: 0.2; } }
+        .sun-fx { position: absolute; top: 14px; left: 50%; width: 96px; height: 96px; transform: translateX(-50%); background: radial-gradient(circle, rgba(255,184,0,0.5), transparent 68%); border-radius: 50%; animation: sun-glow 2.6s ease-in-out infinite; pointer-events: none; z-index: 0; }
+        @keyframes sun-glow { 0%,100% { transform: translateX(-50%) scale(0.82); opacity: 0.55; } 50% { transform: translateX(-50%) scale(1.16); opacity: 1; } }
+        .cond-result { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; margin-top: 4px; padding: 9px 14px; border-radius: 99px; font-family: 'Manrope'; font-weight: 700; font-size: 14px; background: ${T.paper}; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.22); animation: veh-pop 0.4s cubic-bezier(.34,1.4,.5,1); }
+        @keyframes veh-pop { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+        /* p12: sikl — squat figurasi */
+        .squat-stage { display: flex; align-items: center; gap: 16px; margin: 4px 0 2px; }
+        .squat-fig { font-size: 40px; display: inline-block; animation: squat 0.42s ease-out; }
+        @keyframes squat { 0% { transform: translateY(0) scaleY(1); } 42% { transform: translateY(11px) scaleY(0.8); } 100% { transform: translateY(0) scaleY(1); } }
+        .loop-spin { font-size: 22px; display: inline-block; animation: loop-rot 0.55s ease-in-out; }
+        @keyframes loop-rot { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         .feedback-block { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease-out 0.1s, margin-top 0.4s ease-out; margin-top: 0; }
         .feedback-block.visible { max-height: 800px; opacity: 1; margin-top: clamp(14px,2vw,20px); }

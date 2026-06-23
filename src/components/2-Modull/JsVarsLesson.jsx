@@ -162,10 +162,10 @@ const Nm = ({ children }) => <span style={{ color: CODE.num }}>{children}</span>
 const Op = ({ children }) => <span style={{ color: CODE.punct }}>{children}</span>;
 
 // O'zgaruvchi = nomlangan quti (asosiy vizual metafora)
-const VarBox = ({ name, value, valColor = T.accent, small }) => (
+const VarBox = ({ name, value, valColor = T.accent, small, pulse }) => (
   <div className="var-box" key={value}>
     <div className="var-name">📦 {name}</div>
-    <div className="var-val" style={{ color: valColor, fontSize: small ? 'clamp(15px,2.4vw,19px)' : 'clamp(18px,3vw,24px)' }}>{value}</div>
+    <div className={`var-val ${pulse ? 'drop-in' : ''}`} style={{ color: valColor, fontSize: small ? 'clamp(15px,2.4vw,19px)' : 'clamp(18px,3vw,24px)' }}>{value}</div>
   </div>
 );
 
@@ -400,7 +400,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   const PreviewBlock = (
     <Col>
       <p className="flow-label">Bugun shunday kod yozasiz</p>
-      <pre className="code-box fade-up" style={{ fontSize: 'clamp(13px,1.9vw,15px)' }}><Kw>let</Kw> <Vr>ism</Vr> <Op>=</Op> <St>"Aziza"</St>{'\n'}<Kw>let</Kw> <Vr>yosh</Vr> <Op>=</Op> <Nm>14</Nm>{'\n'}<Kw>const</Kw> <Vr>shahar</Vr> <Op>=</Op> <St>"Toshkent"</St></pre>
+      <pre className="code-box" style={{ fontSize: 'clamp(13px,1.9vw,15px)' }}><span className="fade-up" style={{ display: 'block', animationDelay: '0.1s' }}><Kw>let</Kw> <Vr>ism</Vr> <Op>=</Op> <St>"Aziza"</St></span><span className="fade-up" style={{ display: 'block', animationDelay: '0.3s' }}><Kw>let</Kw> <Vr>yosh</Vr> <Op>=</Op> <Nm>14</Nm></span><span className="fade-up" style={{ display: 'block', animationDelay: '0.5s' }}><Kw>const</Kw> <Vr>shahar</Vr> <Op>=</Op> <St>"Toshkent"</St></span></pre>
       <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ uchta o'zgaruvchi, uchta "quti"</p>
     </Col>
   );
@@ -416,7 +416,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Stage eyebrow="Reja" screen={screen} audioState={audio} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head">
-          <h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Birinchi haqiqiy kodingizni yozasiz!</span></h2>
+          <h2 className="title h-title fade-up">Bugun <span className="italic" style={{ color: T.accent }}>birinchi haqiqiy kodingizni</span> yozasiz!</h2>
         </div>
         <Mentor>Mana, eng qizig'i boshlanadi — bugun siz birinchi marta <b style={{ color: T.ink }}>haqiqiy JavaScript kodi</b> yozasiz! Hammasi <b style={{ color: T.ink }}>o'zgaruvchilardan</b> boshlanadi. 5 qadamda o'rganamiz va oxirida o'zingiz yozasiz.</Mentor>
         {!isNarrow ? (
@@ -454,21 +454,21 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="O'zgaruvchi" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/2 qismni ko'ring`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'zgaruvchi aslida <span className="italic" style={{ color: T.accent }}>nima</span>?</h2></div>
-        <Mentor>O'zgaruvchini shunday tasavvur qiling: ustiga nom yozilgan <b style={{ color: T.ink }}>quti</b>. Qutining <b style={{ color: T.ink }}>nomi</b> bor, ichida esa <b style={{ color: T.ink }}>qiymat</b> turadi. Nom orqali qutini istalgan payt topasiz. Quti qismlarini bosib ko'ring.</Mentor>
+        <Mentor>O'zgaruvchi — bu ustiga <b style={{ color: T.ink }}>yorliq yopishtirilgan quti</b>. Yorlig'i — uning <b style={{ color: T.ink }}>nomi</b> (masalan <span className="mono">ism</span>), ichidagi narsa — <b style={{ color: T.ink }}>qiymati</b> (masalan <span className="mono">"Aziza"</span>). Nomini aytib, ichidagini istalgan payt olasiz. Quti qismlarini bosib ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
-              <div style={{ background: T.paper, borderRadius: 16, boxShadow: `0 10px 26px -6px rgba(${T.shadowBase},0.16)`, overflow: 'hidden', minWidth: 180 }}>
-                <div onClick={() => tap('nom')} style={{ cursor: 'pointer', background: active === 'nom' ? T.accent : T.ink, color: '#fff', fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 14, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}>📦 ism {seen.has('nom') && <span style={{ marginLeft: 'auto' }}>✓</span>}</div>
-                <div onClick={() => tap('qiymat')} style={{ cursor: 'pointer', padding: '22px 16px', textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 'clamp(20px,4vw,28px)', color: active === 'qiymat' ? T.accent : T.ink, background: active === 'qiymat' ? T.accentSoft : '#fff', transition: 'all 0.2s' }}>"Aziza" {seen.has('qiymat') && <span style={{ fontSize: 14, color: T.success }}>✓</span>}</div>
+              <div style={{ background: T.paper, borderRadius: 16, boxShadow: `0 10px 26px -6px rgba(${T.shadowBase},0.16)`, overflow: 'hidden', minWidth: 200 }}>
+                <div onClick={() => tap('nom')} style={{ cursor: 'pointer', background: active === 'nom' ? T.accent : T.ink, color: '#fff', fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 14, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}><span style={{ fontFamily: "'Manrope',sans-serif", fontSize: 9.5, opacity: 0.65, letterSpacing: '0.12em' }}>NOMI</span>📦 ism {seen.has('nom') && <span style={{ marginLeft: 'auto' }}>✓</span>}</div>
+                <div onClick={() => tap('qiymat')} style={{ cursor: 'pointer', padding: '18px 16px', textAlign: 'center', fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 'clamp(20px,4vw,28px)', color: active === 'qiymat' ? T.accent : T.ink, background: active === 'qiymat' ? T.accentSoft : '#fff', transition: 'all 0.2s' }}><div style={{ fontFamily: "'Manrope',sans-serif", fontSize: 9.5, opacity: 0.6, letterSpacing: '0.12em', fontWeight: 600, marginBottom: 5 }}>QIYMATI · ICHIDAGI</div>"Aziza" {seen.has('qiymat') && <span style={{ fontSize: 14, color: T.success }}>✓</span>}</div>
               </div>
             </div>
             <pre className="code-box fade-up delay-2" style={{ textAlign: 'center' }}><Kw>let</Kw> <Vr>ism</Vr> <Op>=</Op> <St>"Aziza"</St></pre>
           </Col>
           <Col>
             {active ? (
-              <div className="sk-info fade-step" key={active}>
+              <div className="sk-info pop-in" key={active}>
                 <span className="sk-tagbig"><span className="sk-wordbadge">{PARTS[active].label}</span></span>
                 <p className="body" style={{ color: T.ink, margin: '11px 0 0' }}>{PARTS[active].role}</p>
               </div>
@@ -492,8 +492,8 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Qiymat berish" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Bir qiymat tanlang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Qutiga qiymatni <span className="italic" style={{ color: T.accent }}>qanday</span> solamiz?</h2></div>
-        <Mentor>Qutiga qiymat <b style={{ color: T.ink }}>= belgisi</b> orqali solinadi. Lekin diqqat: kodda <b style={{ color: T.ink }}>=</b> "teng" degani emas — u <b style={{ color: T.ink }}>"qutiga sol"</b> degani! Bir qiymat tanlab, qutiga tushishini ko'ring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Qutiga qiymatni <span className="italic" style={{ color: T.accent }}>qanday</span> joylaymiz?</h2></div>
+        <Mentor>Qutiga qiymat <b style={{ color: T.ink }}>= belgisi</b> orqali joylanadi. Lekin diqqat: kodda <b style={{ color: T.ink }}>=</b> "teng" degani emas — u <b style={{ color: T.ink }}>"qutiga joyla"</b> degani! Bir qiymat tanlab, qutiga tushishini ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -501,13 +501,13 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {VALUES.map(v => (<button key={v} className={`chip ${val === v ? 'chip-on' : ''}`} onClick={() => setVal(v)}>"{v}"</button>))}
             </div>
-            <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(14px,2.4vw,18px)' }}><Kw>let</Kw> <Vr>ism</Vr> <Op>=</Op> <St>"{val || '...'}"</St></pre>
-            <div className="frame-soft fade-up delay-2"><p className="body" style={{ margin: 0, color: T.ink }}>O'qiymiz: «<span className="mono">"{val || '...'}"</span> ni <span className="mono">ism</span> qutisiga sol».</p></div>
+            <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(14px,2.4vw,18px)' }}><Kw>let</Kw> <Vr>ism</Vr> <Op>=</Op> <span className="pop-num" key={val} style={{ color: CODE.str }}>"{val || '...'}"</span></pre>
+            <div className="frame-soft fade-up delay-2"><p className="body" style={{ margin: 0, color: T.ink }}>O'qiymiz: «<span className="mono">"{val || '...'}"</span> ni <span className="mono">ism</span> qutisiga joyla».</p></div>
           </Col>
           <Col>
             <p className="flow-label">Natija — quti</p>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
-              {val ? <VarBox name="ism" value={`"${val}"`} valColor={CODE.str} /> : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Qiymat tanlang — quti to'ladi</p></div>}
+              {val ? <VarBox name="ism" value={`"${val}"`} valColor={CODE.str} pulse /> : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Qiymat tanlang — quti to'ladi</p></div>}
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Tayyor! <span className="mono">ism</span> qutisida endi <span className="mono">"{val}"</span> turibdi.</p></div>}
           </Col>
@@ -542,13 +542,13 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="let" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Ballni o\'zgartiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Quti ichidagini <span className="italic" style={{ color: T.accent }}>o'zgartirsa</span> bo'ladimi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up"><span className="italic mono" style={{ color: T.accent }}>let</span> — qiymatni keyin o'zgartirsa bo'ladimi?</h2></div>
         <Mentor>O'yindagi <b style={{ color: T.ink }}>ballingiz</b> doim o'zgarib turadi-ku. Bunday qiymatlar uchun <b style={{ color: T.ink }}>let</b> so'zini ishlatamiz — uning ichini istagancha o'zgartirsa bo'ladi. Tugmani bosib, ballni oshiring.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">Quti — ball</p>
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}><VarBox name="ball" value={ball} valColor={CODE.num} /></div>
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}><VarBox name="ball" value={ball} valColor={CODE.num} pulse /></div>
             <button className="btn" onClick={bump} style={{ alignSelf: 'center' }}>⬆️ Ballni oshirish</button>
           </Col>
           <Col>
@@ -597,16 +597,16 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             <p className="flow-label">Quti — o'zgarmas (const)</p>
             <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
-              <div style={{ position: 'relative' }}>
+              <div className={tried ? 'shake-x' : ''} style={{ position: 'relative' }}>
                 <VarBox name="tugilgan_yil" value={2012} valColor={CODE.num} />
-                {tried && <span style={{ position: 'absolute', top: -10, right: -10, fontSize: 22 }}>🔒</span>}
+                {tried && <span className="pop-num" style={{ position: 'absolute', top: -10, right: -10, fontSize: 22 }}>🔒</span>}
               </div>
             </div>
             <button className="btn" onClick={() => setTried(true)} style={{ alignSelf: 'center' }}>✏️ Qiymatni o'zgartirishga urinish</button>
           </Col>
           <Col>
             <p className="flow-label">Kod</p>
-            <pre className="code-box fade-up" style={{ fontSize: 'clamp(13px,2vw,15px)' }}><Kw>const</Kw> <Vr>tugilgan_yil</Vr> <Op>=</Op> <Nm>2012</Nm>{'\n'}{tried && <><Vr>tugilgan_yil</Vr> <Op>=</Op> <Nm>2015</Nm>{'\n'}<span style={{ color: T.accent }}>{'❌ Xato: const o‘zgarmaydi!'}</span></>}</pre>
+            <pre className="code-box fade-up" style={{ fontSize: 'clamp(13px,2vw,15px)' }}><Kw>const</Kw> <Vr>tugilgan_yil</Vr> <Op>=</Op> <Nm>2012</Nm>{'\n'}{tried && <><Vr>tugilgan_yil</Vr> <Op>=</Op> <Nm>2015</Nm>{'\n'}<span className="el-in" style={{ color: T.accent, display: 'inline-block' }}>{'❌ Xato: const o‘zgarmaydi!'}</span></>}</pre>
             {done
               ? <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi — <b>const</b> qutini "qulflaydi" 🔒. Qiymat bir marta solinadi va o'zgarmaydi.</p></div>
               : <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}>const = constant = o'zgarmas. Tug'ilgan yil, hafta kunlari soni (7), Pi soni — bularga const.</p></div>}
@@ -642,10 +642,10 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             const correct = ans[i] === c.a;
             const wrong = ans[i] && ans[i] !== c.a;
             return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, background: T.paper, borderRadius: 12, padding: '12px 15px', boxShadow: `0 6px 16px -6px rgba(${T.shadowBase},0.14)`, flexWrap: 'wrap' }}>
+              <div key={i} className={correct ? 'ring-green' : ''} style={{ display: 'flex', alignItems: 'center', gap: 12, background: T.paper, borderRadius: 12, padding: '12px 15px', boxShadow: `0 6px 16px -6px rgba(${T.shadowBase},0.14)`, flexWrap: 'wrap' }}>
                 <span style={{ flex: 1, minWidth: 140, fontFamily: "'Manrope',sans-serif", fontWeight: 600, color: T.ink }}>{c.t}</span>
                 {correct ? (
-                  <span className="mono" style={{ color: T.success, fontWeight: 700, fontSize: 14 }}>✓ {c.a} — {c.why}</span>
+                  <span className="mono pop-in" style={{ color: T.success, fontWeight: 700, fontSize: 14 }}>✓ {c.a} — {c.why}</span>
                 ) : (
                   <span style={{ display: 'flex', gap: 7 }}>
                     {['let', 'const'].map(opt => (
@@ -676,7 +676,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="var" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Ikkalasini ko\'ring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">var — bu <span className="italic" style={{ color: T.accent }}>nima</span> (eski tanish)?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up"><span className="italic mono" style={{ color: T.accent }}>var</span> — eski usul (endi ishlatilmaydi)</h2></div>
         <Mentor>Eski kodlarda yana bitta so'zni uchratasiz — <b style={{ color: T.ink }}>var</b>. Bu o'zgaruvchining eng eski usuli (2015-yilgacha). Kamchiliklari borligi uchun bugun biz <b style={{ color: T.ink }}>let</b> va <b style={{ color: T.ink }}>const</b> ishlatamiz. var bilan shunchaki tanish bo'lib qo'ying.</Mentor>
         <Zoomable>
         <div className="split">
@@ -690,6 +690,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 ? <><Kw>var</Kw> <Vr>ism</Vr> <Op>=</Op> <St>"Aziza"</St>{'\n'}<Kw>var</Kw> <Vr>yosh</Vr> <Op>=</Op> <Nm>14</Nm></>
                 : <><Kw>let</Kw> <Vr>ism</Vr> <Op>=</Op> <St>"Aziza"</St>{'\n'}<Kw>const</Kw> <Vr>yosh</Vr> <Op>=</Op> <Nm>14</Nm></>}
             </pre>
+            <p className="el-in" key={era} style={{ margin: '8px 0 0', fontSize: 13, fontWeight: 600, color: era === 'old' ? T.accent : T.success }}>{era === 'old' ? '⚠️ Eski usul — kamchiliklari bor edi' : '✨ Zamonaviy va ishonchli usul'}</p>
           </Col>
           <Col>
             <div className="frame fade-up delay-2">
@@ -738,7 +739,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Ma'lumot turlari" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/3 turni ko'ring`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Qutiga <span className="italic" style={{ color: T.accent }}>nima</span> solish mumkin?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Quti ichida qanday <span className="italic" style={{ color: T.accent }}>qiymatlar</span> bo'ladi?</h2></div>
         <Mentor>Qutiga turli xil narsa sig'adi: <b style={{ color: T.ink }}>matn</b> (qo'shtirnoq ichida), <b style={{ color: T.ink }}>raqam</b> (qo'shtirnoqsiz) va <b style={{ color: T.ink }}>ha/yo'q</b> (true yoki false). Bular — <b style={{ color: T.ink }}>ma'lumot turlari</b>. Har birini bosing.</Mentor>
         <Zoomable>
         <div className="split">
@@ -756,7 +757,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             {active ? (
               <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 12 }} key={active}>
-                <div style={{ display: 'flex', justifyContent: 'center' }}><VarBox name={TYPES[active].box.n} value={TYPES[active].box.v} valColor={TYPES[active].color} small /></div>
+                <div style={{ display: 'flex', justifyContent: 'center' }}><VarBox name={TYPES[active].box.n} value={TYPES[active].box.v} valColor={TYPES[active].color} small pulse /></div>
                 <div className="sk-info"><span className="sk-tagbig"><span className="sk-wordbadge">{TYPES[active].name}</span></span><p className="body" style={{ color: T.ink, margin: '10px 0 0' }}>{TYPES[active].desc}</p></div>
               </div>
             ) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir turni bosing</p></div> : null)}
@@ -799,7 +800,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             <p className="flow-label">Natija</p>
             <div className="demo-swap" key={mode + 'r'} style={{ background: T.paper, borderRadius: 14, padding: '22px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
-              <div style={{ fontFamily: "'Fraunces',serif", fontSize: 'clamp(36px,8vw,52px)', color: isNum ? CODE.num : T.accent }}>{isNum ? '10' : '"55"'}</div>
+              <div className="pop-num" key={mode} style={{ fontFamily: "'Fraunces',serif", fontSize: 'clamp(36px,8vw,52px)', color: isNum ? CODE.num : T.accent }}>{isNum ? '10' : '"55"'}</div>
               <p className="body" style={{ margin: '6px 0 0', color: T.ink2 }}>{isNum ? 'Qo‘shildi — chunki raqam' : 'Yopishdi — chunki matn'}</p>
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Esda saqlang: <b>qo'shtirnoq bor → matn</b>, <b>qo'shtirnoq yo'q → raqam</b>. Bu — eng ko'p chalkashtiradigan joy!</p></div>}
@@ -1076,6 +1077,21 @@ export default function JsVarsLesson({ lang: langProp, onFinished }) {
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
         .el-in { animation: el-pop 0.3s ease-out; }
+
+        /* ── Jonli demo animatsiyalari ── */
+        @keyframes pop-in { 0% { opacity: 0; transform: scale(.82) translateY(10px); } 55% { opacity: 1; transform: scale(1.05) translateY(0); } 100% { transform: scale(1); } }
+        .pop-in { animation: pop-in .42s cubic-bezier(.34,1.4,.4,1); }
+        @keyframes pop-num { 0% { transform: scale(.5); opacity: 0; } 60% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); } }
+        .pop-num { animation: pop-num .5s cubic-bezier(.34,1.5,.4,1); display: inline-block; }
+        @keyframes drop-in { 0% { opacity: 0; transform: translateY(-16px) scale(.8); } 60% { opacity: 1; transform: translateY(3px) scale(1.05); } 100% { transform: translateY(0) scale(1); } }
+        .drop-in { animation: drop-in .5s cubic-bezier(.34,1.4,.4,1); }
+        @keyframes shake-x { 0%,100% { transform: translateX(0); } 18% { transform: translateX(-6px); } 38% { transform: translateX(6px); } 58% { transform: translateX(-4px); } 78% { transform: translateX(4px); } }
+        .shake-x { animation: shake-x .45s ease; }
+        @keyframes ring-green { 0% { box-shadow: 0 0 0 0 rgba(31,122,77,.5); } 70% { box-shadow: 0 0 0 16px rgba(31,122,77,0); } 100% { box-shadow: 0 0 0 0 rgba(31,122,77,0); } }
+        @keyframes ring-red { 0% { box-shadow: 0 0 0 0 rgba(255,79,40,.5); } 70% { box-shadow: 0 0 0 16px rgba(255,79,40,0); } 100% { box-shadow: 0 0 0 0 rgba(255,79,40,0); } }
+        .ring-green { animation: ring-green 1.3s ease-out; } .ring-red { animation: ring-red 1.3s ease-out; }
+        @keyframes flow-y { 0% { transform: translateY(-3px); opacity: .45; } 50% { transform: translateY(3px); opacity: 1; } 100% { transform: translateY(-3px); opacity: .45; } }
+        .flow-y { animation: flow-y 1.1s ease-in-out infinite; display: inline-block; }
 
         .feedback-block { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease-out 0.1s, margin-top 0.4s ease-out; margin-top: 0; }
         .feedback-block.visible { max-height: 800px; opacity: 1; margin-top: clamp(14px,2vw,20px); }

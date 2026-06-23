@@ -294,8 +294,8 @@ const Mentor = ({ children }) => {
 };
 
 // Natija (true/false) belgisi
-const BoolPill = ({ value }) => (
-  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 14, color: value ? T.success : T.accent, background: value ? T.successSoft : T.accentSoft, padding: '5px 12px', borderRadius: 99 }}>{value ? '✓ true' : '✗ false'}</span>
+const BoolPill = ({ value, pulse }) => (
+  <span className={pulse ? `pop-in ${value ? 'ring-green' : 'ring-red'}` : undefined} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 14, color: value ? T.success : T.accent, background: value ? T.successSoft : T.accentSoft, padding: '5px 12px', borderRadius: 99 }}>{value ? '✓ true' : '✗ false'}</span>
 );
 
 // Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
@@ -334,8 +334,8 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   return (
     <Stage eyebrow="Kirish" screen={screen} audioState={audio} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
-        <h1 className="title h-title fade-up" style={{ maxWidth: 760 }}>Turniket <span className="italic" style={{ color: T.accent }}>kimga</span> ochiladi?</h1>
-        <Mentor>Attraksionda yozuv: <b style={{ color: T.ink }}>"12 yoshdan oshganlar chiqadi"</b>. Turniket yoshingizga qarab ochiladi yoki yopiq qoladi. Dastur bu qarorni qanday qabul qiladi? Yoshni o'zgartirib, sinab ko'ring.</Mentor>
+        <h1 className="title h-title fade-up" style={{ maxWidth: 760 }}>Turniket <span className="italic" style={{ color: T.accent }}>qachon</span> ochiladi?</h1>
+        <Mentor><b style={{ color: T.ink }}>Turniket</b> — bu kirish darvozasi. Attraksionda yozuv: <b style={{ color: T.ink }}>"12 yoshdan oshganlar chiqadi"</b>. Demak darvoza <b style={{ color: T.ink }}>yoshni tekshiradi</b>: yetarli bo'lsa ochiladi, bo'lmasa yopiq qoladi. Yoshni o'zgartirib, sinab ko'ring.</Mentor>
         <Zoomable>
         <Split>
           <Col>
@@ -343,9 +343,9 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
               {[8, 12, 15].map(a => (<button key={a} className={`chip ${age === a ? 'chip-on' : ''}`} onClick={() => setAge(a)}>{a} yosh</button>))}
             </div>
-            <div className="demo-swap" key={age} style={{ background: allowed ? T.successSoft : T.accentSoft, borderRadius: 16, padding: '22px 16px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.16)` }}>
-              <div style={{ fontSize: 44 }}>{allowed ? '✅' : '⛔'}</div>
-              <p style={{ fontFamily: 'Georgia, serif', fontWeight: 700, color: allowed ? T.success : T.accent, margin: '8px 0 2px', fontSize: 'clamp(16px,2.4vw,20px)' }}>{allowed ? 'Turniket ochildi!' : 'Turniket yopiq'}</p>
+            <div style={{ background: allowed ? T.successSoft : T.accentSoft, borderRadius: 16, padding: '22px 16px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.16)`, transition: 'background 0.35s ease' }}>
+              <div className="gate-wrap"><span className="gate-post l" /><span className="gate-post r" /><span className={`gate-bar ${allowed ? 'open' : 'shut'}`} /></div>
+              <p className="demo-swap" key={age} style={{ fontFamily: 'Georgia, serif', fontWeight: 700, color: allowed ? T.success : T.accent, margin: '16px 0 2px', fontSize: 'clamp(16px,2.4vw,20px)' }}>{allowed ? '✅ Turniket ochildi!' : '⛔ Turniket yopiq'}</p>
               <p className="mono small" style={{ color: T.ink2, margin: 0 }}>yosh = {age} · {age} {'>='} 12 → {String(allowed)}</p>
             </div>
           </Col>
@@ -402,9 +402,9 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Stage eyebrow="Reja" screen={screen} audioState={audio} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head">
-          <h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Dasturingiz qaror qabul qiladi!</span></h2>
+          <h2 className="title h-title fade-up">Kod endi <span className="italic" style={{ color: T.accent }}>o'zi tanlaydi</span></h2>
         </div>
-        <Mentor>Algoritm darsida <b style={{ color: T.ink }}>"agar... bo'lsa..."</b> degandik, esingizdami? Bugun aynan shuni haqiqiy kodga aylantiramiz — <span className="mono">if</span> va <span className="mono">else</span>. 5 qadamda o'rganamiz.</Mentor>
+        <Mentor>Hayotda doim shart bilan ish qilamiz: <b style={{ color: T.ink }}>yomg'ir yog'sa</b> — soyabon olasiz, <b style={{ color: T.ink }}>aks holda</b> — yo'q. Kod ham xuddi shunday <b style={{ color: T.ink }}>"agar... bo'lsa..."</b> deb o'ylaydi — buni <span className="mono">if</span> va <span className="mono">else</span> bilan yozamiz. 5 qadamda o'rganamiz.</Mentor>
         {!isNarrow ? (
           <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
@@ -435,7 +435,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="if" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Yoshni o\'zgartiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Agar</span> ... bo'lsa — buni bajaring</h2></div>
+        <div className="head"><h2 className="title h-title fade-up"><span className="italic mono" style={{ color: T.accent }}>if</span> — agar shart rost bo'lsa, bajar</h2></div>
         <Mentor><span className="mono">if</span> degani <b style={{ color: T.ink }}>"agar"</b>. Qavs ichiga <b style={{ color: T.ink }}>shart</b>, figurali qavs <span className="mono">{'{ }'}</span> ichiga <b style={{ color: T.ink }}>kod</b> yoziladi. Shart <b style={{ color: T.ink }}>rost (true)</b> bo'lsa — kod ishlaydi. Yoshni o'zgartiring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -496,14 +496,14 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {OPS.map(o => (<button key={o.op} className={`chip ${active === o.op ? 'chip-on' : ''}`} onClick={() => tap(o.op)}><span className="mono">{o.op}</span>{seen.has(o.op) && ' ✓'}</button>))}
             </div>
-            <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(15px,2.6vw,20px)', textAlign: 'center' }}><Nm>{A}</Nm> <Op>{active || '?'}</Op> <Nm>{B}</Nm></pre>
+            <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(15px,2.6vw,20px)', textAlign: 'center' }}><Nm>{A}</Nm> <span className="pop-num" key={active} style={{ color: CODE.punct, fontWeight: 700 }}>{active || '?'}</span> <Nm>{B}</Nm></pre>
           </Col>
           <Col>
             {cur ? (
               <div className="demo-swap" key={active} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ background: T.paper, borderRadius: 14, padding: '18px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
+                <div className="pop-in" style={{ background: T.paper, borderRadius: 14, padding: '18px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
                   <p className="mono" style={{ margin: '0 0 10px', color: T.ink2, fontSize: 15 }}>{A} {cur.op} {B}</p>
-                  <BoolPill value={cur.res} />
+                  <BoolPill value={cur.res} pulse />
                 </div>
                 <div className="sk-info"><span className="sk-tagbig"><span className="sk-wordbadge mono">{cur.op}</span><span style={{ fontWeight: 600, color: T.ink }}>{cur.name}</span></span><p className="body" style={{ color: T.ink, margin: '9px 0 0' }}>{`14 ${cur.name} 12? Javob: ${cur.res ? 'ha (true)' : "yo'q (false)"}.`}</p></div>
               </div>
@@ -540,8 +540,8 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="else" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Ikkala yo\'lni ko\'ring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Shart bajarilmasa — <span className="italic" style={{ color: T.accent }}>aks holda</span>?</h2></div>
-        <Mentor>Shart bajarilmasa-chi? Buning uchun <span className="mono">else</span> bor — <b style={{ color: T.ink }}>"aks holda"</b>. if rost bo'lsa birinchi blok, <b style={{ color: T.ink }}>aks holda</b> else bloki ishlaydi. Doim bittasi tanlanadi. Yoshni o'zgartiring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up"><span className="italic mono" style={{ color: T.accent }}>else</span> — aks holda, BOSHQA yo'l</h2></div>
+        <Mentor><span className="mono">else</span> — bu <b style={{ color: T.ink }}>"aks holda"</b>, ya'ni <b style={{ color: T.ink }}>ikkinchi yo'l</b> (tugadi degani emas!). Shart <b style={{ color: T.ink }}>rost</b> bo'lsa — if bloki, <b style={{ color: T.ink }}>yolg'on</b> bo'lsa — else bloki ishlaydi. Doim ikkitadan bittasi. Yoshni o'zgartiring.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -550,18 +550,18 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(12.5px,1.9vw,14.5px)' }}>
               <Kw>if</Kw> (<Vr>yosh</Vr> <Op>{'>='}</Op> <Nm>12</Nm>) {'{'}{'\n'}
-              <span style={{ background: allowed ? 'rgba(31,122,77,0.25)' : 'transparent', borderRadius: 4, opacity: allowed ? 1 : 0.4 }}>{'  '}<Vr>console</Vr>.<Vr>log</Vr>(<St>"Kiring!"</St>)</span>{'\n'}
+              <span style={{ background: allowed ? 'rgba(31,122,77,0.25)' : 'transparent', borderRadius: 4, opacity: allowed ? 1 : 0.4, transition: 'background 0.35s, opacity 0.35s' }}>{'  '}<Vr>console</Vr>.<Vr>log</Vr>(<St>"Kiring!"</St>)</span>{'\n'}
               {'}'} <Kw>else</Kw> {'{'}{'\n'}
-              <span style={{ background: !allowed ? 'rgba(255,79,40,0.22)' : 'transparent', borderRadius: 4, opacity: !allowed ? 1 : 0.4 }}>{'  '}<Vr>console</Vr>.<Vr>log</Vr>(<St>"Ruxsat yo'q"</St>)</span>{'\n'}
+              <span style={{ background: !allowed ? 'rgba(255,79,40,0.22)' : 'transparent', borderRadius: 4, opacity: !allowed ? 1 : 0.4, transition: 'background 0.35s, opacity 0.35s' }}>{'  '}<Vr>console</Vr>.<Vr>log</Vr>(<St>"Ruxsat yo'q"</St>)</span>{'\n'}
               {'}'}
             </pre>
           </Col>
           <Col>
             <p className="flow-label">Natija</p>
-            <div className="demo-swap" key={age} style={{ background: allowed ? T.successSoft : T.accentSoft, borderRadius: 14, padding: '20px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
-              <div style={{ fontSize: 36 }}>{allowed ? '✅' : '⛔'}</div>
+            <div className="demo-swap" key={age} style={{ background: allowed ? T.successSoft : T.accentSoft, borderRadius: 14, padding: '20px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)`, transition: 'background 0.35s' }}>
+              <div className="pop-num" style={{ fontSize: 36 }}>{allowed ? '✅' : '⛔'}</div>
               <p className="mono" style={{ margin: '8px 0 0', fontWeight: 700, color: allowed ? T.success : T.accent }}>{allowed ? '"Kiring!"' : '"Ruxsat yo\'q"'}</p>
-              <p className="small" style={{ margin: '6px 0 0', color: T.ink2 }}>{allowed ? 'if bloki ishladi' : 'else bloki ishladi'}</p>
+              <p className="small" style={{ margin: '6px 0 0', color: T.ink2 }}>{allowed ? '↑ if bloki ishladi' : '↓ else bloki ishladi'}</p>
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ <b>if / else</b> — ikki yo'lli ayri: rost bo'lsa biri, yolg'on bo'lsa ikkinchisi. Hech qachon ikkalasi birga emas.</p></div>}
           </Col>
@@ -618,8 +618,8 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {active ? (
               <div className="sk-info fade-step" key={active}>
                 {active === 'assign'
-                  ? (<><span className="sk-tagbig"><span className="sk-wordbadge mono">=</span><span style={{ fontWeight: 600, color: T.ink }}>o'zlashtirish</span></span><p className="body" style={{ color: T.ink, margin: '10px 0 0' }}>Quti yaratganda ishlatamiz (1-darsdan). Hech narsa tekshirmaydi — shunchaki qiymat soladi.</p></>)
-                  : (<><span className="sk-tagbig"><span className="sk-wordbadge mono">===</span><span style={{ fontWeight: 600, color: T.ink }}>taqqoslash</span></span><p className="body" style={{ color: T.ink, margin: '10px 0 4px' }}>Ikki qiymatni solishtiradi va <b>true</b> yoki <b>false</b> qaytaradi.</p><p className="body" style={{ margin: 0, color: T.ink }}><b style={{ color: T.accent }}>Shartlarda (if) doim shu — ===.</b></p></>)}
+                  ? (<><span className="sk-tagbig"><span className="sk-wordbadge mono">=</span><span style={{ fontWeight: 600, color: T.ink }}>o'zlashtirish</span></span><p className="body" style={{ color: T.ink, margin: '10px 0 0' }}>Quti yaratganda ishlatamiz (1-darsdan). Hech narsa tekshirmaydi — shunchaki qiymat soladi.</p><div className="pop-in" style={{ marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}><span className="mono" style={{ fontWeight: 700, color: T.ink }}>10</span><span className="flow-x" style={{ color: T.accent, fontWeight: 700, fontSize: 18 }}>→</span><span className="var-box" style={{ minWidth: 92 }}><span className="var-name">ball</span><span className="var-val" style={{ fontSize: 18, color: T.ink }}>10</span></span></div></>)
+                  : (<><span className="sk-tagbig"><span className="sk-wordbadge mono">===</span><span style={{ fontWeight: 600, color: T.ink }}>taqqoslash</span></span><p className="body" style={{ color: T.ink, margin: '10px 0 4px' }}>Ikki qiymatni solishtiradi va <b>true</b> yoki <b>false</b> qaytaradi.</p><div className="pop-in" style={{ margin: '10px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 11, flexWrap: 'wrap' }}><span className="mono" style={{ color: T.ink2 }}>10 === 10</span><span className="flow-x" style={{ color: T.ink3, fontSize: 18 }}>→</span><BoolPill value={true} pulse /></div><p className="body" style={{ margin: 0, color: T.ink }}><b style={{ color: T.accent }}>Shartlarda (if) doim shu — ===.</b></p></>)}
               </div>
             ) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir kartani bosing</p></div> : null)}
             {done && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>Qoida:</b> qiymat berish — <span className="mono">=</span>, tekshirish — <span className="mono">===</span>. Aralashtirmang!</p></div>}
@@ -651,7 +651,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="else if" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Ballni o\'zgartiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Ikkidan ko'p <span className="italic" style={{ color: T.accent }}>yo'l</span> bo'lsa-chi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Bir nechta yo'l bo'lsa — <span className="italic mono" style={{ color: T.accent }}>else if</span></h2></div>
         <Mentor>Ba'zan bir nechta yo'l bo'ladi. Imtihon bahosi: 90+ → 5, 70+ → 4, 60+ → 3, aks holda → 2. Buning uchun <span className="mono">else if</span> — <b style={{ color: T.ink }}>"aks holda, agar..."</b>. Ballni o'zgartiring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -661,13 +661,13 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               {BALLS.map(b => (<button key={b} className={`chip ${ball === b ? 'chip-on' : ''}`} onClick={() => setB(b)}>{b}</button>))}
             </div>
             <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(11.5px,1.7vw,13.5px)' }}>
-              {LINES.map((l, i) => (<span key={i} style={{ display: 'block', background: branch === i ? 'rgba(31,122,77,0.25)' : 'transparent', borderRadius: 4, opacity: branch === i ? 1 : 0.45, padding: '1px 3px' }}>{l.c}</span>))}
+              {LINES.map((l, i) => (<span key={i} style={{ display: 'block', background: branch === i ? 'rgba(31,122,77,0.25)' : 'transparent', borderRadius: 4, opacity: branch === i ? 1 : 0.45, padding: '2px 4px', transition: 'background 0.35s, opacity 0.35s' }}>{branch === i && <span style={{ color: CODE.str, fontWeight: 700 }}>▶ </span>}{l.c}</span>))}
             </pre>
           </Col>
           <Col>
             <p className="flow-label">Natija</p>
             <div className="demo-swap" key={ball} style={{ background: T.paper, borderRadius: 14, padding: '20px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
-              <div style={{ fontFamily: "'Fraunces',serif", fontSize: 'clamp(40px,9vw,60px)', color: grade >= 3 ? T.success : T.accent }}>{grade}</div>
+              <div className="pop-num" key={grade} style={{ fontFamily: "'Fraunces',serif", fontSize: 'clamp(40px,9vw,60px)', color: grade >= 3 ? T.success : T.accent }}>{grade}</div>
               <p className="small" style={{ margin: '4px 0 0', color: T.ink2 }}>baho — {ball} ball uchun</p>
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ <b>else if</b> zanjiri: yuqoridan pastga tekshiriladi, birinchi rost shart ishlaydi, qolganlari o'tkazib yuboriladi.</p></div>}
@@ -691,8 +691,8 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Shart natijasi" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Yoshni o\'zgartiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Shart aslida <span className="italic" style={{ color: T.accent }}>nima</span> qaytaradi?</h2></div>
-        <Mentor>Bir sirni payqadingizmi: taqqoslash natijasi — o'sha <b style={{ color: T.ink }}>true yoki false</b> (1-darsdagi boolean!). Demak shartni <b style={{ color: T.ink }}>qutiga ham solsa</b> bo'ladi. Yoshni o'zgartirib, <span className="mono">katta</span> qutisiga nima tushishini ko'ring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Shartni <span className="italic" style={{ color: T.accent }}>o'zgaruvchiga</span> solib bo'ladimi?</h2></div>
+        <Mentor>E'tibor bering: taqqoslash (<span className="mono">yosh {'>='} 18</span>) natijasi — bu o'sha <b style={{ color: T.ink }}>true yoki false</b> (1-darsdagi boolean!). Demak uni <b style={{ color: T.ink }}>o'zgaruvchiga saqlash</b> mumkin. Yoshni o'zgartirib, <span className="mono">katta</span> o'zgaruvchisiga nima yozilishini ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -702,9 +702,11 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(13px,2vw,15px)' }}><Kw>let</Kw> <Vr>yosh</Vr> <Op>=</Op> <Nm>{age}</Nm>{'\n'}<Kw>let</Kw> <Vr>katta</Vr> <Op>=</Op> <Vr>yosh</Vr> <Op>{'>='}</Op> <Nm>18</Nm>{'\n'}<Cm>{`// katta = ${val}`}</Cm></pre>
           </Col>
           <Col>
-            <p className="flow-label">Quti — katta</p>
-            <div className="demo-swap" key={age} style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
-              <div className="var-box"><div className="var-name">📦 katta</div><div className="var-val" style={{ color: val ? T.success : T.accent }}>{String(val)}</div></div>
+            <p className="flow-label">Taqqoslash natijasi o'zgaruvchiga tushadi</p>
+            <div className="demo-swap" key={age} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '6px 0' }}>
+              <span className="mono pop-in" style={{ fontSize: 15, color: T.ink2 }}>{age} {'>='} 18 → <b style={{ color: val ? T.success : T.accent }}>{String(val)}</b></span>
+              <span className="flow-x" style={{ color: T.ink3, fontSize: 22 }}>↓</span>
+              <div className={`var-box ${val ? 'ring-green' : 'ring-red'}`} style={{ minWidth: 150 }}><div className="var-name">o'zgaruvchi: katta</div><div className="var-val pop-num" style={{ color: val ? T.success : T.accent }}>{String(val)}</div></div>
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Ko'rdingizmi — <span className="mono">yosh {'>='} 18</span> shunchaki <b>true/false</b>. Shart va boolean — bir narsa!</p></div>}
           </Col>
@@ -745,7 +747,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Ichma-ich shart" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Sozlamalarni sinang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bitta shart <span className="italic" style={{ color: T.accent }}>yetmasa</span>?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Ikkita shart <span className="italic" style={{ color: T.accent }}>birga</span> kerak bo'lsa?</h2></div>
         <Mentor>Attraksionga kirish uchun: avval <b style={{ color: T.ink }}>yosh</b> yetarli, keyin <b style={{ color: T.ink }}>chipta</b> ham kerak. Demak <span className="mono">if</span> ichiga yana <span className="mono">if</span> yozamiz — <b style={{ color: T.ink }}>ichma-ich shart</b>. Sozlamalarni o'zgartiring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -755,16 +757,20 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}><span className="flow-label" style={{ minWidth: 54 }}>Chipta</span><button className={`chip ${ticket ? 'chip-on' : ''}`} onClick={() => bump(() => setTicket(t => !t))}>{ticket ? '🎫 Bor' : '✖ Yo\'q'}</button></div>
             </div>
             <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(11px,1.7vw,13px)' }}>
-              <span style={{ display: 'block', background: ageOk ? 'transparent' : 'rgba(255,79,40,0.18)', borderRadius: 4 }}><Kw>if</Kw> (<Vr>yosh</Vr> <Op>{'>='}</Op> <Nm>12</Nm>) {'{'}</span>
-              <span style={{ display: 'block', opacity: ageOk ? 1 : 0.4 }}>{'  '}<Kw>if</Kw> (<Vr>chiptaBor</Vr>) {'{'} <Cm>kir</Cm> {'}'}</span>
-              <span style={{ display: 'block', opacity: ageOk ? 1 : 0.4 }}>{'  '}<Kw>else</Kw> {'{'} <Cm>chipta ol</Cm> {'}'}</span>
+              <span style={{ display: 'block', background: ageOk ? 'transparent' : 'rgba(255,79,40,0.18)', borderRadius: 4, transition: 'background 0.35s' }}><Kw>if</Kw> (<Vr>yosh</Vr> <Op>{'>='}</Op> <Nm>12</Nm>) {'{'}</span>
+              <span style={{ display: 'block', opacity: ageOk ? 1 : 0.4, transition: 'opacity 0.35s' }}>{'  '}<Kw>if</Kw> (<Vr>chiptaBor</Vr>) {'{'} <Cm>kir</Cm> {'}'}</span>
+              <span style={{ display: 'block', opacity: ageOk ? 1 : 0.4, transition: 'opacity 0.35s' }}>{'  '}<Kw>else</Kw> {'{'} <Cm>chipta ol</Cm> {'}'}</span>
               <span style={{ display: 'block' }}>{'}'} <Kw>else</Kw> {'{'} <Cm>ruxsat yo'q</Cm> {'}'}</span>
             </pre>
           </Col>
           <Col>
-            <p className="flow-label">Natija</p>
+            <p className="flow-label">Ikkala shart ham kerak</p>
+            <div className="fade-up" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <span className="mono" style={{ fontWeight: 700, fontSize: 13, padding: '6px 12px', borderRadius: 99, background: ageOk ? T.successSoft : T.accentSoft, color: ageOk ? T.success : T.accent, transition: 'all 0.3s' }}>{ageOk ? '✓' : '✗'} yosh ≥ 12</span>
+              <span className="mono" style={{ fontWeight: 700, fontSize: 13, padding: '6px 12px', borderRadius: 99, background: ticket ? T.successSoft : T.accentSoft, color: ticket ? T.success : T.accent, transition: 'all 0.3s' }}>{ticket ? '✓' : '✗'} chipta</span>
+            </div>
             <div className="demo-swap" key={`${age}-${ticket}`} style={{ background: T.paper, borderRadius: 14, padding: '20px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
-              <div style={{ fontSize: 38 }}>{result.ic}</div>
+              <div className="pop-num" style={{ fontSize: 38 }}>{result.ic}</div>
               <p style={{ fontFamily: 'Georgia, serif', fontWeight: 700, margin: '8px 0 0', color: result.c, fontSize: 'clamp(15px,2.2vw,18px)' }}>{result.t}</p>
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ <b>Ichma-ich shart</b>: tashqi if rost bo'lsagina, ichki if tekshiriladi. Bosqichma-bosqich qaror.</p></div>}
@@ -795,8 +801,8 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Amaliy misol" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Yoshlarni sinang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Kino chiptasi — <span className="italic" style={{ color: T.accent }}>yoshga qarab</span> narx</h2></div>
-        <Mentor>Hamma narsani birga ishlatamiz. Chipta narxi: 7 gacha — <b style={{ color: T.ink }}>tekin</b>, 18 gacha — <b style={{ color: T.ink }}>yarim narx</b>, kattalar — <b style={{ color: T.ink }}>to'liq</b>. Yoshni o'zgartiring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Sen <span className="italic" style={{ color: T.accent }}>kassirsan</span>: chipta narxi qancha?</h2></div>
+        <Mentor>Kinoteatr <b style={{ color: T.ink }}>kassasidasiz</b>! Har bir mehmonga yoshiga qarab narx aytasiz: 7 gacha bola — <b style={{ color: T.ink }}>tekin</b>, 18 gacha o'quvchi — <b style={{ color: T.ink }}>yarim narx</b>, kattalar — <b style={{ color: T.ink }}>to'liq</b>. <span className="mono">if / else if</span> shu qarorni o'zi chiqaradi. Yoshni tanlang.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -805,14 +811,14 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               {AGES.map(a => (<button key={a} className={`chip ${age === a ? 'chip-on' : ''}`} onClick={() => setA(a)}>{a} yosh</button>))}
             </div>
             <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(11.5px,1.7vw,13.5px)' }}>
-              {LINES.map((l, i) => (<span key={i} style={{ display: 'block', background: branch === i ? 'rgba(31,122,77,0.25)' : 'transparent', borderRadius: 4, opacity: branch === i ? 1 : 0.45, padding: '1px 3px' }}>{l}</span>))}
+              {LINES.map((l, i) => (<span key={i} style={{ display: 'block', background: branch === i ? 'rgba(31,122,77,0.25)' : 'transparent', borderRadius: 4, opacity: branch === i ? 1 : 0.45, padding: '2px 4px', transition: 'background 0.35s, opacity 0.35s' }}>{branch === i && <span style={{ color: CODE.str, fontWeight: 700 }}>▶ </span>}{l}</span>))}
             </pre>
           </Col>
           <Col>
             <p className="flow-label">Chipta narxi</p>
             <div className="demo-swap" key={age} style={{ background: T.paper, borderRadius: 14, padding: '20px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
-              <div style={{ fontFamily: "'Fraunces',serif", fontSize: 'clamp(28px,6vw,40px)', color: T.accent }}>{price === 0 ? 'TEKIN' : price.toLocaleString('ru-RU') + ' so\'m'}</div>
-              <p className="small" style={{ margin: '4px 0 0', color: T.ink2 }}>{age < 7 ? 'bola (7 gacha)' : age < 18 ? "o'quvchi (18 gacha)" : 'katta'}</p>
+              <div className="pop-num" key={price} style={{ fontFamily: "'Fraunces',serif", fontSize: 'clamp(28px,6vw,40px)', color: price === 0 ? T.success : T.accent }}>{price === 0 ? 'TEKIN' : price.toLocaleString('ru-RU') + ' so\'m'}</div>
+              <p className="small" style={{ margin: '4px 0 0', color: T.ink2 }}>🎟️ {age < 7 ? 'bola (7 gacha)' : age < 18 ? "o'quvchi (18 gacha)" : 'katta'}</p>
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Mana — haqiqiy dasturlardagi mantiq! if/else if bilan har qanday qoidani yozish mumkin.</p></div>}
           </Col>
@@ -863,7 +869,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 7 }}>{OPS.map(o => (<button key={o} className={`chip ${op === o ? 'chip-on' : ''}`} onClick={() => setOp(o)}><span className="mono">{o}</span></button>))}</div>
             <p className="flow-label">Son (yosh chegarasi)</p>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 7 }}>{NUMS.map(n => (<button key={n} className={`chip ${num === n ? 'chip-on' : ''}`} onClick={() => setNum(n)}>{n}</button>))}</div>
-            <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(12.5px,1.9vw,15px)' }}><Kw>if</Kw> (<Vr>yosh</Vr> <Op>{op || '?'}</Op> <Nm>{num ?? '?'}</Nm>) {'{'} <Cm>kir</Cm> {'}'}</pre>
+            <pre className="code-box fade-up delay-2" style={{ fontSize: 'clamp(12.5px,1.9vw,15px)' }}><Kw>if</Kw> (<Vr>yosh</Vr> <span className="pop-num" key={op} style={{ color: op ? CODE.punct : CODE.comment, fontWeight: 700 }}>{op || '?'}</span> <span className="pop-num" key={num} style={{ color: num != null ? CODE.num : CODE.comment, fontWeight: 700 }}>{num ?? '?'}</span>) {'{'} <Cm>kir</Cm> {'}'}</pre>
           </Col>
           <Col>
             <p className="flow-label">Shartingizni sinab ko'ring</p>
@@ -871,9 +877,9 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div style={{ display: 'flex', gap: 7 }}>{[8, 12, 16].map(t => (<button key={t} className={`chip ${test === t ? 'chip-on' : ''}`} onClick={() => setTest(t)}>{t} yosh</button>))}</div>
                 {test !== null && (
-                  <div className="demo-swap" key={test} style={{ background: evalCond(test) ? T.successSoft : T.accentSoft, borderRadius: 14, padding: '16px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
-                    <p className="mono small" style={{ margin: '0 0 6px', color: T.ink2 }}>{test} {op} {num} → {String(evalCond(test))}</p>
-                    <p style={{ fontWeight: 700, margin: 0, color: evalCond(test) ? T.success : T.accent }}>{evalCond(test) ? '✅ Turniket ochildi' : '⛔ Yopiq'}</p>
+                  <div className={`demo-swap ${evalCond(test) ? 'ring-green' : 'ring-red'}`} key={test} style={{ background: evalCond(test) ? T.successSoft : T.accentSoft, borderRadius: 14, padding: '16px', textAlign: 'center', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
+                    <p className="mono small" style={{ margin: '0 0 6px', color: T.ink2 }}>{test} {op} {num} → <b style={{ color: evalCond(test) ? T.success : T.accent }}>{String(evalCond(test))}</b></p>
+                    <p className="pop-num" style={{ fontWeight: 700, margin: 0, color: evalCond(test) ? T.success : T.accent }}>{evalCond(test) ? '✅ Turniket ochildi' : '⛔ Yopiq'}</p>
                   </div>
                 )}
                 <div className="frame-success"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Shartingiz tayyor! Yoshlarni sinab, qanday ishlashini ko'ring.</p></div>
@@ -1075,6 +1081,25 @@ export default function JsConditionsLesson({ lang: langProp, onFinished }) {
         @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
+
+        /* ── Jonli demo animatsiyalari ── */
+        @keyframes pop-in { 0% { opacity: 0; transform: scale(.82) translateY(10px); } 55% { opacity: 1; transform: scale(1.05) translateY(0); } 100% { transform: scale(1); } }
+        .pop-in { animation: pop-in .42s cubic-bezier(.34,1.4,.4,1); }
+        @keyframes pop-num { 0% { transform: scale(.5); opacity: 0; } 60% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); } }
+        .pop-num { animation: pop-num .5s cubic-bezier(.34,1.5,.4,1); display: inline-block; }
+        @keyframes shake-x { 0%,100% { transform: translateX(0); } 18% { transform: translateX(-6px); } 38% { transform: translateX(6px); } 58% { transform: translateX(-4px); } 78% { transform: translateX(4px); } }
+        .shake-x { animation: shake-x .45s ease; }
+        @keyframes ring-green { 0% { box-shadow: 0 0 0 0 rgba(31,122,77,.5); } 70% { box-shadow: 0 0 0 16px rgba(31,122,77,0); } 100% { box-shadow: 0 0 0 0 rgba(31,122,77,0); } }
+        @keyframes ring-red { 0% { box-shadow: 0 0 0 0 rgba(255,79,40,.5); } 70% { box-shadow: 0 0 0 16px rgba(255,79,40,0); } 100% { box-shadow: 0 0 0 0 rgba(255,79,40,0); } }
+        .ring-green { animation: ring-green 1.3s ease-out; } .ring-red { animation: ring-red 1.3s ease-out; }
+        @keyframes flow-x { 0% { transform: translate(-3px,0); opacity: .45; } 50% { transform: translate(3px,0); opacity: 1; } 100% { transform: translate(-3px,0); opacity: .45; } }
+        .flow-x { animation: flow-x 1.1s ease-in-out infinite; display: inline-block; }
+        /* Turniket darvozasi */
+        .gate-wrap { position: relative; width: 92px; height: 56px; margin: 0 auto; }
+        .gate-post { position: absolute; top: 0; width: 8px; height: 56px; border-radius: 4px; background: ${T.ink}; } .gate-post.l { left: 0; } .gate-post.r { right: 0; }
+        .gate-bar { position: absolute; top: 24px; left: 8px; width: 76px; height: 8px; border-radius: 4px; transform-origin: left center; transition: transform .55s cubic-bezier(.34,1.3,.4,1), background .3s; }
+        .gate-bar.open { transform: rotate(-74deg); background: ${T.success}; }
+        .gate-bar.shut { transform: rotate(0deg); background: ${T.accent}; }
 
         .feedback-block { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease-out 0.1s, margin-top 0.4s ease-out; margin-top: 0; }
         .feedback-block.visible { max-height: 800px; opacity: 1; margin-top: clamp(14px,2vw,20px); }

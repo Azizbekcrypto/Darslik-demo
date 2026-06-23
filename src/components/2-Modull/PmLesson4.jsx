@@ -323,7 +323,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   return (
     <Stage eyebrow="Kirish" screen={screen} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
-        <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Bir ilova — nega bitta tugmani <span className="italic" style={{ color: T.accent }}>har kuni</span> bosasiz, boshqasini hech qachon?</h1>
+        <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Nega ba'zi ilovalarni <span className="italic" style={{ color: T.accent }}>har kuni</span> ochasiz, boshqalarini — bir marta ko'rib, unutasiz?</h1>
         <Mentor>Quyidagi <b style={{ color: T.ink }}>og'riqqa</b> ikkita feature'ni sinab ko'ring. Qaysi biri og'riqni yopadi?</Mentor>
         <Zoomable>
         <Split>
@@ -335,9 +335,9 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
               </p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
                 <button className="kindbtn" onClick={() => tryF('dori')} style={{ background: tried === 'dori' ? T.success : T.successSoft, color: tried === 'dori' ? '#fff' : T.success }}>{p4.pill(15)} Rasm yuborish</button>
-                <button className="kindbtn" onClick={() => tryF('shirinlik')} style={{ background: tried === 'shirinlik' ? T.honey : T.honeySoft, color: tried === 'shirinlik' ? '#fff' : T.honey }}>{p4.spark(15)} Logoni 3D aylantirish</button>
+                <button className="kindbtn" onClick={() => tryF('shirinlik')} style={{ background: tried === 'shirinlik' ? T.honey : T.honeySoft, color: tried === 'shirinlik' ? '#fff' : T.honey }}>{Ico.moon(15)} Tungi rejim (dark mode)</button>
               </div>
-              {tried && <p className="small fade-step" style={{ margin: 0, textAlign: 'center', color: relieved ? T.success : T.ink2, fontWeight: 600 }}>{relieved ? 'Og\'riq yopildi — bu feature haqiqatan kerak.' : 'Og\'riq joyida qoldi — chiroyli, lekin foydasiz.'}</p>}
+              {tried && <p className="small fade-step" style={{ margin: 0, textAlign: 'center', color: relieved ? T.success : T.ink2, fontWeight: 600 }}>{relieved ? 'Og\'riq yopildi — bu feature haqiqatan kerak.' : 'Og\'riq joyida qoldi — tungi rejim yaxshi feature, lekin bu og\'riqqa dori emas.'}</p>}
             </div>
           </Col>
           <Col>
@@ -345,7 +345,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             <div className="fade-up delay-3" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {OPTS.map(o => { const on = picked === o.id; return (<button key={o.id} className={`hook-option ${on ? 'on' : ''}`} disabled={picked !== null} onClick={() => pick(o.id)}><span className="radio">{on && <span className="radio-dot" />}</span><span>{o.label}</span></button>); })}
             </div>
-            {picked !== null && <p className="hook-ack fade-step">Feature chiroyli bo'lgani uchun emas — <b>haqiqiy og'riqni yopgani</b> uchun ishlatiladi. Buni <b>"dori" (painkiller)</b> deyiladi. Bugun shuni o'rganamiz.</p>}
+            {picked !== null && <p className="hook-ack fade-step">Feature shunchaki chiroyli yoki zamonaviy bo'lgani uchun emas — <b>aniq bir og'riqni yopgani</b> uchun ishlatiladi. Buni <b>"dori" (painkiller)</b> deyiladi. Bugun shuni o'rganamiz.</p>}
           </Col>
         </Split>
         </Zoomable>
@@ -365,23 +365,23 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   ];
   const isNarrow = useIsMobile(768);
   const [showSteps, setShowSteps] = useState(false);
-  const Idea = ({ ic, h, t, c }) => (<div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}><IcoChip color={c} soft={c + '1c'}>{ic}</IcoChip><div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>{h}</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>{t}</p></div></div>);
+  const Idea = ({ ic, h, t, c, d = 0 }) => (<div className="frame idea-card fade-up" style={{ animationDelay: `${d}s`, display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}><IcoChip color={c} soft={c + '1c'}>{ic}</IcoChip><div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>{h}</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>{t}</p></div></div>);
   const IdeaBlock = (
     <Col>
       <p className="flow-label">Bugungi asosiy g'oya</p>
-      <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Idea ic={p4.pill(22)} c={T.success} h="FEATURE = DORI" t="Bitta og'riqni yopadi — shuning uchun kerak" />
-        <Idea ic={p4.candy(22)} c={T.honey} h="BEZAK = SHIRINLIK" t="Chiroyli, lekin hech qanday og'riqni yopmaydi" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <Idea ic={p4.pill(22)} c={T.success} h="FEATURE = DORI" t="Bitta og'riqni yopadi — shuning uchun kerak" d={0.1} />
+        <Idea ic={p4.candy(22)} c={T.honey} h="BEZAK = SHIRINLIK" t="Chiroyli, lekin hech qanday og'riqni yopmaydi" d={0.24} />
       </div>
-      <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ Modul 2'da yozadigan har funksiya — bitta og'riqqa yechim</p>
+      <p className="mono small fade-up" style={{ color: T.accent, margin: 0, animationDelay: '0.38s' }}>→ Modul 2'da yozadigan har funksiya — bitta og'riqqa yechim</p>
     </Col>
   );
   const StepsBlock = (<Col><p className="flow-label">5 qadam</p><ol className="roadmap">{STEPS.map((s, i) => (<li key={i} className="step-card fade-up" style={{ animationDelay: `${0.08 + i * 0.05}s` }}><span className="step-num">{String(i + 1).padStart(2, '0')}</span><span className="step-body"><span className="step-text">{s.text}</span>{s.tag && <span className="step-tag">{s.tag}</span>}</span></li>))}</ol></Col>);
   return (
     <Stage eyebrow="Reja" screen={screen} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
-        <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Mahsulot ichiga kiramiz: har feature qaysi og'riqni yopadi?</span></h2></div>
-        <Mentor>Modul 1'da <b style={{ color: T.ink }}>kim + muammo + yechim</b>ni topdik. Endi mahsulot ichiga kiramiz — har bir <b style={{ color: T.ink }}>feature</b> (funksiya) bitta haqiqiy og'riqni yopishi kerak.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Yechimni <span className="italic" style={{ color: T.accent }}>mahsulotga</span> aylantiramiz — har feature bitta og'riqni yopadi</h2></div>
+        <Mentor>Modul 1'da topdik: <b style={{ color: T.ink }}>kim</b>, qanday <b style={{ color: T.ink }}>muammo</b>, qanday <b style={{ color: T.ink }}>yechim</b>. Endi shu yechimni <b style={{ color: T.ink }}>mahsulot</b>ga aylantiramiz. Mahsulot ko'plab <b style={{ color: T.ink }}>feature</b>'dan (funksiyadan) tuziladi — va har biri bitta haqiqiy og'riqni yopishi kerak.</Mentor>
         {!isNarrow ? (<Zoomable><Split>{IdeaBlock}{StepsBlock}</Split></Zoomable>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>
@@ -400,7 +400,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Og'riq → feature" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/4 ko'ring`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Kunda ishlatadigan ilovalar qaysi <span className="italic" style={{ color: T.accent }}>og'riqni</span> yopgan?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Har kuni ochadigan ilovalaringiz — aslida qaysi <span className="italic" style={{ color: T.accent }}>og'riqni</span> yopadi?</h2></div>
         <Mentor>Har bir mashhur ilova — kimningdir og'rig'iga <b style={{ color: T.ink }}>dori</b>. Bittasini bosib, qaysi og'riqni qanday feature yopganini ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -436,7 +436,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Og'riq = yurak" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Ikkalasini ko\'ring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Og'riqni <span className="italic" style={{ color: T.accent }}>olib tashlasak</span> — feature kerakmi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Og'riq <span className="italic" style={{ color: T.accent }}>yo'qolsa</span> — feature hali ham kerakmi?</h2></div>
         <Mentor>"Rasm yuborish" feature'ini olaylik. <b style={{ color: T.ink }}>Og'riq bor</b> va <b style={{ color: T.ink }}>og'riq yo'q</b> holatini almashtirib ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -559,7 +559,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Zoomable>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {BIRTH.map((s, i) => { const on = step > i; return (<React.Fragment key={s.key}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '9px 13px', opacity: on ? 1 : 0.4, boxShadow: on ? `0 7px 18px -10px rgba(${T.shadowBase},0.18)` : 'none', transition: 'all 0.45s' }}><IcoChip color={on ? s.color : T.ink3} soft={on ? s.color + '1c' : '#ECEAE5'} size={31}>{s.ic}</IcoChip><div style={{ minWidth: 0, flex: 1 }}><p style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 12.5, letterSpacing: '0.04em', color: on ? s.color : T.ink3, margin: 0 }}>{s.label}</p>{on && <p style={{ fontFamily: G, fontStyle: 'italic', fontSize: 13, color: T.ink2, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: isMobile ? 'normal' : 'nowrap' }}>"{s.text}"</p>}</div>{on && <span style={{ color: T.success }}>{Ico.check(15)}</span>}</div>{i < BIRTH.length - 1 && <div style={{ display: 'flex', justifyContent: 'center', color: step > i + 1 ? T.success : T.ink3, transform: 'rotate(90deg)', lineHeight: 1, transition: 'color 0.3s' }}>{Ico.arrow(12)}</div>}</React.Fragment>); })}
+          {BIRTH.map((s, i) => { const on = step > i; return (<React.Fragment key={s.key}><div className={on ? 'birth-on' : ''} style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '9px 13px', opacity: on ? 1 : 0.4, boxShadow: on ? `0 7px 18px -10px rgba(${T.shadowBase},0.18)` : 'none', transition: 'all 0.45s' }}><IcoChip color={on ? s.color : T.ink3} soft={on ? s.color + '1c' : '#ECEAE5'} size={31}>{s.ic}</IcoChip><div style={{ minWidth: 0, flex: 1 }}><p style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 12.5, letterSpacing: '0.04em', color: on ? s.color : T.ink3, margin: 0 }}>{s.label}</p>{on && <p style={{ fontFamily: G, fontStyle: 'italic', fontSize: 13, color: T.ink2, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: isMobile ? 'normal' : 'nowrap' }}>"{s.text}"</p>}</div>{on && <span style={{ color: T.success }} className="feat-pop">{Ico.check(15)}</span>}</div>{i < BIRTH.length - 1 && <div className={step === i + 1 ? 'arrow-live' : ''} style={{ display: 'flex', justifyContent: 'center', color: step > i + 1 ? T.success : T.ink3, transform: 'rotate(90deg)', lineHeight: 1, transition: 'color 0.3s' }}>{Ico.arrow(12)}</div>}</React.Fragment>); })}
         </div>
         <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Tug\'ilmoqda…' : (done ? '↻ Yana ko\'rish' : 'Feature\'ni tug\'dirish')}</button>
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana — feature <b>og'riqdan tug'iladi</b>, bezakdan emas. Avval og'riq, keyin yechim.</p></div>}
@@ -668,7 +668,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const lines = [
     { key: 'rasm', label: 'FEATURE', color: T.blue, pain: 'Ko\'rmasdan ishonmaydi', text: 'Mahsulot rasmini yuklash', ok: true },
     { key: 'qidiruv', label: 'FEATURE', color: T.honey, pain: 'Keraklisini topolmaydi', text: 'Qidiruv', ok: true },
-    { key: 'logo3d', label: '???', color: T.ink3, pain: '—', text: 'Logoni 3D aylantirish', ok: false },
+    { key: 'logo3d', label: '???', color: T.ink3, pain: '—', text: 'Salyut (konfetti) effekti', ok: false },
     { key: 'narx', label: 'FEATURE', color: T.success, pain: 'Xabari yetdimi bilmaydi', text: '"O\'qildi" belgisi', ok: true }
   ];
   const clickLine = (k) => { if (found || fixed) return; if (k === 'logo3d') setFound(true); };
@@ -677,7 +677,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Tuzatish" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : (found ? 'Endi tuzating' : 'Behuda feature\'ni toping')} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bu ro'yxatda qaysi feature <span className="italic" style={{ color: T.accent }}>behuda</span> (shirinlik)?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Bu mahsulotda qaysi feature hech qanday <span className="italic" style={{ color: T.accent }}>og'riqni</span> yopmaydi?</h2></div>
         <Mentor>Mahsulotga 4 ta feature qo'shilgan, lekin bittasi <b style={{ color: T.ink }}>hech qanday og'riqni yopmaydi</b>. Qaysi biri? O'sha qatorni bosing.</Mentor>
         <Zoomable>
         <div className="split">
@@ -701,7 +701,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             {!found && <div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Eslang: har feature <b>bitta og'riqqa</b> javob beradi. Qaysi qatorda og'riq o'rnida "—" turibdi?</p></div>}
-            {found && !fixed && <div className="frame-warn fade-step"><p className="note-h" style={{ color: T.accent }}>Topdingiz!</p><p className="body" style={{ margin: 0, color: T.ink }}>"Logoni 3D aylantirish" — hech qanday og'riqni yopmaydi (og'riq: —). Bu shirinlik. Chap tugmani bosib, og'riqli feature bilan almashtiring.</p></div>}
+            {found && !fixed && <div className="frame-warn fade-step"><p className="note-h" style={{ color: T.accent }}>Topdingiz!</p><p className="body" style={{ margin: 0, color: T.ink }}>"Salyut (konfetti) effekti" — hech qanday og'riqni yopmaydi (og'riq: —). Bu shirinlik. Chap tugmani bosib, og'riqli feature bilan almashtiring.</p></div>}
             {found && fixed && <div className="takeaway fade-step"><div className="ta-bulb" style={{ color: T.honey, display: 'inline-flex' }}>{p4.candy(34)}</div><p className="ta-h">Og'riqsiz feature — behuda mehnat</p><p className="ta-sub">Har feature bitta og'riqqa javob bersin</p></div>}
           </Col>
         </div>
@@ -743,7 +743,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             <p className="flow-label">Feature-kartangiz</p>
-            <SpecCard items={items} minH={200} title="Feature-karta" />
+            <div className={allGood ? 'spec-done' : ''}><SpecCard items={items} minH={200} title="Feature-karta" /></div>
             {allGood && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana — kuchli feature! Aniq kim, aniq og'riq, aniq yechim. Bu <b>dori</b>.</p></div>}
           </Col>
         </div>
@@ -787,11 +787,11 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {CASE_ROWS.map(s => { const open = seen.has(s.key); return (<button key={s.key} onClick={() => tap(s.key)} style={{ textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 12, padding: '11px 14px', background: T.paper, display: 'flex', flexDirection: 'column', gap: 3, boxShadow: active === s.key ? `inset 0 0 0 2px ${s.color}, 0 8px 20px -8px ${s.color}44` : (open ? `inset 0 0 0 1px ${T.success}55` : `0 6px 16px -8px rgba(${T.shadowBase},0.16)`), transition: 'all 0.18s' }}><span style={{ display: 'flex', alignItems: 'center', gap: 9 }}><span style={{ color: s.color, display: 'inline-flex' }}>{s.ic}</span><span className="mono" style={{ fontSize: 11, fontWeight: 700, color: s.color, textTransform: 'uppercase' }}>{s.label}</span>{open && <span style={{ marginLeft: 'auto', color: T.success, display: 'inline-flex' }}>{Ico.check(13)}</span>}</span><span style={{ fontFamily: G, fontSize: 12.5, color: T.ink2 }}>og'riq: {s.pain}</span></button>); })}
+              {CASE_ROWS.map(s => { const open = seen.has(s.key); return (<button key={s.key} onClick={() => tap(s.key)} style={{ textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 12, padding: '11px 14px', background: T.paper, display: 'flex', flexDirection: 'column', gap: 3, boxShadow: active === s.key ? `inset 0 0 0 2px ${s.color}, 0 8px 20px -8px ${s.color}44` : (open ? `inset 0 0 0 1px ${T.success}55` : `0 6px 16px -8px rgba(${T.shadowBase},0.16)`), transition: 'all 0.18s' }}><span style={{ display: 'flex', alignItems: 'center', gap: 9 }}><span style={{ color: s.color, display: 'inline-flex' }}>{s.ic}</span><span className="mono" style={{ fontSize: 11, fontWeight: 700, color: s.color, textTransform: 'uppercase' }}>{s.label}</span>{open && <span className="feat-pop" style={{ marginLeft: 'auto', color: T.success, display: 'inline-flex' }}>{Ico.check(13)}</span>}</span><span style={{ fontFamily: G, fontSize: 12.5, color: T.ink2 }}>og'riq: {s.pain}</span></button>); })}
             </div>
           </Col>
           <Col>
-            {cur ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span style={{ color: cur.color, display: 'inline-flex' }}>{cur.ic}</span><span className="sk-wordbadge" style={{ color: cur.color, background: cur.color + '1c' }}>{cur.label}</span></span><div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, margin: '12px 0 0' }}><span style={{ color: T.accent, display: 'inline-flex', marginTop: 1 }}>{Ico.problem(15)}</span><p className="body" style={{ color: T.ink2, margin: 0 }}><b style={{ color: T.accent }}>Og'riq:</b> {cur.pain}</p></div><p className="body" style={{ color: T.ink, margin: '8px 0 0' }}>{cur.why}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir qatorni bosing</p></div> : null)}
+            {cur ? (<div className="sk-info slide-in-r" key={active}><span className="sk-tagbig"><span style={{ color: cur.color, display: 'inline-flex' }}>{cur.ic}</span><span className="sk-wordbadge" style={{ color: cur.color, background: cur.color + '1c' }}>{cur.label}</span></span><div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, margin: '12px 0 0' }}><span style={{ color: T.accent, display: 'inline-flex', marginTop: 1 }}>{Ico.problem(15)}</span><p className="body" style={{ color: T.ink2, margin: 0 }}><b style={{ color: T.accent }}>Og'riq:</b> {cur.pain}</p></div><p className="body" style={{ color: T.ink, margin: '8px 0 0' }}>{cur.why}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir qatorni bosing</p></div> : null)}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har feature aniq bir og'riqqa bog'langan — bironta behuda emas. Endi o'zingiznikini yozasiz.</p></div>}
           </Col>
         </div>
@@ -805,7 +805,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 const Screen14 = ({ screen, onNext, onPrev }) => (
   <Stage eyebrow="Qoida" screen={screen} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Yakuniy ishga →" onClick={onNext} /></>}>
     <div className="screen">
-      <div className="head"><h2 className="title h-title fade-up">"Muammosiz yechim" — <span className="italic" style={{ color: T.accent }}>qurilmaydi</span></h2></div>
+      <div className="head"><h2 className="title h-title fade-up">Og'riq bo'lmasa — <span className="italic" style={{ color: T.accent }}>feature ham kerak emas</span></h2></div>
       <Mentor>Har bir feature bitta haqiqiy <b style={{ color: T.ink }}>og'riqqa</b> javob beradi. Og'riq bo'lmasa — feature ham kerak emas. Qurishdan oldin doim so'rang: <b style={{ color: T.ink }}>"Bu kimning qaysi og'rig'ini yopadi?"</b></Mentor>
       <Zoomable>
       <div className="split">
@@ -875,7 +875,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 16 — YAKUN + DEMO DAY =====
 const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
-  const RECAP = ['Har feature — bitta og\'riqqa dori', 'Dori (kerak) va shirinlik (bezak)ni ajratish', 'Og\'riqni feature bilan moslashtirish', '"Muammosiz yechim" qurilmaydi'];
+  const RECAP = ['Har feature — bitta og\'riqqa dori', 'Dori (kerak) va shirinlik (bezak)ni ajratish', 'Og\'riqni feature bilan moslashtirish', 'Og\'riq bo\'lmasa — feature ham kerak emas'];
   const HOMEWORK = [{ b: 'Sevimli ilovangizni oching', t: '— uning 3 feature\'i qaysi og\'riqni yopadi?' }, { b: 'O\'z mahsulotingizni tekshiring', t: '— har feature og\'riqqa bog\'langanmi?' }, { b: 'Demo Day\'ga tayyorlaning', t: '— 3 og\'riq → yechimni ayting' }];
   const GLOSSARY = [{ b: 'Og\'riq (pain)', t: '— foydalanuvchining haqiqiy muammosi' }, { b: 'Feature', t: '— og\'riqni yopadigan funksiya' }, { b: 'Dori (painkiller)', t: '— og\'riqni yopadigan kerakli feature' }, { b: 'Shirinlik (vitamin)', t: '— chiroyli, lekin og\'riqsiz bezak' }, { b: 'Demo Day', t: '— mahsulotingizni taqdim qilish kuni' }];
   const correct = SCORED_IDX.filter(i => answers[i]?.correct).length;
@@ -972,6 +972,17 @@ export default function PmLesson4({ lang: langProp, onFinished }) {
         .shake-x { animation: shake 0.42s; }
         @keyframes feat-pop { 0% { transform: scale(.82); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
         .feat-pop { animation: feat-pop .34s cubic-bezier(.2,.7,.2,1); }
+        /* PM4 — qo'shimcha animatsiyalar (sahifa 2,8,13,15) */
+        .idea-card { transition: transform .2s cubic-bezier(.2,.7,.2,1), box-shadow .2s; }
+        .idea-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px -10px rgba(${T.shadowBase},0.2); }
+        @keyframes birth-pop { 0% { transform: scale(.93); } 55% { transform: scale(1.035); } 100% { transform: scale(1); } }
+        .birth-on { animation: birth-pop .52s cubic-bezier(.2,.7,.2,1); }
+        @keyframes arrow-bob { 0%,100% { transform: rotate(90deg) translateX(0); } 50% { transform: rotate(90deg) translateX(3.5px); } }
+        .arrow-live { animation: arrow-bob 0.9s ease-in-out infinite; }
+        @keyframes spec-glow { 0% { box-shadow: 0 0 0 0 rgba(31,122,77,0); } 45% { box-shadow: 0 0 0 5px rgba(31,122,77,0.22); } 100% { box-shadow: 0 0 0 0 rgba(31,122,77,0); } }
+        .spec-done { border-radius: 14px; animation: spec-glow .75s ease; }
+        @keyframes slide-in-r { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+        .slide-in-r { animation: slide-in-r .36s cubic-bezier(.2,.7,.2,1); }
 
         .feedback-block { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease-out 0.1s, margin-top 0.4s ease-out; margin-top: 0; }
         .feedback-block.visible { max-height: 800px; opacity: 1; margin-top: clamp(14px,2vw,20px); }
