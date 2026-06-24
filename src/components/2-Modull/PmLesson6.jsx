@@ -90,10 +90,10 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 // ===== KONSEPT LEKSIKONI =====
 // Demo Day taqdimotining 4 qismi
 const PARTS = [
-  { key: 'ochilish', label: 'Ochilish + "ha"', color: T.honey, ic: p6.spark(18), job: 'Muammoni ayt — auditoriya "ha, menda ham bor" deb bosh qimirlatsin.', ex: 'Sevimli rasmlaringizni do\'stlarga ko\'rsatish noqulay emasmi?' },
-  { key: 'demo', label: 'Jonli demo', color: T.accent, ic: p6.play(18), job: 'Saytni KO\'RSAT, bosib ber: "mana — ishlaydi!"', ex: 'Mana, like tugmasini bosaman — hisob ortdi. Jonli ishlaydi!' },
-  { key: 'texnika', label: 'Sodda texnika', color: T.blue, ic: p6.frame(18), job: 'Qanday qurganing — jargonsiz, tanish analogiya bilan.', ex: 'Skelet — HTML, ko\'rinish — CSS, harakat — JS.' },
-  { key: 'yakun', label: 'Yakun + ishonch', color: T.grape, ic: p6.hand(18), job: 'Yakunla va savolga tayyor tur.', ex: 'Rahmat! Savollaringiz bo\'lsa — mamnuniyat bilan javob beraman.' }
+  { key: 'ochilish', label: 'Ochilish + "ha"', color: T.honey, ic: p6.spark(18), job: 'Tanish muammodan boshlang — auditoriya "ha, menda ham shunday" deb o\'zini topadi va diqqat qaratadi.', ex: 'Salom! Yoqqan rasmni do\'stlarga ulashish ba\'zan noqulay, to\'g\'rimi? Men buni bitta oddiy saytda hal qildim.' },
+  { key: 'demo', label: 'Jonli demo', color: T.accent, ic: p6.play(18), job: 'Gapirmang — bosib KO\'RSATING. Ishlayotganini o\'z ko\'zi bilan ko\'rgan auditoriya darrov ishonadi.', ex: 'Mana saytim. Yuragni bosaman — qarang, like soni 12 dan 13 ga oshdi. Hammasi jonli, haqiqatan ishlaydi.' },
+  { key: 'texnika', label: 'Sodda texnika', color: T.blue, ic: p6.frame(18), job: 'Jargonsiz, tanish analogiya bilan tushuntiring — texnik bo\'lmagan odam ham darrov tushunsin.', ex: 'Qanday qurdim? Oddiy qilib: HTML — skelet, CSS — ko\'rinish va rang, JS — harakat (tugma bosilganda ish bajaradi).' },
+  { key: 'yakun', label: 'Yakun + ishonch', color: T.grape, ic: p6.hand(18), job: 'Qisqa yakunlang va savolga ochiq turing — bu ishonch va professionallik belgisi.', ex: 'Mana shunday — oddiy g\'oyadan ishlaydigan saytgacha. E\'tiboringiz uchun rahmat, savollaringizga tayyorman!' }
 ];
 const PMETA = {}; PARTS.forEach(p => { PMETA[p.key] = p; });
 
@@ -234,8 +234,8 @@ const Mentor = ({ children }) => {
 };
 
 const Q = ({ children, max = 760 }) => <h2 className="title h-title fade-up" style={{ maxWidth: max }}>{children}</h2>;
-const IcoChip = ({ color = T.accent, soft = T.accentSoft, children, size = 46 }) => (
-  <span style={{ width: size, height: size, borderRadius: 13, background: soft, color, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{children}</span>
+const IcoChip = ({ color = T.accent, soft = T.accentSoft, children, size = 46, className = '' }) => (
+  <span className={className} style={{ width: size, height: size, borderRadius: 13, background: soft, color, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{children}</span>
 );
 
 const MentorCollapseScroll = ({ targetRef }) => {
@@ -277,16 +277,27 @@ const LiveSite = ({ live = true, styled = true, onLike }) => {
   };
   return (
     <div className={`mini-site ${styled ? '' : 'skel'}`}>
-      <div className="ms-top"><span className="ms-dots"><i /><i /><i /></span><span className="ms-url">mening-saytim.uz</span></div>
+      <div className="ms-top"><span className="ms-dots"><i /><i /><i /></span><span className="ms-url">{styled ? 'aziz-photo.uz' : 'mening-saytim.uz'}</span></div>
       <div className="ms-body">
-        <div className="ms-head"><span className="ms-ava" /><span className="ms-name">{styled ? 'Aziz' : ''}</span></div>
-        <div className="ms-img">{styled && <span className="ms-imgico">🏞️</span>}</div>
+        <div className="ms-head">
+          <span className="ms-ava">{styled && <span className="ms-online" />}</span>
+          <div className="ms-meta">
+            <span className="ms-name">{styled ? 'Aziz Karimov' : ''}</span>
+            {styled && <span className="ms-sub">2 soat oldin · Toshkent</span>}
+          </div>
+          {styled && <span className="ms-follow">+ Kuzatish</span>}
+        </div>
+        <div className="ms-img">{styled && <span className="ms-imgico">🏔️</span>}</div>
+        {styled && <p className="ms-capt">Chimyon cho'qqisidagi ajoyib sayohatim ✨🥾</p>}
         <div className="ms-row">
           <button className={`ms-like ${liked ? 'on' : ''} ${pop ? 'pop' : ''}`} onClick={tap} disabled={!live} aria-label="like">
             {Ico.heart(18, liked)}<span className="ms-count">{styled ? likes : ''}</span>
           </button>
+          {styled && <span className="ms-act">💬<span className="ms-actn">3</span></span>}
+          {styled && <span className="ms-act ms-save">🔖</span>}
           {styled && <span className="ms-cap">{live ? 'bosib ko\'ring →' : 'JS yo\'q — tugma jim'}</span>}
         </div>
+        {styled && <p className="ms-liked">Malika va yana {likes - 1} kishi yoqtirdi</p>}
       </div>
     </div>
   );
@@ -364,7 +375,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   return (
     <Stage eyebrow="Kirish" screen={screen} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
-        <h1 className="title h-title fade-up" style={{ maxWidth: 840 }}>Bir sayt, ikki taqdimot — qaysi biri sizni <span className="italic" style={{ color: T.accent }}>"voy"</span> deydi?</h1>
+        <h1 className="title h-title fade-up" style={{ maxWidth: 840 }}>Bir sayt, ikki taqdimot — qaysi biri sizga <span className="italic" style={{ color: T.accent }}>"voy!"</span> dedirtiradi?</h1>
         <Mentor>Ikki o'quvchi bir xil saytni taqdim qilmoqda. Birini bosing — biri faqat <b style={{ color: T.ink }}>gapiradi</b>, biri <b style={{ color: T.ink }}>jonli ko'rsatadi</b>.</Mentor>
         <Zoomable>
         <Split>
@@ -411,13 +422,13 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   ];
   const isNarrow = useIsMobile(768);
   const [showSteps, setShowSteps] = useState(false);
-  const Idea = ({ ic, h, t, c }) => (<div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}><IcoChip color={c} soft={c + '1c'}>{ic}</IcoChip><div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>{h}</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>{t}</p></div></div>);
+  const Idea = ({ ic, h, t, c, anim }) => (<div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}><IcoChip color={c} soft={c + '1c'} className={anim}>{ic}</IcoChip><div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>{h}</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>{t}</p></div></div>);
   const IdeaBlock = (
     <Col>
-      <p className="flow-label">Bugungi asosiy g'oya</p>
+      <p className="flow-label">Bugungi asosiy fikr</p>
       <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Idea ic={p6.play(22)} c={T.accent} h="AYTMA — KO'RSAT" t="Jonli demo — eng kuchli dalil" />
-        <Idea ic={p6.frame(22)} c={T.blue} h="SODDA TIL" t="Skelet (HTML) · teri (CSS) · harakat (JS)" />
+        <Idea ic={p6.play(22)} c={T.accent} h="AYTMA — KO'RSAT" t="Jonli demo — eng kuchli dalil" anim="ico-pulse" />
+        <Idea ic={p6.frame(22)} c={T.blue} h="SODDA TIL" t="Skelet (HTML) · teri (CSS) · harakat (JS)" anim="ico-sway" />
       </div>
       <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ Shu darsdan keyin: Demo Day! Real saytingni taqdim qilasan</p>
     </Col>
@@ -427,7 +438,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Stage eyebrow="Reja" screen={screen} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Real saytingni Demo Day'da qanday jonli pitch qilasan?</span></h2></div>
-        <Mentor>Modul 1'da <b style={{ color: T.ink }}>g'oyani</b> pitch qilding — mahsulot hali yo'q edi. Endi qo'lingda <b style={{ color: T.ink }}>haqiqiy sayt</b> bor (HTML+CSS+JS). Demo Day'da uni jonli ko'rsatasan!</Mentor>
+        <Mentor>Modul 1'da hali mahsulot yo'q edi — faqat <b style={{ color: T.ink }}>fikrni (g'oyani)</b> taqdim qilgansiz. Endi qo'lingizda <b style={{ color: T.ink }}>haqiqiy, ishlaydigan sayt</b> bor (HTML+CSS+JS). Demo Day'da uni jonli ko'rsatasiz!</Mentor>
         {!isNarrow ? (<Zoomable><Split>{IdeaBlock}{StepsBlock}</Split></Zoomable>) : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{IdeaBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>5 qadamni ko'rish</button></div>) : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ G'oyani ko'rish</button>{StepsBlock}</div>)}
       </div>
     </Stage>
@@ -450,8 +461,8 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Zoomable>
         <div className="split">
           <Col>
-            <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {PARTS.map(s => (<button key={s.key} onClick={() => tap(s.key)} style={{ display: 'flex', alignItems: 'center', gap: 11, textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 12, padding: '12px 14px', background: T.paper, boxShadow: active === s.key ? `inset 0 0 0 2px ${s.color}, 0 8px 20px -8px ${s.color}44` : `0 6px 16px -8px rgba(${T.shadowBase},0.16)`, transition: 'all 0.18s' }}><span style={{ color: s.color, display: 'inline-flex' }}>{s.ic}</span><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, fontSize: 14, color: T.ink }}>{s.label}</span>{seen.has(s.key) && <span style={{ marginLeft: 'auto', color: T.success, display: 'inline-flex' }}>{Ico.check(14)}</span>}</button>))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {PARTS.map((s, i) => (<button key={s.key} className="pop-in" onClick={() => tap(s.key)} style={{ animationDelay: `${0.06 + i * 0.09}s`, display: 'flex', alignItems: 'center', gap: 11, textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 12, padding: '12px 14px', background: T.paper, transform: active === s.key ? 'translateX(4px)' : 'none', boxShadow: active === s.key ? `inset 0 0 0 2px ${s.color}, 0 8px 20px -8px ${s.color}44` : `0 6px 16px -8px rgba(${T.shadowBase},0.16)`, transition: 'box-shadow 0.18s, transform 0.18s' }}><span className={active === s.key ? 'ico-pulse' : ''} style={{ color: s.color, display: 'inline-flex' }}>{s.ic}</span><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, fontSize: 14, color: T.ink }}>{s.label}</span>{seen.has(s.key) && <span style={{ marginLeft: 'auto', color: T.success, display: 'inline-flex' }}>{Ico.check(14)}</span>}</button>))}
             </div>
           </Col>
           <Col>
@@ -567,7 +578,6 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [step, setStep] = useState(storedAnswer ? PARTS.length : 0);
   const [running, setRunning] = useState(false);
   const timer = useRef(null);
-  const isMobile = useIsMobile();
   const done = step >= PARTS.length;
   useEffect(() => () => clearTimeout(timer.current), []);
   const run = () => { clearTimeout(timer.current); setStep(0); setRunning(true); const tick = (i) => { setStep(i); if (i < PARTS.length) timer.current = setTimeout(() => tick(i + 1), 820); else setRunning(false); }; timer.current = setTimeout(() => tick(1), 350); };
@@ -580,7 +590,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Zoomable>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {PARTS.map((s, i) => { const on = step > i; return (<React.Fragment key={s.key}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '9px 13px', opacity: on ? 1 : 0.4, boxShadow: on ? `0 7px 18px -10px rgba(${T.shadowBase},0.18)` : 'none', transition: 'all 0.45s' }}><IcoChip color={on ? s.color : T.ink3} soft={on ? s.color + '1c' : '#ECEAE5'} size={31}>{s.ic}</IcoChip><div style={{ minWidth: 0, flex: 1 }}><p style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 13, color: on ? s.color : T.ink3, margin: 0 }}>{s.label}</p>{on && <p style={{ fontFamily: G, fontStyle: 'italic', fontSize: 12.5, color: T.ink2, margin: '1px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: isMobile ? 'normal' : 'nowrap' }}>"{s.ex}"</p>}</div>{on && <span style={{ color: T.success }}>{Ico.check(15)}</span>}</div>{i < PARTS.length - 1 && <div style={{ display: 'flex', justifyContent: 'center', color: step > i + 1 ? T.success : T.ink3, transform: 'rotate(90deg)', lineHeight: 1, transition: 'color 0.3s' }}>{Ico.arrow(12)}</div>}</React.Fragment>); })}
+          {PARTS.map((s, i) => { const on = step > i; return (<React.Fragment key={s.key}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '9px 13px', opacity: on ? 1 : 0.4, boxShadow: on ? `0 7px 18px -10px rgba(${T.shadowBase},0.18)` : 'none', transition: 'all 0.45s' }}><IcoChip color={on ? s.color : T.ink3} soft={on ? s.color + '1c' : '#ECEAE5'} size={31}>{s.ic}</IcoChip><div style={{ minWidth: 0, flex: 1 }}><p style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 13, color: on ? s.color : T.ink3, margin: 0 }}>{s.label}</p>{on && <p className="fade-step" style={{ fontFamily: G, fontStyle: 'italic', fontSize: 12.5, color: T.ink2, margin: '2px 0 0', lineHeight: 1.4 }}>"{s.ex}"</p>}</div>{on && <span style={{ color: T.success }}>{Ico.check(15)}</span>}</div>{i < PARTS.length - 1 && <div style={{ display: 'flex', justifyContent: 'center', color: step > i + 1 ? T.success : T.ink3, transform: 'rotate(90deg)', lineHeight: 1, transition: 'color 0.3s' }}>{Ico.arrow(12)}</div>}</React.Fragment>); })}
         </div>
         <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Qurilmoqda…' : (done ? '↻ Yana ko\'rish' : 'Taqdimotni qurish')}</button>
         {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana to'liq taqdimot: <b>ochilish → demo → texnika → yakun</b>. 2 daqiqada tayyor.</p></div>}
@@ -798,7 +808,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
           <Col>
-            {active ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span style={{ color: PMETA[active].color, display: 'inline-flex' }}>{PMETA[active].ic}</span><span className="sk-wordbadge" style={{ color: PMETA[active].color, background: PMETA[active].color + '1c' }}>{PMETA[active].label}</span></span><p className="body" style={{ color: T.ink, margin: '12px 0 0' }}>{PMETA[active].job}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir qatorni bosing</p></div> : null)}
+            {active ? (<div className="sk-info fade-step" key={active}><span className="sk-tagbig"><span style={{ color: PMETA[active].color, display: 'inline-flex' }}>{PMETA[active].ic}</span><span className="sk-wordbadge" style={{ color: PMETA[active].color, background: PMETA[active].color + '1c' }}>{PMETA[active].label}</span></span><p className="eyebrow" style={{ color: T.accent, margin: '12px 0 5px', letterSpacing: '0.08em' }}>Nega aynan shunday?</p><p className="body" style={{ color: T.ink, margin: 0 }}>{PMETA[active].job}</p></div>) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir qatorni bosib, nega shunday yozilganini ko'ring</p></div> : null)}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Har qator o'z vazifasini bajaradi. Endi o'zingizning Demo Day pitchingizni yozasiz.</p></div>}
           </Col>
         </div>
@@ -813,19 +823,31 @@ const Screen14 = ({ screen, onNext, onPrev }) => (
   <Stage eyebrow="Qoida" screen={screen} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Yakuniy ishga →" onClick={onNext} /></>}>
     <div className="screen">
       <div className="head"><h2 className="title h-title fade-up">Aytma — <span className="italic" style={{ color: T.accent }}>ko'rsat</span></h2></div>
-      <Mentor>Jonli demo va sodda til <b style={{ color: T.ink }}>ishonch</b> beradi. "Men qildim" demang — <b style={{ color: T.ink }}>bosib ko'rsating</b>. Texnikani tanish analogiya bilan tushuntiring.</Mentor>
+      <Mentor>Jonli demo va sodda til <b style={{ color: T.ink }}>ishonch</b> beradi. "Men qildim" demang — <b style={{ color: T.ink }}>bosib ko'rsating</b>. Mana real sayt: yuragni bosing — gapsiz isbot. O'ngda esa har doim ishlaydigan 4 qadamli tartib.</Mentor>
       <Zoomable>
       <div className="split">
         <Col>
-          <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 'clamp(18px,2.6vw,26px)' }}>
-            <IcoChip size={54} color={T.accent} soft={T.accentSoft}>{p6.play(28)}</IcoChip>
-            <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, margin: 0, color: T.ink, fontSize: 'clamp(18px,2.4vw,22px)' }}>Demo = isbot</p><p className="body" style={{ margin: '3px 0 0', color: T.ink2 }}>Bir marta ko'rsatish — 100 marta aytishdan kuchli.</p></div>
+          <p className="flow-label">Aytma — bosib <span style={{ color: T.accent }}>ko'rsat</span></p>
+          <div className="fade-up"><LiveSite /></div>
+          <div className="frame fade-up delay-1" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px' }}>
+            <IcoChip size={46} color={T.accent} soft={T.accentSoft} className="ico-pulse">{p6.play(24)}</IcoChip>
+            <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, margin: 0, color: T.ink, fontSize: 'clamp(16px,2.2vw,20px)' }}>Demo = isbot</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Bir marta ko'rsatish — 100 marta aytishdan kuchli.</p></div>
           </div>
         </Col>
         <Col>
-          <p className="flow-label">Demo Day taqdimoti — har doim</p>
-          <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {PARTS.map((s, i) => (<React.Fragment key={s.key}><div style={{ display: 'flex', alignItems: 'center', gap: 11, background: T.paper, borderRadius: 11, padding: '10px 13px', boxShadow: `0 5px 14px -8px rgba(${T.shadowBase},0.16)` }}><span style={{ color: s.color, display: 'inline-flex' }}>{s.ic}</span><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, color: T.ink, fontSize: 13.5 }}>{s.label}</span></div>{i < PARTS.length - 1 && <span style={{ color: T.ink3, textAlign: 'center', fontSize: 11 }}>↓</span>}</React.Fragment>))}
+          <p className="flow-label">Demo Day taqdimoti — har doim shu 4 qadam</p>
+          <div className="rule-flow">
+            {PARTS.map((s, i) => {
+              const hint = { ochilish: 'muammoni ayt', demo: 'bosib ko\'rsat', texnika: 'sodda til', yakun: 'ishonch bilan' }[s.key];
+              return (<React.Fragment key={s.key}>
+                <div className="rule-step" style={{ animationDelay: `${0.12 + i * 0.18}s`, borderLeft: `3px solid ${s.color}` }}>
+                  <IcoChip size={34} color={s.color} soft={s.color + '1c'}>{s.ic}</IcoChip>
+                  <div><span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, color: T.ink, fontSize: 13.5, display: 'block' }}>{s.label}</span><span className="small" style={{ color: T.ink3 }}>{hint}</span></div>
+                  <span className="mono" style={{ marginLeft: 'auto', fontWeight: 700, color: s.color, fontSize: 12 }}>{i + 1}</span>
+                </div>
+                {i < PARTS.length - 1 && <span className="rule-arrow" style={{ animationDelay: `${0.21 + i * 0.18}s` }}>↓</span>}
+              </React.Fragment>);
+            })}
           </div>
         </Col>
       </div>
@@ -854,7 +876,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Yakuniy ish" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? 'Davom etish' : `To'ldiring (${filled}/4)`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">O'z sayting uchun <span className="italic" style={{ color: T.accent }}>Demo Day pitchini</span> yoz</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">O'z saytingiz uchun <span className="italic" style={{ color: T.accent }}>Demo Day pitchini</span> yozing</h2></div>
         <Mentor>To'rt qismni yozing: <b style={{ color: T.ink }}>ochilish, jonli demo, sodda texnika, yakun</b>. Keyin taymerni bosib, <b style={{ color: T.ink }}>ovoz chiqarib</b> mashq qiling.</Mentor>
         <MentorCollapseScroll targetRef={workRef} />
         <Zoomable>
@@ -967,12 +989,17 @@ export default function PmLesson6({ lang: langProp, onFinished }) {
         .ms-dots { display: flex; gap: 5px; } .ms-dots i { width: 9px; height: 9px; border-radius: 50%; }
         .ms-dots i:nth-child(1) { background: #ff5f57; } .ms-dots i:nth-child(2) { background: #febc2e; } .ms-dots i:nth-child(3) { background: #28c840; }
         .ms-url { font-family: 'JetBrains Mono'; font-size: 11px; color: ${T.ink2}; }
-        .ms-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-        .ms-head { display: flex; align-items: center; gap: 8px; }
-        .ms-ava { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, ${T.accent}, ${T.honey}); flex-shrink: 0; }
-        .ms-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.ink}; }
-        .ms-img { height: 92px; border-radius: 10px; background: linear-gradient(135deg, ${T.blueSoft}, ${T.accentSoft}); display: flex; align-items: center; justify-content: center; font-size: 30px; }
-        .ms-row { display: flex; align-items: center; gap: 10px; }
+        .ms-body { padding: 14px; display: flex; flex-direction: column; gap: 9px; }
+        .ms-head { display: flex; align-items: center; gap: 9px; }
+        .ms-ava { position: relative; width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, ${T.accent}, ${T.honey}); flex-shrink: 0; box-shadow: 0 3px 9px -3px ${T.accent}66; }
+        .ms-online { position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; background: ${T.success}; box-shadow: 0 0 0 2px #fff; }
+        .ms-meta { display: flex; flex-direction: column; min-width: 0; }
+        .ms-name { font-family: 'Manrope'; font-weight: 800; font-size: 13.5px; color: ${T.ink}; line-height: 1.2; }
+        .ms-sub { font-family: 'Manrope'; font-weight: 500; font-size: 11px; color: ${T.ink3}; }
+        .ms-follow { margin-left: auto; font-family: 'Manrope'; font-weight: 700; font-size: 11px; color: #fff; background: ${T.accent}; border-radius: 99px; padding: 5px 11px; flex-shrink: 0; box-shadow: 0 4px 11px -4px ${T.accent}aa; }
+        .ms-img { height: 118px; border-radius: 12px; background: linear-gradient(150deg, #7CC6E8 0%, #A9D7B0 45%, #FFD9A8 100%); display: flex; align-items: center; justify-content: center; font-size: 42px; box-shadow: inset 0 -30px 50px -20px rgba(0,0,0,0.18); }
+        .ms-capt { font-family: 'Source Serif 4', serif; font-size: 13.5px; color: ${T.ink}; margin: 0; line-height: 1.4; }
+        .ms-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
         .ms-like { display: inline-flex; align-items: center; gap: 7px; border: none; cursor: pointer; background: ${T.bg}; color: ${T.ink2}; padding: 8px 15px; border-radius: 99px; font-family: 'Manrope'; font-weight: 700; transition: all 0.18s; }
         .ms-like:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 14px -6px rgba(${T.shadowBase},0.3); }
         .ms-like:disabled { cursor: default; }
@@ -980,9 +1007,13 @@ export default function PmLesson6({ lang: langProp, onFinished }) {
         .ms-like.pop { animation: like-pop 0.34s cubic-bezier(.2,.7,.2,1); }
         @keyframes like-pop { 0% { transform: scale(1); } 40% { transform: scale(1.28); } 100% { transform: scale(1); } }
         .ms-count { font-size: 13px; min-width: 10px; }
-        .ms-cap { font-size: 12px; color: ${T.ink3}; font-style: italic; }
-        .mini-site.skel .ms-ava { background: #E2E0DB; }
-        .mini-site.skel .ms-img { background: #E2E0DB; }
+        .ms-act { display: inline-flex; align-items: center; gap: 4px; font-size: 15px; color: ${T.ink2}; }
+        .ms-actn { font-family: 'Manrope'; font-weight: 700; font-size: 12.5px; }
+        .ms-save { margin-left: 2px; }
+        .ms-cap { font-size: 11.5px; color: ${T.ink3}; font-style: italic; margin-left: auto; }
+        .ms-liked { font-family: 'Manrope'; font-weight: 600; font-size: 11.5px; color: ${T.ink2}; margin: 0; }
+        .mini-site.skel .ms-ava { background: #E2E0DB; box-shadow: none; }
+        .mini-site.skel .ms-img { background: #E2E0DB; box-shadow: none; }
         .mini-site.skel .ms-name { width: 64px; height: 11px; border-radius: 4px; background: #E2E0DB; }
         .mini-site.skel .ms-like { background: #E2E0DB; color: #C9C7C1; box-shadow: none; }
         @keyframes nod { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(4px) rotate(4deg); } }
@@ -991,6 +1022,18 @@ export default function PmLesson6({ lang: langProp, onFinished }) {
         .veh-pop { animation: veh-pop .4s cubic-bezier(.2,.7,.2,1); }
         @keyframes feat-pop { 0% { transform: scale(.82); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
         .feat-pop { animation: feat-pop .34s cubic-bezier(.2,.7,.2,1); }
+        .pop-in { opacity: 0; animation: feat-pop .42s cubic-bezier(.2,.7,.2,1) both; }
+
+        /* Idea ikonkalari jonli animatsiyasi (Screen1) + faol ikonка puls (Screen2) */
+        @keyframes ico-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.13); } }
+        .ico-pulse { animation: ico-pulse 1.5s ease-in-out infinite; }
+        @keyframes ico-sway { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+        .ico-sway { animation: ico-sway 2.2s ease-in-out infinite; }
+
+        /* Qoida 4-qadam oqimi (Screen14) — navbatma-navbat chiqadi */
+        .rule-flow { display: flex; flex-direction: column; gap: 5px; }
+        .rule-step { display: flex; align-items: center; gap: 11px; background: ${T.paper}; border-radius: 11px; padding: 10px 13px; box-shadow: 0 6px 16px -9px rgba(${T.shadowBase},0.2); opacity: 0; animation: feat-pop .45s cubic-bezier(.2,.7,.2,1) both; }
+        .rule-arrow { text-align: center; color: ${T.ink3}; font-size: 14px; line-height: 1; opacity: 0; animation: fade-step .4s ease-out both; }
         @keyframes shake { 0%,100% { transform: none; } 20% { transform: translateX(-4px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
         .shake-x { animation: shake 0.42s; }
 

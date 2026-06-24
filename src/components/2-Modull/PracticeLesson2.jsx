@@ -67,10 +67,11 @@ const SCORED_IDX = SCREEN_META.map((m, i) => (m.scored ? i : null)).filter(i => 
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
-const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic }) => {
+const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, mentorCollapsible }) => {
   const isMobile = useIsMobile();
   const isNarrow = useIsMobile(768);
-  const collapseOn = isNarrow && !mentorStatic;
+  // mentorCollapsible: desktopda ham mentor yig'ilsin (pastki qism bosilganda/skroll qilinganda)
+  const collapseOn = (isNarrow || mentorCollapsible) && !mentorStatic;
   const padH = isMobile ? 12 : 100;
   const [mCollapsed, setMCollapsed] = useState(false);
   const contentRef = useRef(null);
@@ -244,7 +245,6 @@ const PROMO = {
   tadbir: { tag: 'Tadbir', title: 'TEXNO FEST', sub: 'Yilning eng katta IT festivali', cta: 'Bilet olish', cards: ['Spikerlar', 'Master-klass', "Sovg'alar"] },
   ilova:  { tag: 'Ilova', title: 'FOCUSLY', sub: 'Vaqtingizni aqlli boshqaring', cta: 'Yuklab olish', cards: ['Taymer', 'Statistika', 'Eslatma'] }
 };
-const TOPIC_LABEL = { oyin: "o'yin promo", klub: 'klub', tadbir: 'tadbir', ilova: 'ilova' };
 const STYLE_LABEL = { zamonaviy: 'zamonaviy', oynoqi: "o'ynoqi", minimal: 'minimal' };
 const COLOR_HEX = { kok: '#2563EB', yashil: '#1F9D55', sariq: '#F59E0B', siyohrang: '#7C3AED' };
 const COLOR_LABEL = { kok: "ko'k", yashil: 'yashil', sariq: "to'q sariq", siyohrang: 'siyohrang' };
@@ -253,24 +253,23 @@ const STYLES = [['zamonaviy', 'Zamonaviy'], ['oynoqi', "O'ynoqi"], ['minimal', '
 const COLORS_LIST = [['kok', "Ko'k"], ['yashil', 'Yashil'], ['sariq', "To'q sariq"], ['siyohrang', 'Siyohrang']];
 const SECTIONS = [['button', 'Tugma'], ['cards', 'Kartalar'], ['banner', 'Banner']];
 
-const sectionWords = (s = {}) => {
-  const w = [];
-  if (s.button) w.push('tugma');
-  if (s.cards) w.push('kartalar');
-  if (s.banner) w.push('banner');
-  return w;
-};
+// Real loyihaga yaqin nomlar — prompt "o'yinchoq" emas, AI'ga aytsa ishlaydigan darajada
+const TOPIC_PROMPT = { oyin: "«Pixel Quest» video-o'yini", klub: 'shaxmat klubi', tadbir: '«Texno Fest» festivali', ilova: '«Focusly» ilovasi' };
+const SECTION_PROMPT = { button: 'harakat tugmasi', cards: '3 ta xususiyat kartasi', banner: 'maxsus taklif banneri' };
+const sectionPromptWords = (s = {}) => Object.keys(SECTION_PROMPT).filter(k => s[k]).map(k => SECTION_PROMPT[k]);
 
-const Slot = ({ val, ph }) => val ? <span className="pb-slot">{val}</span> : <span className="pb-ph">{ph}</span>;
+// key={val} — qiymat o'zgarganda slot qayta yuklanib "pop" animatsiyasi beradi (qaysi bo'lim o'zgarganini ko'rsatadi)
+const Slot = ({ val, ph }) => val ? <span className="pb-slot" key={val}>{val}</span> : <span className="pb-ph">{ph}</span>;
 
+// Real, ishlaydigan darajadagi prompt — tabiiy gap, tafsilotli; slotlar tanlovga qarab to'ladi
 const PromptLine = ({ topic, style, color, sections }) => {
-  const secs = sectionWords(sections);
+  const secs = sectionPromptWords(sections);
   return (
     <div className="promptbox">
-      Menga <Slot val={style ? STYLE_LABEL[style] : null} ph="uslub" />,{' '}
-      <Slot val={color ? COLOR_LABEL[color] + ' rangli' : null} ph="rang" />{' '}
-      <Slot val={topic ? TOPIC_LABEL[topic] : null} ph="mavzu" /> sahifasini{' '}
-      <Slot val={secs.length ? secs.join(', ') : null} ph="qismlar" /> bilan yasab ber.
+      Menga <Slot val={topic ? TOPIC_PROMPT[topic] : null} ph="mavzu" /> uchun bir sahifali promo-landing yasab ber.{' '}
+      Uslubi <Slot val={style ? STYLE_LABEL[style] : null} ph="uslub" />, asosiy rang <Slot val={color ? COLOR_LABEL[color] : null} ph="rang" />.{' '}
+      Yuqorida katta sarlavha va qisqa tavsif, hamda <Slot val={secs.length ? secs.join(', ') : null} ph="qismlar" /> bo'lsin.{' '}
+      Mobil va kompyuterda chiroyli ko'rinsin.
     </div>
   );
 };
@@ -329,23 +328,71 @@ function useScrollIntoViewOnMobile(trigger) {
   return ref;
 }
 
-// Prompt-quruvchi (4 blok) — mobilda rang/qismlar tanlanganda natijaga avtoskroll
+// Barcha ekranlarda (mobil + desktop) avtoskroll — masalan "deploy" natijasi har doim ko'rinishi uchun
+function useScrollIntoView(trigger) {
+  const ref = useRef(null);
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    if (!trigger) return;
+    const el = ref.current;
+    if (!el) return;
+    const t = setTimeout(() => { if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 180);
+    return () => clearTimeout(t);
+  }, [trigger]);
+  return ref;
+}
+
+// "Agent quryapti…" — jonli shimmer skeleton (oddiy matndan ko'ra tushunarliroq)
+const BuildingPreview = () => (
+  <div className="build-skel">
+    <div className="bs-bar bs-lg" />
+    <div className="bs-bar" style={{ width: '72%' }} />
+    <div className="bs-bar" style={{ width: '92%' }} />
+    <div className="bs-bar" style={{ width: '60%' }} />
+    <p className="build-note">Agent quryapti…</p>
+  </div>
+);
+
+// Prompt-quruvchi (4 blok) — mobilda rang/qismlar tanlanganda natijaga avtoskroll;
+// desktopда esa rang (3-blok) tanlanganda ham natijaga avtoskroll
 const PromoBuilder = ({ topic, setTopic, style, setStyle, color, setColor, sec, setSec }) => {
   const tog = (k) => setSec(s => ({ ...s, [k]: !s[k] }));
-  const previewRef = useScrollIntoViewOnMobile(`${color}|${sec.button ? 1 : 0}${sec.cards ? 1 : 0}${sec.banner ? 1 : 0}`);
+  const previewRef = useRef(null);
+  const scrollToPreview = () => { const el = previewRef.current; if (!el) return; const t = setTimeout(() => { if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 160); return () => clearTimeout(t); };
+  // mobil (<768px): rang yoki qismlar o'zgarganda
+  const firstM = useRef(true);
+  useEffect(() => {
+    if (firstM.current) { firstM.current = false; return; }
+    if (typeof window === 'undefined' || window.innerWidth >= 768) return;
+    return scrollToPreview();
+    // eslint-disable-next-line
+  }, [`${color}|${sec.button ? 1 : 0}${sec.cards ? 1 : 0}${sec.banner ? 1 : 0}`]);
+  // desktop (>=768px): rang tanlanganda
+  const firstD = useRef(true);
+  useEffect(() => {
+    if (firstD.current) { firstD.current = false; return; }
+    if (!color) return;
+    if (typeof window === 'undefined' || window.innerWidth < 768) return;
+    return scrollToPreview();
+    // eslint-disable-next-line
+  }, [color]);
   return (
     <Zoomable>
     <div className="split">
       <Col>
+        {/* PROMPT — yuqorida: tugmalarni bosgan sari shu yerda yig'iladi */}
+        <p className="flow-label">Sizning buyrug'ingiz — pastdagi tugmalar bilan yig'iladi</p>
+        <PromptLine topic={topic} style={style} color={color} sections={sec} />
+        <p className="builder-cue">Pastdagi 4 guruhdan tanlang ↓ — har bosishda buyruq va o'ngdagi sayt darhol o'zgaradi</p>
         <p className="flow-label">1. Mavzu (nima)</p>
         <div className="chiprow">{TOPICS.map(([v, l]) => <button key={v} className={`chip ${topic === v ? 'chip-on' : ''}`} onClick={() => setTopic(v)}>{l}</button>)}</div>
-        <p className="flow-label">2. Uslub</p>
+        <p className="flow-label">2. Uslub (qanday ko'rinishda)</p>
         <div className="chiprow">{STYLES.map(([v, l]) => <button key={v} className={`chip ${style === v ? 'chip-on' : ''}`} onClick={() => setStyle(v)}>{l}</button>)}</div>
         <p className="flow-label">3. Rang</p>
         <div className="chiprow">{COLORS_LIST.map(([v, l]) => <button key={v} className={`chip ${color === v ? 'chip-on' : ''}`} onClick={() => setColor(v)}><span style={{ width: 11, height: 11, borderRadius: '50%', background: COLOR_HEX[v], display: 'inline-block' }} />{l}</button>)}</div>
         <p className="flow-label">4. Qismlar (tafsilot)</p>
         <div className="chiprow">{SECTIONS.map(([k, l]) => <button key={k} className={`chip ${sec[k] ? 'chip-on' : ''}`} onClick={() => tog(k)}>{sec[k] ? '✓ ' : '+ '}{l}</button>)}</div>
-        <PromptLine topic={topic} style={style} color={color} sections={sec} />
       </Col>
       <Col>
         <p className="flow-label">Natija — jonli yangilanadi</p>
@@ -394,8 +441,8 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   return (
     <Stage eyebrow="Kirish" screen={screen} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
-        <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Butun bir saytni <span className="italic" style={{ color: T.accent }}>bitta jumla</span> bilan qura olasizmi?</h1>
-        <Mentor>1-darsda har bir narsani qo'lda qurdik. AI esa saytni soniyalarda yasaydi! Quyidagi buyruqni agentga yuboring va o'ngdagi natijaga diqqat bilan qarang.</Mentor>
+        <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>AI'ga shunchaki <span className="italic" style={{ color: T.accent }}>«sayt yasab ber»</span> desangiz — nima chiqadi?</h1>
+        <Mentor>1-darsda har bir narsani qo'lda qurdik. AI esa saytni soniyalarda yasaydi! Quyidagi qisqa, noaniq buyruqni agentga yuboring va o'ngdagi natijaga diqqat bilan qarang — kutganingizday chiqadimi?</Mentor>
         <Zoomable>
         <Split>
           <Col>
@@ -408,8 +455,8 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
             <p className="flow-label">Natija</p>
             <Browser url="ai-natija.uz">
               {phase === 'idle' && <p className="small" style={{ margin: 0, opacity: 0.5, textAlign: 'center', padding: '24px 0' }}>(hali yuborilmadi)</p>}
-              {phase === 'building' && <p className="small" style={{ margin: 0, opacity: 0.6, textAlign: 'center', padding: '24px 0' }}>Agent quryapti…</p>}
-              {built && <LandingPreview vague />}
+              {phase === 'building' && <BuildingPreview />}
+              {built && <div className="result-reveal"><LandingPreview vague /></div>}
             </Browser>
             {built && (
               <div className="fade-step">
@@ -446,9 +493,9 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   const [showSteps, setShowSteps] = useState(false);
   const PreviewBlock = (
     <Col>
-      <div className="fade-up frame" style={{ background: T.ink, color: '#fff', textAlign: 'center', padding: '20px 18px' }}>
-        <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.6)', margin: '0 0 8px' }}>Bugungi asosiy qoida</p>
-        <p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, fontSize: 'clamp(18px,3vw,24px)', lineHeight: 1.25, margin: 0 }}>AI <span style={{ color: T.accent, fontStyle: 'italic' }}>tezlik</span> beradi — <span style={{ color: T.accent, fontStyle: 'italic' }}>sifatni</span> siz ta'minlaysiz.</p>
+      <div className="speed-quote">
+        <p className="sq-eyebrow">Bugungi asosiy qoida</p>
+        <p className="sq-text">AI <span className="sq-fast">tezlik</span> beradi — <span className="sq-quality">sifatni</span> siz ta'minlaysiz.</p>
       </div>
       <p className="flow-label">Yaxshi promptning 4 ingredienti</p>
       <div className="fade-up delay-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
@@ -512,8 +559,8 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <p className="flow-label">Natija</p>
             <Browser url="texno-fest.uz">
               {phase === 'idle' && <p className="small" style={{ margin: 0, opacity: 0.5, textAlign: 'center', padding: '24px 0' }}>(buyruqni yuboring)</p>}
-              {phase === 'building' && <p className="small" style={{ margin: 0, opacity: 0.6, textAlign: 'center', padding: '24px 0' }}>Agent quryapti…</p>}
-              {built && <LandingPreview topic="tadbir" style="oynoqi" color="siyohrang" sections={{ button: true, cards: true, banner: true }} />}
+              {phase === 'building' && <BuildingPreview />}
+              {built && <div className="result-reveal"><LandingPreview topic="tadbir" style="oynoqi" color="siyohrang" sections={{ button: true, cards: true, banner: true }} /></div>}
             </Browser>
           </Col>
         </div>
@@ -529,10 +576,10 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [seen, setSeen] = useState(new Set());
   const done = seen.size >= 2;
   const PARTS = {
-    mavzu: { color: T.blue, hex: '#5BC8EC', name: 'MAVZU', word: "o'yin promo", desc: 'Qanaqa sahifa kerakligi. Masalan: o\'yin promo, klub, tadbir yoki ilova sahifasi.' },
+    mavzu: { color: T.blue, hex: '#5BC8EC', name: 'MAVZU', word: "«Pixel Quest» o'yini", desc: 'Qanaqa sahifa va nima haqida. Masalan: o\'yin promo, klub, tadbir yoki ilova. Mahsulot nomini ham aytsangiz — yanada aniq.' },
     uslub: { color: T.accent, hex: '#FF9777', name: 'USLUB', word: "o'ynoqi", desc: 'Sahifa qanday ko\'rinishda bo\'lsin: zamonaviy, o\'ynoqi yoki minimal.' },
     rang: { color: T.success, hex: '#6FD79E', name: 'RANG', word: "ko'k", desc: 'Asosiy rang: ko\'k, yashil, to\'q sariq yoki siyohrang.' },
-    qism: { color: '#A78BFA', hex: '#C4B5FD', name: 'QISMLAR', word: 'tugma, kartalar', desc: 'Sahifada nimalar bo\'lsin: tugma, kartalar yoki banner.' }
+    qism: { color: '#A78BFA', hex: '#C4B5FD', name: 'QISMLAR', word: 'tugma va kartalar', desc: 'Sahifada nimalar bo\'lsin: harakat tugmasi, xususiyat kartalari yoki banner.' }
   };
   const tap = (k) => { setPart(k); setSeen(prev => { const n = new Set(prev); n.add(k); return n; }); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
@@ -546,7 +593,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="split">
           <Col>
             <div className="codebox" style={{ background: T.paper, color: T.ink, fontFamily: "'Manrope'", fontSize: 'clamp(14px,1.9vw,16px)', lineHeight: 2.1, boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.16)` }}>
-              Menga <Span k="uslub" />, <Span k="rang" /> rangli <Span k="mavzu" /> sahifasini <Span k="qism" /> bilan yasab ber.
+              Menga <Span k="mavzu" /> uchun bir sahifali promo-landing yasab ber — <Span k="uslub" /> uslubda, <Span k="rang" /> rangli, <Span k="qism" /> bilan.
             </div>
             {part ? (
               <div className="sk-info fade-step" key={part}>
@@ -636,10 +683,10 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             <p className="flow-label">Natija</p>
             <Browser url={sent === 'yaxshi' ? 'shaxmat-klubi.uz' : 'ai-natija.uz'}>
-              {phase === 'building' && <p className="small" style={{ margin: 0, opacity: 0.6, textAlign: 'center', padding: '24px 0' }}>Agent quryapti…</p>}
+              {phase === 'building' && <BuildingPreview />}
               {phase === 'idle' && sent === null && <p className="small" style={{ margin: 0, opacity: 0.5, textAlign: 'center', padding: '24px 0' }}>(buyruqni yuboring)</p>}
-              {phase === 'idle' && sent === 'yomon' && <LandingPreview vague />}
-              {phase === 'idle' && sent === 'yaxshi' && <LandingPreview topic="klub" style="oynoqi" color="yashil" sections={{ button: true, cards: true, banner: true }} />}
+              {phase === 'idle' && sent === 'yomon' && <div className="result-reveal" key="yomon"><LandingPreview vague /></div>}
+              {phase === 'idle' && sent === 'yaxshi' && <div className="result-reveal" key="yaxshi"><LandingPreview topic="klub" style="oynoqi" color="yashil" sections={{ button: true, cards: true, banner: true }} /></div>}
             </Browser>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir xil maqsad, lekin tafsilot bilan natija osmon-u yer farq qiladi. <b>Tafsilot = sifat.</b></p></div>}
           </Col>
@@ -824,10 +871,10 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const anySec = sec.button || sec.cards || sec.banner;
   const all4 = topic && style && color && anySec;
   const done = published;
-  const pubRef = useScrollIntoViewOnMobile(published);
+  const pubRef = useScrollIntoView(published); // deploy natijasi mobil + desktop'da ham ko'rinishga kelsin
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="O'z loyihangiz" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Sahifani nashr qiling'} onClick={onNext} /></>}>
+    <Stage eyebrow="O'z loyihangiz" screen={screen} mentorCollapsible navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Sahifani nashr qiling'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi <span className="italic" style={{ color: T.accent }}>o'zingiz</span> qanday sayt yaratasiz?</h2></div>
         <Mentor>Endi to'liq erkinlik sizda! Yoqtirgan mavzu, uslub, rang va qismlarni tanlab, <b style={{ color: T.ink }}>o'zingizning</b> promo sahifangizni quring. Tayyor bo'lgach — uni <b style={{ color: T.ink }}>nashr qiling</b> (deploy) va dunyoga ulashing.</Mentor>
@@ -865,16 +912,16 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             <p className="flow-label">Mavzuni tanlang</p>
             <div className="chiprow fade-up delay-1">{TOPICS.map(([v, l]) => <button key={v} className={`chip ${topic === v ? 'chip-on' : ''}`} onClick={() => setTopic(v)}>{l}</button>)}</div>
-            <div className="promptbox">Menga <span className="pb-slot">o'ynoqi</span>, <span className="pb-slot">siyohrang rangli</span> <span className="pb-slot">{TOPIC_LABEL[topic]}</span> sahifasini <span className="pb-slot">tugma, kartalar</span> bilan yasab ber.</div>
+            <div className="promptbox">Menga <span className="pb-slot" key={topic}>{TOPIC_PROMPT[topic]}</span> uchun bir sahifali promo-landing yasab ber. Uslubi <span className="pb-slot">o'ynoqi</span>, asosiy rang <span className="pb-slot">siyohrang</span>. Yuqorida katta sarlavha va qisqa tavsif, hamda <span className="pb-slot">harakat tugmasi, 3 ta karta</span> bo'lsin. Mobil va kompyuterda chiroyli ko'rinsin.</div>
             <button className="btn" onClick={send} disabled={phase === 'building'} style={{ alignSelf: 'flex-start' }}>{phase === 'building' ? 'Quryapti…' : 'Agentga yuborish'}</button>
             {stale && <p className="hook-ack fade-step" style={{ margin: 0, color: T.accent }}>Yangi mavzu tanlandi — yuborib ko'ring.</p>}
           </Col>
           <Col>
             <p className="flow-label">Natija — har mavzuga boshqa sayt</p>
             <Browser url={sent ? `${sent}.uz` : 'promo.uz'} key={sent || 'none'}>
-              {phase === 'building' && <p className="small" style={{ margin: 0, opacity: 0.6, textAlign: 'center', padding: '24px 0' }}>Agent quryapti…</p>}
+              {phase === 'building' && <BuildingPreview />}
               {phase === 'idle' && sent === null && <p className="small" style={{ margin: 0, opacity: 0.5, textAlign: 'center', padding: '24px 0' }}>(mavzu tanlab, yuboring)</p>}
-              {phase === 'idle' && sent && <LandingPreview topic={sent} style="oynoqi" color="siyohrang" sections={{ button: true, cards: true, banner: false }} />}
+              {phase === 'idle' && sent && <div className="result-reveal"><LandingPreview topic={sent} style="oynoqi" color="siyohrang" sections={{ button: true, cards: true, banner: false }} /></div>}
             </Browser>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? O'yin, klub, tadbir, ilova — bitta usul bilan hammasi. Endi siz <b>istalgancha sayt</b> qura olasiz.</p></div>}
           </Col>
@@ -941,7 +988,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const all4 = topic && style && color && anySec;
   useEffect(() => { if (all4 && !passed) { setPassed(true); onAnswer(screen, { stage: 'final', screenIdx: screen, question: 'To\'liq 4-ingredientli buyruq tuzish', studentAnswer: `${topic}/${style}/${color}`, correct: true, firstAttemptCorrect: true, solved: true, picked: `${topic}/${style}/${color}` }); } }, [all4]);
   return (
-    <Stage eyebrow="Yakuniy · amaliy" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? 'Davom etish' : "4 ingredientni to'ldiring"} onClick={onNext} /></>}>
+    <Stage eyebrow="Yakuniy · amaliy" screen={screen} mentorCollapsible navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? 'Davom etish' : "4 ingredientni to'ldiring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi sinov: <span className="italic" style={{ color: T.accent }}>to'liq</span> buyruq tuzing</h2></div>
         <Mentor>Vazifa: <b style={{ color: T.ink }}>maktab konsertiga promo sahifa</b> kerak. To'liq, sifatli buyruq tuzing — <b style={{ color: T.ink }}>4 ingredientning hammasini</b> tanlang: mavzu, uslub, rang va kamida bitta qism. Hammasi to'lganda buyruq tayyor bo'ladi.</Mentor>
@@ -1175,9 +1222,32 @@ export default function PracticeLesson2({ lang: langProp, onFinished }) {
 
         /* === PROMPT-QURUVCHI === */
         .chiprow { display: flex; flex-wrap: wrap; gap: 8px; }
-        .promptbox { background: ${T.paper}; border-radius: 12px; padding: 12px 14px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.16); font-family: 'Manrope'; font-size: clamp(13px,1.6vw,14.5px); line-height: 2; color: ${T.ink}; }
-        .pb-slot { display: inline-flex; align-items: center; background: ${T.accentSoft}; color: ${T.accent}; font-weight: 700; border-radius: 6px; padding: 2px 8px; margin: 0 1px; }
+        .promptbox { background: ${T.paper}; border-radius: 12px; padding: 13px 15px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.16); font-family: 'Manrope'; font-size: clamp(13px,1.6vw,14.5px); line-height: 2; color: ${T.ink}; }
+        .pb-slot { display: inline-flex; align-items: center; background: ${T.accentSoft}; color: ${T.accent}; font-weight: 700; border-radius: 6px; padding: 2px 8px; margin: 0 1px; animation: slot-pop 0.34s cubic-bezier(.34,1.45,.5,1); }
+        @keyframes slot-pop { 0% { transform: scale(0.5); opacity: 0; } 55% { transform: scale(1.14); } 100% { transform: scale(1); opacity: 1; } }
         .pb-ph { display: inline-flex; align-items: center; border: 1.5px dashed ${T.ink3}; color: ${T.ink3}; border-radius: 6px; padding: 1px 8px; margin: 0 1px; font-style: italic; }
+        .builder-cue { font-family: 'Manrope'; font-weight: 500; font-size: 12px; color: ${T.ink2}; margin: -2px 0 2px; display: flex; align-items: center; gap: 6px; }
+
+        /* === SPEED QUOTE (Screen1 qora karta — yangilangan) === */
+        @keyframes quote-in { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
+        @keyframes sheen { 0% { background-position: -60% 0; } 100% { background-position: 160% 0; } }
+        @keyframes sq-underline { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+        .speed-quote { position: relative; overflow: hidden; border-radius: 16px; padding: clamp(20px,3.2vw,30px); text-align: center; background: radial-gradient(130% 150% at 50% -10%, #262A33 0%, #15171D 58%, #0B0C10 100%); box-shadow: 0 18px 44px -14px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.07); animation: quote-in 0.5s cubic-bezier(.34,1.2,.4,1); }
+        .speed-quote::after { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,0.08) 50%, transparent 62%); background-size: 220% 100%; animation: sheen 3.4s ease-in-out 0.7s infinite; pointer-events: none; }
+        .speed-quote .sq-eyebrow { font-family: 'Manrope'; font-weight: 700; font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin: 0 0 11px; position: relative; }
+        .speed-quote .sq-text { font-family: 'Source Serif 4', serif; font-weight: 600; font-size: clamp(18px,3vw,26px); line-height: 1.3; margin: 0; color: #F4F1EA; position: relative; }
+        .sq-fast { color: ${T.accent}; font-style: italic; position: relative; text-shadow: 0 0 18px rgba(255,79,40,0.45); }
+        .sq-fast::after { content: ''; position: absolute; left: 0; right: 0; bottom: -3px; height: 2px; background: ${T.accent}; border-radius: 2px; transform: scaleX(0); transform-origin: left; animation: sq-underline 0.5s cubic-bezier(.4,0,.2,1) forwards 0.55s; box-shadow: 0 0 10px ${T.accent}; }
+        .sq-quality { color: #FFC56B; font-style: italic; text-shadow: 0 0 18px rgba(255,197,107,0.4); }
+
+        /* === NATIJA REVEAL + "QURYAPTI" SKELETON === */
+        @keyframes result-reveal { from { opacity: 0; transform: translateY(9px) scale(0.97); } to { opacity: 1; transform: none; } }
+        .result-reveal { animation: result-reveal 0.42s cubic-bezier(.34,1.18,.5,1); }
+        @keyframes bs-shimmer { 0% { background-position: 180% 0; } 100% { background-position: -180% 0; } }
+        .build-skel { display: flex; flex-direction: column; gap: 11px; padding: 10px 2px; }
+        .build-skel .bs-bar { height: 13px; border-radius: 7px; background: linear-gradient(90deg, #ECEAE4 25%, #FAF8F3 50%, #ECEAE4 75%); background-size: 200% 100%; animation: bs-shimmer 1.15s ease-in-out infinite; }
+        .build-skel .bs-lg { height: 34px; border-radius: 10px; }
+        .build-note { text-align: center; font-size: 11.5px; color: ${T.ink3}; margin: 6px 0 0; font-family: 'JetBrains Mono'; letter-spacing: 0.04em; }
 
         /* === EVENT KARTALAR === */
         .evt-card { display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; border: none; border-radius: 12px; padding: 13px 15px; background: ${T.paper}; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); transition: all .18s; width: 100%; }

@@ -435,7 +435,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="if" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Yoshni o\'zgartiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up"><span className="italic mono" style={{ color: T.accent }}>if</span> — agar shart rost bo'lsa, bajar</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Dastur <span className="italic" style={{ color: T.accent }}>qachon</span> kodni bajaradi?</h2></div>
         <Mentor><span className="mono">if</span> degani <b style={{ color: T.ink }}>"agar"</b>. Qavs ichiga <b style={{ color: T.ink }}>shart</b>, figurali qavs <span className="mono">{'{ }'}</span> ichiga <b style={{ color: T.ink }}>kod</b> yoziladi. Shart <b style={{ color: T.ink }}>rost (true)</b> bo'lsa — kod ishlaydi. Yoshni o'zgartiring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -540,7 +540,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="else" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Ikkala yo\'lni ko\'ring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up"><span className="italic mono" style={{ color: T.accent }}>else</span> — aks holda, BOSHQA yo'l</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Shart bajarilmasa, dastur <span className="italic" style={{ color: T.accent }}>nima qiladi</span>?</h2></div>
         <Mentor><span className="mono">else</span> — bu <b style={{ color: T.ink }}>"aks holda"</b>, ya'ni <b style={{ color: T.ink }}>ikkinchi yo'l</b> (tugadi degani emas!). Shart <b style={{ color: T.ink }}>rost</b> bo'lsa — if bloki, <b style={{ color: T.ink }}>yolg'on</b> bo'lsa — else bloki ishlaydi. Doim ikkitadan bittasi. Yoshni o'zgartiring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -651,7 +651,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="else if" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Ballni o\'zgartiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bir nechta yo'l bo'lsa — <span className="italic mono" style={{ color: T.accent }}>else if</span></h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Bir nechta yo'l bo'lsa, dastur <span className="italic" style={{ color: T.accent }}>qaysi birini</span> tanlaydi?</h2></div>
         <Mentor>Ba'zan bir nechta yo'l bo'ladi. Imtihon bahosi: 90+ → 5, 70+ → 4, 60+ → 3, aks holda → 2. Buning uchun <span className="mono">else if</span> — <b style={{ color: T.ink }}>"aks holda, agar..."</b>. Ballni o'zgartiring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -691,7 +691,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Shart natijasi" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Yoshni o\'zgartiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Shartni <span className="italic" style={{ color: T.accent }}>o'zgaruvchiga</span> solib bo'ladimi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Shart <span className="italic" style={{ color: T.accent }}>true/false</span> beradi — buni saqlasa bo'ladimi?</h2></div>
         <Mentor>E'tibor bering: taqqoslash (<span className="mono">yosh {'>='} 18</span>) natijasi — bu o'sha <b style={{ color: T.ink }}>true yoki false</b> (1-darsdagi boolean!). Demak uni <b style={{ color: T.ink }}>o'zgaruvchiga saqlash</b> mumkin. Yoshni o'zgartirib, <span className="mono">katta</span> o'zgaruvchisiga nima yozilishini ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -747,7 +747,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Ichma-ich shart" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Sozlamalarni sinang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Ikkita shart <span className="italic" style={{ color: T.accent }}>birga</span> kerak bo'lsa?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Bir shart ichida <span className="italic" style={{ color: T.accent }}>yana bir shart</span> bo'lsa-chi?</h2></div>
         <Mentor>Attraksionga kirish uchun: avval <b style={{ color: T.ink }}>yosh</b> yetarli, keyin <b style={{ color: T.ink }}>chipta</b> ham kerak. Demak <span className="mono">if</span> ichiga yana <span className="mono">if</span> yozamiz — <b style={{ color: T.ink }}>ichma-ich shart</b>. Sozlamalarni o'zgartiring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -801,7 +801,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Amaliy misol" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Yoshlarni sinang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Sen <span className="italic" style={{ color: T.accent }}>kassirsan</span>: chipta narxi qancha?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Siz <span className="italic" style={{ color: T.accent }}>kassirsiz</span>: chipta narxi qancha?</h2></div>
         <Mentor>Kinoteatr <b style={{ color: T.ink }}>kassasidasiz</b>! Har bir mehmonga yoshiga qarab narx aytasiz: 7 gacha bola — <b style={{ color: T.ink }}>tekin</b>, 18 gacha o'quvchi — <b style={{ color: T.ink }}>yarim narx</b>, kattalar — <b style={{ color: T.ink }}>to'liq</b>. <span className="mono">if / else if</span> shu qarorni o'zi chiqaradi. Yoshni tanlang.</Mentor>
         <Zoomable>
         <div className="split">
@@ -908,8 +908,8 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Debugging" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : (found ? 'Endi tuzating' : 'Xatoni toping')} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Shart noto'g'ri ishlayapti — <span className="italic" style={{ color: T.accent }}>nega</span>?</h2></div>
-        <Mentor>AI shart yozdi, lekin xato qilibdi. Shartda <b style={{ color: T.ink }}>bitta teng belgisi</b> ishlatilibdi — bu qiymatni o'zlashtiradi, <b style={{ color: T.ink }}>tekshirmaydi</b>! Tekshirish uchun <span className="mono">===</span> kerak. Xato qatorni toping.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">10 yoshli bola ham <span className="italic" style={{ color: T.accent }}>"katta"</span> chiqyapti — nega?</h2></div>
+        <Mentor>AI shart yozdi, lekin xato qilibdi: yoshi <b style={{ color: T.ink }}>10</b> bo'lsa ham natija doim <b style={{ color: T.ink }}>"katta"</b>! Sababi — shartda <b style={{ color: T.ink }}>bitta teng belgisi</b> ishlatilibdi: u qiymatni o'zlashtiradi, <b style={{ color: T.ink }}>tekshirmaydi</b>. Tekshirish uchun <span className="mono">===</span> kerak. Xato qatorni toping.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>

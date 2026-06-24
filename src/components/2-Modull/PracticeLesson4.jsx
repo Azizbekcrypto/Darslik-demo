@@ -239,10 +239,10 @@ const SiteCard = ({ name = 'Akmal', role = 'Veb-dasturchi · 14 yosh', children 
 
 // ===== MINI-DO'KON MA'LUMOTLARI (narx — son) =====
 const PRODUCTS = [
-  { name: 'Kitob', price: 35000 },
-  { name: 'Daftar', price: 12000 },
-  { name: 'Ruchka', price: 5000 },
-  { name: 'Sumka', price: 90000 }
+  { name: 'Kitob', price: 35000, emoji: '📚', tint: '#2563EB' },
+  { name: 'Daftar', price: 12000, emoji: '📓', tint: '#1F9D55' },
+  { name: 'Ruchka', price: 5000, emoji: '✏️', tint: '#F59E0B' },
+  { name: 'Sumka', price: 90000, emoji: '🎒', tint: '#7C3AED' }
 ];
 const som = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
@@ -278,7 +278,7 @@ const InteractiveShop = ({ cart = [], onAdd, showCart = true, showTotal = true, 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 7 }}>
         {PRODUCTS.map((p, i) => (
           <div key={i} style={{ background: T.paper, borderRadius: 9, padding: '7px 9px', boxShadow: `0 4px 12px -6px rgba(${T.shadowBase},0.16)`, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 26, height: 26, borderRadius: 6, background: `${accent}22`, flexShrink: 0 }} />
+            <div style={{ width: 30, height: 30, borderRadius: 7, background: `${p.tint || accent}22`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{p.emoji}</div>
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: 12, color: T.ink, whiteSpace: 'nowrap' }}>{p.name}</div>
               <div style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: 11.5, color: accent }}>{som(p.price)} so'm</div>
@@ -290,6 +290,16 @@ const InteractiveShop = ({ cart = [], onAdd, showCart = true, showTotal = true, 
     </div>
   );
 };
+
+// "Agent quryapti…" — jonli shimmer skeleton
+const BuildingPreview = () => (
+  <div className="build-skel">
+    <div className="bs-bar bs-lg" />
+    <div className="bs-bar" style={{ width: '72%' }} />
+    <div className="bs-bar" style={{ width: '90%' }} />
+    <p className="build-note">Agent quryapti…</p>
+  </div>
+);
 
 // Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
 const Zoomable = ({ children }) => {
@@ -325,14 +335,14 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   return (
     <Stage eyebrow="Kirish" screen={screen} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
-        <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Do'kon ko'rinadi, lekin <span className="italic" style={{ color: T.accent }}>sotib olib</span> bo'lmaydi 🤔</h1>
-        <Mentor>3-darsda do'konning <b style={{ color: T.ink }}>o'zagini</b> qurdik — mahsulotlar va narxlar bor. Lekin bu hali haqiqiy do'kon emas: <b style={{ color: T.ink }}>"Sotib olish"</b> tugmasini bosib ko'ring — biror narsa bo'ladimi?</Mentor>
+        <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Do'kon ko'rinadi, lekin <span className="italic" style={{ color: T.accent }}>sotib olib</span> bo'lmaydi</h1>
+        <Mentor>3-darsda do'konning <b style={{ color: T.ink }}>asosiy qismini</b> qurdik — mahsulotlar va narxlar bor. Lekin bu hali haqiqiy do'kon emas: <b style={{ color: T.ink }}>"Sotib olish"</b> tugmasini bosib ko'ring — biror narsa bo'ladimi?</Mentor>
         <Zoomable>
         <Split>
           <Col>
-            <p className="flow-label">3-darsdagi o'zak (katalog)</p>
+            <p className="flow-label">3-darsdagi katalog (asosiy qism)</p>
             <Browser url="maktab-dokoni.uz"><InteractiveShop showCart={false} showTotal={false} /></Browser>
-            <button className="btn" onClick={() => setTries(t => t + 1)} style={{ alignSelf: 'flex-start' }}>🛒 Sotib olish</button>
+            <button className="btn" onClick={() => setTries(t => t + 1)} style={{ alignSelf: 'flex-start' }}>Sotib olish</button>
             {tries > 0 && <p className="mono small" style={{ color: T.accent, margin: 0 }}>{tries}-marta bosildi — hech narsa bo'lmadi. Savat yo'q.</p>}
           </Col>
           <Col>
@@ -349,7 +359,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
                       <span className="radio">{on && <span className="radio-dot" />}</span><span>{o.label}</span>
                     </button>); })}
                 </div>
-                {picked !== null && <p className="hook-ack fade-step">To'g'ri! Mahsulotni ko'rsatish — bu boshlanish. Haqiqiy do'kon uchun <b>savat</b> va <b>jami narx</b> kerak. Bugun o'zakni <b>to'liq, ishlaydigan MVP</b>ga aylantirib, dunyoga chiqaramiz!</p>}
+                {picked !== null && <p className="hook-ack fade-step">To'g'ri! Mahsulotni ko'rsatish — bu boshlanish. Haqiqiy do'kon uchun <b>savat</b> va <b>jami narx</b> kerak. Bugun katalogni <b>to'liq, ishlaydigan MVP</b>ga aylantirib, dunyoga chiqaramiz!</p>}
               </div>
             )}
           </Col>
@@ -365,8 +375,8 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   const STEPS = [
     { text: 'Savatga qo\'shish — sanagich ishlasin', tag: 'savat' },
     { text: 'Jami narx — avtomatik hisob', tag: 'jami' },
-    { text: 'Bug tuzatish — AI bilan', tag: '' },
-    { text: 'Jilolash — oxirgi pardoz', tag: '' },
+    { text: 'Xatoni tuzatish — AI bilan', tag: 'bug' },
+    { text: 'Oxirgi pardoz — qulayroq qilish', tag: '' },
     { text: 'Deploy — dunyoga chiqarish', tag: 'havola' }
   ];
   const isNarrow = useIsMobile(768);
@@ -375,7 +385,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Col>
       <div className="fade-up frame" style={{ background: T.ink, color: '#fff', textAlign: 'center', padding: '20px 18px' }}>
         <p className="eyebrow" style={{ color: 'rgba(255,255,255,0.6)', margin: '0 0 8px' }}>Oxirgi dars — cho'qqi</p>
-        <p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, fontSize: 'clamp(18px,3vw,24px)', lineHeight: 1.25, margin: 0 }}>O'zakni <span style={{ color: T.accent, fontStyle: 'italic' }}>to'liq MVP</span>ga aylantirib, <span style={{ color: T.accent, fontStyle: 'italic' }}>dunyoga</span> chiqaramiz.</p>
+        <p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, fontSize: 'clamp(18px,3vw,24px)', lineHeight: 1.25, margin: 0 }}>Katalogni <span style={{ color: T.accent, fontStyle: 'italic' }}>to'liq MVP</span>ga aylantirib, <span style={{ color: T.accent, fontStyle: 'italic' }}>dunyoga</span> chiqaramiz.</p>
         <p className="body" style={{ color: 'rgba(255,255,255,0.85)', margin: '10px 0 0' }}>Yakunda: "Men istalgan narsani qura olaman."</p>
       </div>
     </Col>
@@ -392,7 +402,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Stage eyebrow="Reja" screen={screen} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up">Do'konni <span className="italic" style={{ color: T.accent }}>oxiriga</span> yetkazamiz</h2></div>
-        <Mentor>Reja bizda bor: o'zakka savat va jami narxni qo'shamiz, buglarni tuzatamiz, jilolaymiz va <b style={{ color: T.ink }}>deploy</b> qilamiz. Dars oxirida sizda haqiqiy, ulashiladigan do'kon bo'ladi. Mana yo'l — 5 qadam.</Mentor>
+        <Mentor>Reja bizda bor: katalogga savat va jami narxni qo'shamiz, xatolarni tuzatamiz, oxirgi pardozni beramiz va <b style={{ color: T.ink }}>deploy</b> qilamiz (internetga chiqaramiz). Dars oxirida sizda haqiqiy, ulashiladigan do'kon bo'ladi. Mana yo'l — 5 qadam.</Mentor>
         {!isNarrow ? (
           <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
@@ -421,12 +431,12 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Xususiyat 1 · Savat" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : (ready ? 'Savatga qo\'shing' : 'Avval qo\'shib oling')} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Avval — <span className="italic" style={{ color: T.accent }}>savatga qo'shish</span></h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Xaridor mahsulotni qanday <span className="italic" style={{ color: T.accent }}>savatga soladi?</span></h2></div>
         <Mentor>Birinchi xususiyat: har mahsulotga <b style={{ color: T.ink }}>"+"</b> tugmasi va <b style={{ color: T.ink }}>savat sanagichi</b>. AI'ga aniq buyruq beramiz, u rejani ko'rsatadi, tasdiqlaymiz — keyin "+" ni bosib, savat to'lishini ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
-            <div className="promptbox">Har mahsulotga <span className="pb-slot">"+ savatga"</span> tugmasi va <span className="pb-slot">savat sanagichi</span> qo'sh.</div>
+            <div className="promptbox">Har mahsulot kartasiga <span className="pb-slot">"+ savatga"</span> tugmasi qo'sh; bosilganda mahsulot savatga qo'shilsin va yuqoridagi <span className="pb-slot">savat sanagichi</span> +1 bo'lsin.</div>
             <button className="btn" onClick={send} disabled={phase !== 'idle' && phase !== 'ready'} style={{ alignSelf: 'flex-start' }}>{phase === 'idle' || phase === 'ready' ? 'Agentga yuborish' : (phase === 'building' ? 'Quryapti…' : 'Reja tayyor')}</button>
             {(phase === 'planned' || phase === 'building' || ready) && (
               <div className="ai-card fade-step">
@@ -468,12 +478,12 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Xususiyat 2 · Jami narx" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : (ready ? 'Mahsulot qo\'shing' : 'Avval qo\'shing')} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Endi — <span className="italic" style={{ color: T.accent }}>jami narx</span> avtomatik hisoblanadi</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Xaridor qancha to'lashini <span className="italic" style={{ color: T.accent }}>qayerdan biladi?</span></h2></div>
         <Mentor>Savat bor, lekin xaridor qancha to'lashini bilishi kerak. <b style={{ color: T.ink }}>Jami narx</b> — qo'shilgan mahsulotlar narxining yig'indisi (10-darsdagi sikl/qo'shish esingizdami?). AI'ga qo'shtiramiz, keyin mahsulot qo'shib, jami o'zgarishini ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
-            <div className="promptbox">Savatga qo'shilgan mahsulotlarning <span className="pb-slot">jami narxini</span> avtomatik hisoblab ko'rsat.</div>
+            <div className="promptbox">Savatdagi barcha mahsulot narxlarini qo'shib, <span className="pb-slot">"Jami"</span> qatorida ko'rsat; mahsulot qo'shilganda yig'indi <span className="pb-slot">avtomatik yangilansin</span>.</div>
             <button className="btn" onClick={send} disabled={phase === 'building'} style={{ alignSelf: 'flex-start' }}>{phase === 'building' ? 'Quryapti…' : (ready ? '↻ Qayta' : 'Agentga yuborish')}</button>
             {ready && <div className="frame" style={{ padding: '11px 14px' }}><p className="small mono" style={{ margin: 0, color: T.ink2 }}>jami = narx[0] + narx[1] + …</p></div>}
           </Col>
@@ -556,7 +566,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Bug topish" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Endi tuzatamiz' : 'Xatoni toping'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Diqqat — bu yerda bir narsa <span className="italic" style={{ color: T.accent }}>noto'g'ri</span></h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Jami narx <span className="italic" style={{ color: T.accent }}>to'g'ri</span> hisoblanyaptimi?</h2></div>
         <Mentor>AI ba'zan kichik xato qiladi — bu mutlaqo normal. Do'konga mahsulot qo'shing va <b style={{ color: T.ink }}>jami narxni diqqat bilan</b> tekshiring: u to'g'ri hisoblanyaptimi? (Maslahat: bitta narxni hisobda ushlab, jamiga solishtiring.)</Mentor>
         <Zoomable>
         <div className="split">
@@ -650,10 +660,10 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const add = (i) => setCart(c => [...c, i]);
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="Jilolash" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Bitta pardoz tanlang'} onClick={onNext} /></>}>
+    <Stage eyebrow="Oxirgi pardoz" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Bitta yaxshilanish tanlang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">MVP ishlayapti — endi <span className="italic" style={{ color: T.accent }}>jilolaymiz</span></h2></div>
-        <Mentor>Asosiy ish tugadi. Endi do'konni <b style={{ color: T.ink }}>yanada qulay</b> qiladigan kichik pardoz qo'shamiz. Bu shart emas, lekin foydalanuvchiga yoqadi. Bitta pardozni tanlang — natijada qanday ko'rinishini ko'ring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Do'konni qanday <span className="italic" style={{ color: T.accent }}>yanada qulay</span> qilamiz?</h2></div>
+        <Mentor>Asosiy ish tugadi. Endi do'konni <b style={{ color: T.ink }}>yanada qulay va chiroyli</b> qiladigan kichik yaxshilanishlar qo'shamiz — bu "oxirgi pardoz". Shart emas, lekin foydalanuvchiga yoqadi. Bittasini tanlang — natijada qanday ko'rinishini ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -800,7 +810,17 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Butun safar" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Har bir darsni bosing'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Qarang — qancha <span className="italic" style={{ color: T.accent }}>yo'l bosib o'tdingiz</span></h2></div>
-        <Mentor>Bu 4 ta praktikada siz bir necha kichik tugmadan to'laqonli, chiqarilgan ilovagacha keldingiz. Har bir darsni bosib, nimani egallaganingizni eslang.</Mentor>
+        <Mentor>Bu 4 ta praktikada siz <b style={{ color: T.ink }}>bitta kichik tugmadan</b> to'laqonli, internetga chiqarilgan <b style={{ color: T.ink }}>ilovagacha</b> keldingiz. Har bir darsni bosing — tasma to'lib boradi va nimani egallaganingizni eslang.</Mentor>
+        <div className="mstone fade-up">
+          <span className="mstone-cap mstone-start">Boshlanish<br /><b>1 ta tugma</b></span>
+          <div className="mstone-track">
+            <div className="mstone-fill" style={{ width: `${(seen.size / PRACTICES.length) * 100}%` }} />
+            {PRACTICES.map(p => (
+              <span key={p.n} className={`mstone-node ${seen.has(p.n) ? 'on' : ''}`}>{seen.has(p.n) ? '✓' : p.n}</span>
+            ))}
+          </div>
+          <span className="mstone-cap mstone-end">Natija<br /><b>chiqarilgan ilova</b></span>
+        </div>
         <Zoomable>
         <div className="split">
           <Col>
@@ -863,10 +883,25 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {!done && <button className="btn" onClick={next} style={{ alignSelf: 'flex-start' }}>{shown === 0 ? 'Boshlash →' : 'Keyingi qadam →'}</button>}
           </Col>
           <Col>
-            <div ref={doneRef}>
-              {!done ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Qadamlarni ochib boring…</p></div>
-                : <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana to'liq oqim: <b>reja → qur → tekshir → tuzat → deploy</b>. Uyga vazifada o'z g'oyangizni shu yo'l bilan haqiqatga aylantiring.</p></div>}
-            </div>
+            <p className="flow-label">Jonli natija — qadam sari</p>
+            <Browser url={shown >= 5 ? 'maktab-dokoni.netlify.app' : 'localhost:3000'}>
+              {shown === 0 && <p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0, padding: '24px 0' }}>(qadamlarni ochib boring)</p>}
+              {shown === 1 && (
+                <div className="result-reveal">
+                  <p style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: 12.5, color: T.ink, margin: '0 0 7px' }}>Sizning buyrug'ingiz:</p>
+                  <div className="promptbox" style={{ margin: 0 }}>Maktab do'koni uchun katalog, savat va jami narx bilan ishlaydigan sahifa qur.</div>
+                </div>
+              )}
+              {shown === 2 && <BuildingPreview />}
+              {shown >= 3 && (
+                <div className="result-reveal" key={shown}>
+                  <InteractiveShop cart={[0, 2]} showCart showTotal />
+                  {shown === 4 && <div className="fade-step" style={{ marginTop: 9, background: T.successSoft, color: T.success, borderRadius: 9, padding: '7px 11px', fontSize: 12, fontWeight: 700, textAlign: 'center' }}>✓ Xato tuzatildi — jami narx to'g'ri</div>}
+                  {shown >= 5 && <div className="fade-step" style={{ marginTop: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: '#E7F6EC', color: T.success, borderRadius: 9, padding: '7px 11px', fontSize: 12, fontWeight: 800 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: T.success, boxShadow: `0 0 8px ${T.success}` }} />Jonli — internetga chiqarildi</div>}
+                </div>
+              )}
+            </Browser>
+            {done && <div ref={doneRef} className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana to'liq oqim: <b>reja → qur → tekshir → tuzat → deploy</b>. Uyga vazifada o'z g'oyangizni shu yo'l bilan haqiqatga aylantiring.</p></div>}
           </Col>
         </div>
         </Zoomable>
@@ -897,8 +932,8 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Yakuniy · amaliy" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? 'Davom etish' : 'To\'g\'ri tartibni tuzing'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Oxirgi sinov: <span className="italic" style={{ color: T.accent }}>istalgan</span> loyiha yo'li</h2></div>
-        <Mentor>Mana — butun modulning sirri bitta ketma-ketlikda. Endi siz <b style={{ color: T.ink }}>istalgan</b> loyihani shu yo'l bilan qura olasiz. Qadamlarni to'g'ri tartibga qo'ying.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Oxirgi sinov: har qanday loyiha — <span className="italic" style={{ color: T.accent }}>bir xil 5 qadam</span></h2></div>
+        <Mentor>Mana — butun modulning siri bitta ketma-ketlikda. Do'kon, o'yin, bot — farqi yo'q: <b style={{ color: T.ink }}>hammasi shu 5 qadam bilan</b> quriladi. Qadamlarni to'g'ri tartibga qo'ying.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -910,8 +945,21 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             <p className="flow-label">Sizning yo'lingiz</p>
-            <div className="frame" style={{ padding: '14px 16px', minHeight: 100 }}>
-              {order.length === 0 ? <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Chapdan qadamlarni tanlang…</p> : order.map((id, i) => <div key={id} style={{ display: 'flex', gap: 9, alignItems: 'center', marginBottom: 6 }}><span className="num-badge" style={{ width: 24, height: 24, fontSize: 12 }}>{i + 1}</span><span style={{ fontSize: 14, color: T.ink }}>{label(id)}</span></div>)}
+            <div className={`frame ${passed ? 'path-done' : ''}`} style={{ padding: '14px 16px', minHeight: 100 }}>
+              {order.length === 0 ? <p className="small" style={{ color: T.ink3, fontStyle: 'italic', margin: 0 }}>Chapdan qadamlarni tanlang…</p> : (
+                <div className="path-flow">
+                  {order.map((id, i) => (
+                    <React.Fragment key={id}>
+                      <div className="path-node el-in" style={{ animationDelay: `${i * 0.04}s` }}>
+                        <span className="num-badge" style={{ width: 24, height: 24, fontSize: 12 }}>{i + 1}</span>
+                        <span style={{ fontSize: 14, color: T.ink, flex: 1 }}>{label(id)}</span>
+                        {passed && <span style={{ color: T.success, fontWeight: 700 }}>✓</span>}
+                      </div>
+                      {i < order.length - 1 && <span className="path-arrow">↓</span>}
+                    </React.Fragment>
+                  ))}
+                </div>
+              )}
             </div>
             {full && !correct && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tartib boshqacha. Eslang: avval o'ylash (reja, MVP), keyin qurish, so'ng tekshirish, oxirida chiqarish. Tozalab, qayta urinib ko'ring.</p></div>}
             {passed && <div ref={passedRef} className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mukammal! Reja → MVP → qur → tekshir → deploy. Bu — istalgan loyihaning universal yo'li. Siz uni egalladingiz!</p></div>}
@@ -1008,6 +1056,36 @@ export default function PracticeLesson4({ lang: langProp, onFinished }) {
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
         .el-in { animation: el-pop 0.3s ease-out; }
+
+        /* === NATIJA REVEAL + "QURYAPTI" SKELETON === */
+        @keyframes result-reveal { from { opacity: 0; transform: translateY(9px) scale(0.97); } to { opacity: 1; transform: none; } }
+        .result-reveal { animation: result-reveal 0.42s cubic-bezier(.34,1.18,.5,1); }
+        @keyframes bs-shimmer { 0% { background-position: 180% 0; } 100% { background-position: -180% 0; } }
+        .build-skel { display: flex; flex-direction: column; gap: 11px; padding: 10px 2px; }
+        .build-skel .bs-bar { height: 13px; border-radius: 7px; background: linear-gradient(90deg, #ECEAE4 25%, #FAF8F3 50%, #ECEAE4 75%); background-size: 200% 100%; animation: bs-shimmer 1.15s ease-in-out infinite; }
+        .build-skel .bs-lg { height: 34px; border-radius: 10px; }
+        .build-note { text-align: center; font-size: 11.5px; color: ${T.ink3}; margin: 6px 0 0; font-family: 'JetBrains Mono'; letter-spacing: 0.04em; }
+
+        /* === BOSQICH TASMASI (milestone) — Screen13 === */
+        .mstone { display: flex; align-items: center; gap: 12px; }
+        .mstone-cap { font-family: 'Manrope', sans-serif; font-size: 10.5px; line-height: 1.35; color: ${T.ink3}; text-align: center; flex-shrink: 0; }
+        .mstone-cap b { color: ${T.ink}; font-size: 12px; }
+        .mstone-start { text-align: right; }
+        .mstone-end { text-align: left; }
+        .mstone-track { position: relative; flex: 1; height: 28px; display: flex; align-items: center; justify-content: space-between; }
+        .mstone-track::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 4px; transform: translateY(-50%); background: rgba(167,166,162,0.3); border-radius: 99px; }
+        .mstone-fill { position: absolute; left: 0; top: 50%; height: 4px; transform: translateY(-50%); background: ${T.accent}; border-radius: 99px; transition: width 0.5s cubic-bezier(.4,0,.2,1); box-shadow: 0 0 10px rgba(255,79,40,0.5); }
+        .mstone-node { position: relative; z-index: 1; width: 26px; height: 26px; border-radius: 50%; background: ${T.paper}; box-shadow: inset 0 0 0 2px rgba(167,166,162,0.45); color: ${T.ink3}; font-family: 'JetBrains Mono'; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.3s; }
+        .mstone-node.on { background: ${T.accent}; color: #fff; box-shadow: 0 4px 12px -3px rgba(255,79,40,0.5); transform: scale(1.08); }
+        @media (max-width: 560px) { .mstone-cap { display: none; } }
+
+        /* === YO'L OQIMI (path flow) — Screen15 === */
+        .path-flow { display: flex; flex-direction: column; gap: 4px; }
+        .path-node { display: flex; align-items: center; gap: 9px; background: ${T.bg}; border-radius: 9px; padding: 8px 11px; }
+        .path-arrow { text-align: center; color: ${T.ink3}; font-size: 14px; line-height: 1; margin: 1px 0; }
+        .path-done .path-node { animation: path-glow 0.6s ease-out; }
+        @keyframes path-glow { 0% { box-shadow: inset 0 0 0 0 ${T.success}; } 40% { box-shadow: inset 0 0 0 2px ${T.success}; } 100% { box-shadow: inset 0 0 0 0 transparent; } }
+        .path-done .path-arrow { color: ${T.success}; }
 
         .feedback-block { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease-out 0.1s, margin-top 0.4s ease-out; margin-top: 0; }
         .feedback-block.visible { max-height: 800px; opacity: 1; margin-top: clamp(14px,2vw,20px); }

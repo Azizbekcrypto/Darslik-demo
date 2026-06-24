@@ -258,8 +258,15 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
               ))}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <button className="btn" onClick={make} disabled={count >= NEED} style={{ alignSelf: 'flex-start' }}>{count >= NEED ? '😕 Charchadim…' : "🍋 Yana bittasini qo'lda tayyorlash"}</button>
+              <button className={`btn ${count >= 3 ? 'btn-tired' : ''}`} onClick={make} disabled={count >= NEED} style={{ alignSelf: 'flex-start' }}>{count >= NEED ? '😕 Charchadim…' : "🍋 Yana bittasini qo'lda tayyorlash"}</button>
               <span className="mono small" style={{ color: T.ink3 }}>{count} / {NEED}</span>
+            </div>
+            <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="flow-label" style={{ margin: 0 }}>Charchoq darajasi <span className="face-pop" key={count} style={{ fontSize: 15 }}>{count < 2 ? '🙂' : count < 4 ? '😐' : count < 5 ? '😓' : '😕'}</span></span>
+                <span className="mono small" style={{ color: count < NEED * 0.5 ? T.success : count < NEED * 0.8 ? '#C77800' : T.accent }}>{Math.round((count / NEED) * 100)}%</span>
+              </div>
+              <div className="fatigue"><div className="fatigue-bar" style={{ width: `${(count / NEED) * 100}%`, color: count < NEED * 0.5 ? T.success : count < NEED * 0.8 ? '#E6A100' : T.accent, background: count < NEED * 0.5 ? T.success : count < NEED * 0.8 ? '#E6A100' : T.accent }} /></div>
             </div>
             {count >= 3 && count < NEED && <p className="hook-ack fade-step">Har safar <b>aynan bir xil 4 bosqich</b>… Zerikarli, to'g'rimi? 😅</p>}
           </Col>
@@ -301,19 +308,25 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <p className="flow-label">Bugungi 3 tushuncha</p>
       <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
         <div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px' }}>
-          <span style={{ fontSize: 30 }}>🛠️</span>
+          <span className="ic-float" style={{ fontSize: 30 }}>🛠️</span>
           <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>FUNKSIYA</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Nomlangan, qayta ishlatiladigan kod bloki (mashina)</p></div>
         </div>
         <div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px' }}>
-          <span style={{ fontSize: 30 }}>⬅️</span>
+          <span className="ic-in" style={{ fontSize: 30 }}>⬅️</span>
           <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>PARAMETR</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Mashinaga beriladigan kirish (input)</p></div>
         </div>
         <div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px' }}>
-          <span style={{ fontSize: 30 }}>➡️</span>
+          <span className="ic-out" style={{ fontSize: 30 }}>➡️</span>
           <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>RETURN</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Mashinadan chiqadigan natija (output)</p></div>
         </div>
       </div>
-      <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ uchalasi birga — haqiqiy "mashina"!</p>
+      <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 9, marginTop: 2 }}>
+        <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ retseptni bir marta yozamiz, nom bilan necha marta chaqiramiz!</p>
+        <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center' }}>
+          {[0, 1, 2].map(i => <span key={i} className="call-pill" style={{ animationDelay: `${i * 0.4}s` }}>salomBer()</span>)}
+          <span className="mono small" style={{ color: T.ink3 }}>… xohlagancha</span>
+        </div>
+      </div>
     </Col>
   );
   const StepsBlock = (
@@ -392,8 +405,11 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
           <Col>
-            <p className="flow-label">Natija (ikkalasida bir xil)</p>
-            <Terminal lines={['Salom!', 'Xush kelibsiz', 'Yaxshi kun!', '...', '(har chaqiriqda shu uchlik takrorlanadi)']} />
+            <div key={mode} className="demo-swap" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 12.5, padding: '6px 13px', borderRadius: 99, background: mode === 'manual' ? T.accentSoft : T.successSoft, color: mode === 'manual' ? T.accent : T.success }}>{mode === 'manual' ? '❌ 9 qator — 3 joyda tuzatasiz' : '🛠️ 1 retsept · 3 chaqiruv'}</div>
+              <p className="flow-label" style={{ margin: 0 }}>Natija (ikkalasida bir xil)</p>
+              <Terminal lines={['Salom!', 'Xush kelibsiz', 'Yaxshi kun!', '...', '(har chaqiriqda shu uchlik takrorlanadi)']} />
+            </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Natija bir xil! Lekin <b>funksiya</b> bilan retsept bir marta yozildi. Matnni o'zgartirsangiz — faqat <b>bitta joyda</b> tuzatasiz. Mana shuning uchun funksiya kerak.</p></div>}
           </Col>
         </div>
@@ -453,6 +469,22 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             <p className="flow-label">Mashinani sinab ko'ramiz</p>
             <div className="codebox fade-up delay-1"><div><FN>console</FN>.<FN>log</FN>(<FN>salomBer</FN>(<STR>"Ali"</STR>))</div></div>
+            <div className="pipe fade-up delay-1">
+              <div className="pipe-box">
+                <span className="pipe-lbl">kirish</span>
+                <span className="pipe-chip" style={{ background: T.accentSoft, color: T.accent }}>"Ali"</span>
+              </div>
+              <span className={`pipe-arrow ${running ? 'flow' : ''}`}>→</span>
+              <div className="pipe-box">
+                <span className="pipe-lbl">mashina</span>
+                <span className={`pipe-machine ${running ? 'busy' : ''}`} key={running ? 'b' : 'i'}>🛠️</span>
+              </div>
+              <span className={`pipe-arrow ${done ? 'flow' : ''}`}>→</span>
+              <div className="pipe-box">
+                <span className="pipe-lbl">chiqish · return</span>
+                <span className="pipe-chip" style={{ background: done ? T.successSoft : T.bg, color: done ? T.success : T.ink3 }}>{done ? '"Salom, Ali!"' : '?'}</span>
+              </div>
+            </div>
             <Terminal lines={out} empty="// ▶ chaqiring" />
             <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Ishlayapti…' : (done ? '↻ Yana chaqirish' : '▶ salomBer("Ali") ni chaqirish')}</button>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ "Ali" qiymati <b>ism</b> parametriga tushdi, funksiya <span className="mono">return</span> orqali <b>"Salom, Ali!"</b> ni qaytardi. Mana to'liq mashina!</p></div>}
@@ -491,7 +523,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Parametr" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Kirishni o\'zgartiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Mashinaga <span className="italic" style={{ color: T.accent }}>turli narsa</span> kiriting</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Bir mashinaga <span className="italic" style={{ color: T.accent }}>har xil ism</span> bersak-chi?</h2></div>
         <Mentor>Parametr — bu mashinaning <b style={{ color: T.ink }}>kirish teshigi</b>. Funksiyani <span className="mono">salomBer("Ali")</span> deb chaqirganda, <b style={{ color: T.ink }}>"Ali"</b> qiymati <span className="mono">ism</span> parametriga tushadi. Kirishni o'zgartiring — natija o'zi o'zgaradi.</Mentor>
         <Zoomable>
         <div className="split">
@@ -599,7 +631,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="log ⚔️ return" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/2 ko'ring`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Eng ko'p <span className="italic" style={{ color: T.accent }}>chalkashtiradigan</span> ikkita narsa</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Ekranga <span className="italic" style={{ color: T.accent }}>ko'rsatish</span> va kodga <span className="italic" style={{ color: T.accent }}>qaytarish</span> — bir xilmi?</h2></div>
         <Mentor>Yangi dasturchilar <span className="mono">console.log</span> va <span className="mono">return</span> ni adashtiradi. Farq oddiy: <b style={{ color: T.accent }}>console.log</b> natijani <b style={{ color: T.ink }}>ekranga ko'rsatadi</b> (ko'z uchun), <b style={{ color: T.accent }}>return</b> esa qiymatni <b style={{ color: T.ink }}>kodga qaytaradi</b> (saqlash uchun). Ikkala kartani bosing.</Mentor>
         <Zoomable>
         <div className="split">
@@ -607,7 +639,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {Object.keys(CARDS).map(k => (
                 <button key={k} onClick={() => tap(k)} style={{ display: 'flex', alignItems: 'center', gap: 13, textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 14, padding: '15px 16px', background: T.paper, boxShadow: active === k ? `inset 0 0 0 2px ${T.accent}, 0 8px 20px -6px rgba(255,79,40,0.22)` : `0 6px 16px -6px rgba(${T.shadowBase},0.14)`, transition: 'all 0.18s' }}>
-                  <span style={{ fontSize: 28 }}>{CARDS[k].ic}</span>
+                  <span className="pulse-ic" style={{ fontSize: 28 }}>{CARDS[k].ic}</span>
                   <span className="mono" style={{ fontWeight: 700, fontSize: 16, color: T.accent }}>{CARDS[k].name}</span>
                   {seen.has(k) && <span style={{ marginLeft: 'auto', color: T.success, fontSize: 15 }}>✓</span>}
                 </button>
@@ -617,10 +649,10 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             {active ? (
               <div className="sk-info fade-step" key={active}>
-                <span className="sk-tagbig"><span style={{ fontSize: 24 }}>{CARDS[active].ic}</span><span className="sk-wordbadge">{CARDS[active].name}</span></span>
+                <span className="sk-tagbig"><span className="pulse-ic" style={{ fontSize: 24 }}>{CARDS[active].ic}</span><span className="sk-wordbadge">{CARDS[active].name}</span></span>
                 <p className="body" style={{ color: T.ink, margin: '11px 0 9px', fontWeight: 600 }}>{CARDS[active].when}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {CARDS[active].ex.map((e, i) => (<div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', background: T.bg, borderRadius: 8, padding: '8px 11px' }}><span style={{ color: T.accent }}>•</span><span className="body" style={{ margin: 0, color: T.ink2 }}>{e}</span></div>))}
+                  {CARDS[active].ex.map((e, i) => (<div key={i} className="ex-row" style={{ display: 'flex', gap: 8, alignItems: 'center', background: T.bg, borderRadius: 8, padding: '8px 11px', animationDelay: `${0.05 + i * 0.09}s` }}><span style={{ color: T.accent }}>•</span><span className="body" style={{ margin: 0, color: T.ink2 }}>{e}</span></div>))}
                 </div>
               </div>
             ) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir kartani bosing</p></div> : null)}
@@ -646,7 +678,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Ko'p parametr" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Sonlarni o\'zgartiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Mashinaga <span className="italic" style={{ color: T.accent }}>2 ta narsa</span> kiritsak-chi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Mashinaga <span className="italic" style={{ color: T.accent }}>ikkita son</span> bersak-chi?</h2></div>
         <Mentor>Bitta funksiya bir nechta parametr olishi mumkin — ularni <b style={{ color: T.ink }}>vergul</b> bilan ajratamiz. <span className="mono">qoshish(a, b)</span> ikkita son oladi va yig'indisini qaytaradi. Diqqat: <b style={{ color: T.ink }}>tartib</b> muhim — birinchisi <span className="mono">a</span>, ikkinchisi <span className="mono">b</span>.</Mentor>
         <Zoomable>
         <div className="split">
@@ -712,7 +744,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Hammasi birga" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Avval hisoblang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Funksiya + parametr + return — <span className="italic" style={{ color: T.accent }}>birga</span></h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Uchalasi birga — <span className="italic" style={{ color: T.accent }}>kassa mashinasi</span>ni quramizmi?</h2></div>
         <Mentor>Mana haqiqiy "mashina"! Do'kon kassasini yasaymiz: <span className="mono">hisobla(narx, soni)</span> ikkita parametr oladi, ularni ko'paytiradi va <b style={{ color: T.ink }}>jami narxni</b> <span className="mono">return</span> qiladi. Nechta daftar olishni tanlang va hisoblang.</Mentor>
         <Zoomable>
         <div className="split">
@@ -767,7 +799,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Hayotiy misol" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Mashinani ishlating'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Esingizdami — <span className="italic" style={{ color: T.accent }}>limonad?</span> Mana mashina!</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Esingizdagi limonad? Endi uni <span className="italic" style={{ color: T.accent }}>mashina</span> tayyorlaydi!</h2></div>
         <Mentor>Dars boshida har bir limonadni qo'lda 4 bosqichda tayyorlayotgan edingiz. Endi <b style={{ color: T.ink }}>limonad mashinasini</b> yozdik: retsept bir marta funksiya ichida. Mashinani <b style={{ color: T.ink }}>xil</b> (ta'm) parametri bilan chaqirsangiz — har safar tayyor limonad qaytaradi. Tugmani bosing.</Mentor>
         <Zoomable>
         <div className="split">
@@ -784,7 +816,19 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Tayyorlanyapti…' : (done ? '↻ Yana tayyorlash' : '🍋 Mashinada tayyorlash')}</button>
           </Col>
           <Col>
-            <p className="flow-label">Tayyor limonadlar</p>
+            <p className="flow-label">Mashina har xilini tayyorlayapti</p>
+            <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {XILLAR.map((x, i) => {
+                const got = out.length > i;
+                return (
+                  <div key={i} className={`flavor-card ${got ? 'got' : ''}`}>
+                    <span className="flavor-ava">{got ? '🥤' : x.e}</span>
+                    <div><div className="flavor-name">{x.n} limonad</div><div className="flavor-msg">{got ? 'tayyor!' : 'navbatini kutyapti…'}</div></div>
+                    <span className="flavor-status">{got ? '✅' : x.e}</span>
+                  </div>
+                );
+              })}
+            </div>
             <Terminal lines={out} empty="// ▶ tugmani bosing" title="limonad mashinasi" />
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ 3 xil limonad — <b>bitta funksiya bilan</b>! Retsept bir marta yozildi, mashina har xil parametr bilan har xil natija qaytardi. Mana funksiyaning kuchi! 🚀</p></div>}
           </Col>
@@ -853,6 +897,13 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             <p className="flow-label">Sizning natijangiz</p>
+            <div className="pipe fade-up delay-1">
+              <div className="pipe-box"><span className="pipe-lbl">kirish</span><span className="pipe-chip" style={{ background: T.accentSoft, color: T.accent }}>"{ISMLAR[ismI]}"</span></div>
+              <span className={`pipe-arrow ${running ? 'flow' : ''}`}>→</span>
+              <div className="pipe-box"><span className="pipe-lbl">mashina</span><span className={`pipe-machine ${running ? 'busy' : ''}`} key={running ? 'b' : 'i'}>🛠️</span></div>
+              <span className={`pipe-arrow ${out.length ? 'flow' : ''}`}>→</span>
+              <div className="pipe-box"><span className="pipe-lbl">chiqish · return</span><span className="pipe-chip" style={{ background: out.length ? T.successSoft : T.bg, color: out.length ? T.success : T.ink3 }}>{out.length ? `"${out[0]}"` : '?'}</span></div>
+            </div>
             <Terminal lines={out} empty="// tanlab, chaqiring" />
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Zo'r! Siz funksiyani parametr bilan chaqirdingiz va u natija qaytardi. Tanlovni o'zgartirib, yana sinab ko'ring.</p></div>}
           </Col>
@@ -1239,6 +1290,52 @@ export default function JsFunctionsLesson({ lang: langProp, onFinished }) {
         .mentor-mob.is-collapsed .mentor-col { gap: 0; }
         .mentor-mob.is-collapsed .mentor-msg { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; box-shadow: none; }
         .mentor-cue { font-family: 'Manrope'; font-weight: 600; font-size: 11px; color: ${T.accent}; letter-spacing: 0.01em; }
+
+        /* ===== QO'SHIMCHA ANIMATSIYALAR (v16 yaxshilash) ===== */
+        /* charchoq o'lchagich (S0) */
+        .fatigue { height: 11px; border-radius: 99px; background: rgba(167,166,162,0.28); overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.12); }
+        .fatigue-bar { height: 100%; border-radius: 99px; transition: width 0.35s cubic-bezier(.4,0,.2,1), background 0.35s ease; box-shadow: 0 0 10px -2px currentColor; }
+        @keyframes wobble { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-2.5deg)} 75%{transform:rotate(2.5deg)} }
+        .btn-tired { animation: wobble 0.45s ease-in-out infinite; }
+        @keyframes pop-face { 0%{transform:scale(0.4); opacity:0;} 60%{transform:scale(1.25);} 100%{transform:scale(1); opacity:1;} }
+        .face-pop { display:inline-block; animation: pop-face 0.4s cubic-bezier(.34,1.4,.4,1); }
+
+        /* ikonkalar (S1) */
+        @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        .ic-float { display:inline-block; animation: floaty 2.4s ease-in-out infinite; }
+        @keyframes slide-in { 0%{transform:translateX(-7px); opacity:.5;} 50%{transform:translateX(3px); opacity:1;} 100%{transform:translateX(-7px); opacity:.5;} }
+        .ic-in { display:inline-block; animation: slide-in 1.9s ease-in-out infinite; }
+        @keyframes slide-out { 0%{transform:translateX(-3px); opacity:.6;} 50%{transform:translateX(7px); opacity:1;} 100%{transform:translateX(-3px); opacity:.6;} }
+        .ic-out { display:inline-block; animation: slide-out 1.9s ease-in-out infinite; }
+        .call-pill { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; padding:5px 11px; border-radius:99px; background:${T.bg}; color:${T.ink2}; animation: callwave 2.2s ease-in-out infinite; }
+        @keyframes callwave { 0%,100%{ background:${T.bg}; color:${T.ink2}; transform:translateY(0);} 50%{ background:${T.accent}; color:#fff; transform:translateY(-4px); box-shadow:0 6px 14px -5px rgba(255,79,40,0.45);} }
+
+        /* mashina quvuri — kirish → mashina → chiqish (S3, S13) */
+        .pipe { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; background:${T.paper}; border-radius:14px; padding:16px 12px; box-shadow:0 8px 20px -6px rgba(${T.shadowBase},0.14); }
+        .pipe-box { display:flex; flex-direction:column; align-items:center; gap:5px; }
+        .pipe-chip { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; padding:8px 12px; border-radius:10px; transition:all 0.4s cubic-bezier(.4,0,.2,1); }
+        .pipe-machine { font-size:34px; transition: transform 0.3s; line-height:1; }
+        .pipe-machine.busy { animation: shake-machine 0.5s ease; }
+        @keyframes shake-machine { 0%,100%{transform:rotate(0) scale(1);} 25%{transform:rotate(-8deg) scale(1.1);} 75%{transform:rotate(8deg) scale(1.1);} }
+        .pipe-arrow { color:${T.ink3}; font-size:20px; transition: color 0.3s; }
+        .pipe-arrow.flow { color:${T.accent}; animation: arrow-pulse 0.6s ease infinite; }
+        @keyframes arrow-pulse { 0%,100%{opacity:.35; transform:translateX(0);} 50%{opacity:1; transform:translateX(3px);} }
+        .pipe-lbl { font-family:'Manrope'; font-weight:700; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:${T.ink3}; }
+
+        /* limonad ta'm kartalari (S11) */
+        .flavor-card { display:flex; align-items:center; gap:11px; background:${T.paper}; border-radius:12px; padding:10px 14px; box-shadow:0 6px 16px -6px rgba(${T.shadowBase},0.14); transition:all 0.45s cubic-bezier(.4,0,.2,1); opacity:0.5; }
+        .flavor-card.got { opacity:1; box-shadow: inset 0 0 0 1.5px ${T.success}, 0 8px 20px -6px rgba(31,122,77,0.25); }
+        .flavor-ava { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:19px; background:${T.accentSoft}; flex-shrink:0; transition: background 0.35s; }
+        .flavor-card.got .flavor-ava { background:${T.successSoft}; animation: hop 0.5s ease; }
+        @keyframes hop { 0%{transform:translateY(-9px)} 60%{transform:translateY(2px)} 100%{transform:translateY(0)} }
+        .flavor-name { font-weight:600; font-size:14px; color:${T.ink}; }
+        .flavor-msg { font-size:12px; color:${T.ink2}; }
+        .flavor-status { margin-left:auto; font-size:18px; }
+
+        /* karta ikon pulse + misol satrlari (S7) */
+        @keyframes pulseq { 0%,100%{transform:scale(1); opacity:1;} 50%{transform:scale(1.16); opacity:0.7;} }
+        .pulse-ic { display:inline-block; animation: pulseq 1.4s ease-in-out infinite; }
+        .ex-row { animation: el-pop 0.32s ease-out both; }
       `}</style>
       <div className="lesson-root">
         <Current screen={screen} storedAnswer={answers[screen]} answers={answers} onAnswer={recordAnswer} onNext={next} onPrev={prev} onReset={reset} onFinish={finishLesson} />

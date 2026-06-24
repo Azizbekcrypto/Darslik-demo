@@ -257,8 +257,15 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
               ))}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <button className="btn" onClick={write} disabled={count >= NEED} style={{ alignSelf: 'flex-start' }}>{count >= NEED ? '😮‍💨 Charchadim…' : '✍️ Yana bittasini yozish'}</button>
+              <button className={`btn ${count >= 20 ? 'btn-tired' : ''}`} onClick={write} disabled={count >= NEED} style={{ alignSelf: 'flex-start' }}>{count >= NEED ? '😮‍💨 Charchadim…' : '✍️ Yana bittasini yozish'}</button>
               <span className="mono small" style={{ color: T.ink3 }}>{count} / {NEED}</span>
+            </div>
+            <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="flow-label" style={{ margin: 0 }}>Charchoq darajasi <span className="face-pop" key={count === 0 ? 0 : count < 12 ? 1 : count < 21 ? 2 : count < 30 ? 3 : 4} style={{ fontSize: 15 }}>{count < 12 ? '🙂' : count < 21 ? '😐' : count < 30 ? '😓' : '😮‍💨'}</span></span>
+                <span className="mono small" style={{ color: count < NEED * 0.5 ? T.success : count < NEED * 0.8 ? '#C77800' : T.accent }}>{Math.round((count / NEED) * 100)}%</span>
+              </div>
+              <div className="fatigue"><div className="fatigue-bar" style={{ width: `${(count / NEED) * 100}%`, color: count < NEED * 0.5 ? T.success : count < NEED * 0.8 ? '#E6A100' : T.accent, background: count < NEED * 0.5 ? T.success : count < NEED * 0.8 ? '#E6A100' : T.accent }} /></div>
             </div>
             {count >= 5 && count < NEED && <p className="hook-ack fade-step">Hali <b>{NEED - count} ta</b> qoldi… va bu atigi 30 ta. 1000 ta bo'lsa-chi? 😅</p>}
           </Col>
@@ -300,12 +307,14 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <p className="flow-label">Bugungi 2 katta vosita</p>
       <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}>
-          <span style={{ fontSize: 32 }}>🔁</span>
+          <span className="ic-spin" style={{ fontSize: 32 }}>🔁</span>
           <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>SIKL</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Bir amalni ko'p marta takrorlaydi (for, while)</p></div>
         </div>
         <div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}>
-          <span style={{ fontSize: 32 }}>📚</span>
-          <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>MASSIV</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Bitta o'zgaruvchida qiymatlar ro'yxati</p></div>
+          <span className="ic-float" style={{ fontSize: 32 }}>📚</span>
+          <div style={{ flex: 1 }}><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>MASSIV</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Bitta o'zgaruvchida qiymatlar ro'yxati</p>
+            <div className="mini-arr">{[0, 1, 2].map(i => <span key={i} className="mini-cell" style={{ animationDelay: `${i * 0.45}s` }}>{i}</span>)}</div>
+          </div>
         </div>
       </div>
       <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ ikkalasini birga ishlatsak — haqiqiy kuch!</p>
@@ -360,7 +369,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', gap: 8 }}>
-              <button className={`chip ${mode === 'manual' ? 'chip-on' : ''}`} onClick={() => set('manual')}>😮‍💨 Siklsiz</button>
+              <button className={`chip ${mode === 'manual' ? 'chip-on' : ''}`} onClick={() => set('manual')}>😕 Siklsiz</button>
               <button className={`chip ${mode === 'loop' ? 'chip-on' : ''}`} onClick={() => set('loop')}>🔁 Sikl bilan</button>
             </div>
             <div className="codebox demo-swap" key={mode}>
@@ -423,7 +432,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="for sikli" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Avval ishga tushiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up"><span className="mono" style={{ color: T.accent }}>for</span> sikli — <span className="italic" style={{ color: T.accent }}>zinapoya</span> kabi</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Kompyuter 1 dan 5 gacha <span className="italic" style={{ color: T.accent }}>qanday</span> ko'tariladi?</h2></div>
         <Mentor>for ni zinapoyaga o'xshating: <b style={{ color: T.blue }}>qaysi zinadan</b> boshlaysiz, <b style={{ color: T.accent }}>qaysi zinagacha</b> chiqasiz, va <b style={{ color: T.success }}>har safar nechta zina</b> ko'tarilasiz. Mana shu 3 sozlama qavs ichida turadi. Rangli qismlarni <b style={{ color: T.ink }}>bosib</b> bilib oling, so'ng "Ishga tushir"ni bosing.</Mentor>
         <Zoomable>
         <div className="split">
@@ -452,6 +461,15 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <span className="iwatch-lbl">hozir</span>
               <span className="iwatch-eq">i =</span>
               <span className="iwatch-num">{iVal || '·'}</span>
+            </div>
+            <div className="stair-strip fade-up delay-1">
+              {[1, 2, 3, 4, 5].map(s => (
+                <div key={s} className={`stair-col ${iVal >= s ? 'on' : ''}`}>
+                  <span className="stair-walker" key={iVal} style={{ visibility: iVal === s ? 'visible' : 'hidden' }}>🚶</span>
+                  <div className={`stair-bar ${iVal >= s ? 'lit' : ''}`} style={{ height: `${24 + s * 13}%` }} />
+                  <span className="stair-n">{s}</span>
+                </div>
+              ))}
             </div>
             <Terminal lines={out.map(v => `Salom ${v}`)} empty="// ▶ ishga tushiring" />
             <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Bajarilmoqda…' : (done ? '↻ Yana ishga tushir' : '▶ Ishga tushir')}</button>
@@ -515,8 +533,13 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             <p className="flow-label">Natija — {nums.length} ta son</p>
+            <div className="numline fade-up delay-1">
+              {Array.from({ length: 12 }, (_, k) => k + 1).map(n => (
+                <span key={n} className={`num-cell ${nums.includes(n) ? 'hit' : ''}`}>{n}</span>
+              ))}
+            </div>
             <Terminal lines={nums.map(String)} />
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Ko'rdingizmi? Bitta sonni o'zgartirdingiz — butun natija o'zgardi. Sikl <b>moslashuvchan</b>.</p></div>}
+            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Ko'rdingizmi? Bitta sonni o'zgartirdingiz — butun natija o'zgardi. Qadam <b>2</b> bo'lsa, sikl sonlarni <b>sakrab</b> o'tadi. Sikl moslashuvchan!</p></div>}
           </Col>
         </div>
         </Zoomable>
@@ -578,11 +601,14 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             <div className="glass-wrap fade-up delay-1">
+              <span className="tap-emoji">🚰{running && <span className="drip">💧</span>}</span>
               <div className="glass">
-                <div className="glass-fill" style={{ height: `${suv}%` }} />
+                <div className="glass-fill" style={{ height: `${suv}%` }}>{suv > 0 && suv < 100 && <div className="glass-wave" />}</div>
                 <span className="glass-pct">{suv}%</span>
+                {running && suv > 0 && <span className="splash" key={suv}>+20</span>}
               </div>
-              <p className="mono small" style={{ color: T.ink3, margin: 0 }}>suv = {suv}</p>
+              <div className="cond-pill" style={{ background: suv < 100 ? T.successSoft : T.accentSoft, color: suv < 100 ? T.success : T.accent }}>suv {suv} &lt; 100 → {suv < 100 ? "✓ yana quy" : "✗ to'xta"}</div>
+              <p className="mono small" style={{ color: T.ink3, margin: 0 }}>{iter}-aylanish</p>
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Stakan to'ldi! Sikl 5 marta ishladi — biz buni oldindan sanamadik, shart (<span className="mono">suv &lt; 100</span>) o'zi to'xtatdi. Mana <b>while</b>ning farqi.</p></div>}
           </Col>
@@ -616,7 +642,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {Object.keys(CARDS).map(k => (
                 <button key={k} onClick={() => tap(k)} style={{ display: 'flex', alignItems: 'center', gap: 13, textAlign: 'left', cursor: 'pointer', border: 'none', borderRadius: 14, padding: '15px 16px', background: T.paper, boxShadow: active === k ? `inset 0 0 0 2px ${T.accent}, 0 8px 20px -6px rgba(255,79,40,0.22)` : `0 6px 16px -6px rgba(${T.shadowBase},0.14)`, transition: 'all 0.18s' }}>
-                  <span style={{ fontSize: 28 }}>{CARDS[k].ic}</span>
+                  <span className={k === 'whilec' ? 'pulse-q' : 'ic-float'} style={{ fontSize: 28 }}>{CARDS[k].ic}</span>
                   <span className="mono" style={{ fontWeight: 700, fontSize: 18, color: T.accent }}>{CARDS[k].name}</span>
                   {seen.has(k) && <span style={{ marginLeft: 'auto', color: T.success, fontSize: 15 }}>✓</span>}
                 </button>
@@ -626,10 +652,10 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           <Col>
             {active ? (
               <div className="sk-info fade-step" key={active}>
-                <span className="sk-tagbig"><span style={{ fontSize: 24 }}>{CARDS[active].ic}</span><span className="sk-wordbadge">{CARDS[active].name}</span></span>
+                <span className="sk-tagbig"><span className={active === 'whilec' ? 'pulse-q' : 'ic-float'} style={{ fontSize: 24 }}>{CARDS[active].ic}</span><span className="sk-wordbadge">{CARDS[active].name}</span></span>
                 <p className="body" style={{ color: T.ink, margin: '11px 0 9px', fontWeight: 600 }}>{CARDS[active].when}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {CARDS[active].ex.map((e, i) => (<div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', background: T.bg, borderRadius: 8, padding: '8px 11px' }}><span style={{ color: T.accent }}>•</span><span className="body" style={{ margin: 0, color: T.ink2 }}>{e}</span></div>))}
+                  {CARDS[active].ex.map((e, i) => (<div key={i} className="ex-row" style={{ display: 'flex', gap: 8, alignItems: 'center', background: T.bg, borderRadius: 8, padding: '8px 11px', animationDelay: `${0.05 + i * 0.09}s` }}><span style={{ color: T.accent }}>•</span><span className="body" style={{ margin: 0, color: T.ink2 }}>{e}</span></div>))}
                 </div>
               </div>
             ) : (!isNarrow ? <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Bir kartani bosing</p></div> : null)}
@@ -663,9 +689,9 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <div><KW>const</KW> mevalar = [<STR>"olma"</STR>, <STR>"banan"</STR>, <STR>"uzum"</STR>, <STR>"qulupnay"</STR>]</div>
             </div>
             <p className="flow-label">Qutilar — indeksini bosing</p>
-            <div className="arr-row fade-up delay-2">
+            <div className="arr-row">
               {ARR.map((it, i) => (
-                <button key={i} className={`arr-cell ${active === i ? 'on' : ''}`} onClick={() => tap(i)}>
+                <button key={i} className={`arr-cell ex-row ${active === i ? 'on' : ''}`} onClick={() => tap(i)} style={{ animationDelay: `${0.15 + i * 0.09}s` }}>
                   <span className="arr-emoji">{it.e}</span>
                   <span className="arr-name">{it.n}</span>
                   <span className="arr-idx">[{i}]</span>
@@ -802,7 +828,19 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start' }}>{running ? 'Yuborilmoqda…' : (done ? '↻ Yana yuborish' : '🎉 Hammaga tabrik yuborish')}</button>
           </Col>
           <Col>
-            <p className="flow-label">Yuborilgan tabriklar</p>
+            <p className="flow-label">Sikl har bir do'stga yuboryapti</p>
+            <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {NAMES.map((nm, i) => {
+                const got = out.length > i;
+                return (
+                  <div key={i} className={`friend-card ${got ? 'got' : ''}`}>
+                    <span className="friend-ava">{['🧑', '👩', '🧔'][i]}</span>
+                    <div><div className="friend-name">{nm}</div><div className="friend-msg">{got ? `"Bayram muborak, ${nm}"` : 'navbatini kutyapti…'}</div></div>
+                    <span className="friend-status">{got ? '✅' : '✉️'}</span>
+                  </div>
+                );
+              })}
+            </div>
             <Terminal lines={out} empty="// ▶ tugmani bosing" title="xabarlar" />
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ 3 ta shaxsiy tabrik — <b>bitta sikl bilan</b>! Ro'yxatda 1000 ta nom bo'lsa ham, kod aynan shu qoladi. Mana dasturchining "dangasaligi" — aslida zukkolik!</p></div>}
           </Col>
@@ -875,6 +913,11 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             <p className="flow-label">Sizning natijangiz</p>
+            <div className="fade-up delay-1" style={{ display: 'flex', alignItems: 'center', gap: 13, background: T.paper, borderRadius: 12, padding: '12px 18px', boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.14)` }}>
+              <span className="rep-badge burst" key={out.length}>{out.length}</span>
+              <div><div className="flow-label" style={{ margin: 0 }}>marta bajarildi</div><div className="mono small" style={{ color: T.ink2 }}>{n} martadan</div></div>
+              {done && <span className="burst" key="cel" style={{ marginLeft: 'auto', fontSize: 30 }}>🎉</span>}
+            </div>
             <Terminal lines={out} empty="// parametrni tanlab, ishga tushiring" />
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Zo'r! Siz haqiqiy sikl qurdingiz va ishga tushirdingiz. Parametrni o'zgartirib, yana sinab ko'ring.</p></div>}
           </Col>
@@ -921,7 +964,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {!fixed ? (
               <div className="term fade-up delay-2">
                 <div className="term-bar"><span className="term-dot" style={{ background: '#FF5F56' }} /><span className="term-dot" style={{ background: '#FFBD2E' }} /><span className="term-dot" style={{ background: '#27C93F' }} /><span className="term-title">console</span></div>
-                <div className="term-body">{[1, 0, -1, -2].map((v, k) => <div key={k} className="term-line"><span className="term-arrow" style={{ color: T.accent }}>›</span><span>{v}</span></div>)}<p className="term-empty" style={{ color: T.accent }}>⚠️ i kamayyapti — 5 ga hech yetmaydi, cheksiz!</p></div>
+                <div className="term-body">{[1, 0, -1, -2].map((v, k) => <div key={k} className="term-line"><span className="term-arrow" style={{ color: T.accent }}>›</span><span>{v}</span></div>)}<div className="term-line warn-pulse" style={{ color: T.accent }}><span className="term-arrow" style={{ color: T.accent }}>›</span><span>⋮</span></div><p className="term-empty warn-pulse" style={{ color: T.accent }}>⚠️ i kamayyapti — 5 ga hech yetmaydi, cheksiz!</p></div>
               </div>
             ) : (
               <div className="term fade-step">
@@ -1228,7 +1271,7 @@ export default function JsLoopsLesson({ lang: langProp, onFinished }) {
         .arr-row { display: flex; flex-wrap: wrap; gap: 9px; }
         .arr-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; border: none; cursor: pointer; background: ${T.paper}; border-radius: 12px; padding: 12px 14px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); transition: all 0.18s; font-family: 'Manrope'; }
         .arr-cell:hover { transform: translateY(-2px); }
-        .arr-cell.on { box-shadow: inset 0 0 0 2px ${T.accent}, 0 8px 20px -6px rgba(255,79,40,0.25); }
+        .arr-cell.on { box-shadow: inset 0 0 0 2px ${T.accent}, 0 10px 22px -6px rgba(255,79,40,0.35); transform: translateY(-3px) scale(1.04); background: ${T.accentSoft}; }
         .arr-cell.scan { box-shadow: inset 0 0 0 2px ${T.accent}, 0 8px 22px -6px rgba(255,79,40,0.4); background: ${T.accentSoft}; transform: translateY(-3px) scale(1.04); }
         .arr-emoji { font-size: 26px; }
         .arr-name { font-weight: 600; font-size: 12.5px; color: ${T.ink}; }
@@ -1266,6 +1309,74 @@ export default function JsLoopsLesson({ lang: langProp, onFinished }) {
         .mentor-mob.is-collapsed .mentor-col { gap: 0; }
         .mentor-mob.is-collapsed .mentor-msg { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; box-shadow: none; }
         .mentor-cue { font-family: 'Manrope'; font-weight: 600; font-size: 11px; color: ${T.accent}; letter-spacing: 0.01em; }
+
+        /* ===== QO'SHIMCHA ANIMATSIYALAR (v16 yaxshilash) ===== */
+        /* S0 — charchoq o'lchagich */
+        .fatigue { height: 11px; border-radius: 99px; background: rgba(167,166,162,0.28); overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.12); }
+        .fatigue-bar { height: 100%; border-radius: 99px; transition: width 0.35s cubic-bezier(.4,0,.2,1), background 0.35s ease; box-shadow: 0 0 10px -2px currentColor; }
+        @keyframes wobble { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-2.5deg)} 75%{transform:rotate(2.5deg)} }
+        .btn-tired { animation: wobble 0.45s ease-in-out infinite; }
+        @keyframes pop-face { 0%{transform:scale(0.4); opacity:0;} 60%{transform:scale(1.25);} 100%{transform:scale(1); opacity:1;} }
+        .face-pop { display: inline-block; animation: pop-face 0.4s cubic-bezier(.34,1.4,.4,1); }
+
+        /* S1 — reja ikonkalari */
+        @keyframes spin360 { to { transform: rotate(360deg); } }
+        .ic-spin { display: inline-block; animation: spin360 2.6s linear infinite; }
+        @keyframes floaty { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        .ic-float { display: inline-block; animation: floaty 2.4s ease-in-out infinite; }
+        .mini-arr { display: flex; gap: 5px; margin-top: 9px; }
+        .mini-cell { width: 27px; height: 27px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 12px; color: ${T.ink2}; background: ${T.bg}; animation: cellwave 2.4s ease-in-out infinite; }
+        @keyframes cellwave { 0%,100%{ background: ${T.bg}; color: ${T.ink2}; transform: translateY(0);} 50%{ background: ${T.accent}; color:#fff; transform: translateY(-5px); box-shadow: 0 6px 14px -5px rgba(255,79,40,0.45);} }
+
+        /* S3 — zinapoya */
+        .stair-strip { display: flex; align-items: flex-end; gap: 6px; height: 104px; background: ${T.paper}; border-radius: 12px; padding: 10px 12px 8px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); }
+        .stair-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 3px; height: 100%; }
+        .stair-bar { width: 100%; border-radius: 5px 5px 0 0; background: rgba(167,166,162,0.3); transition: background 0.35s ease, box-shadow 0.35s ease; }
+        .stair-bar.lit { background: linear-gradient(180deg, #6FD79E, ${T.success}); box-shadow: 0 0 14px rgba(31,122,77,0.4); }
+        .stair-walker { font-size: 19px; animation: hop 0.5s ease; }
+        @keyframes hop { 0%{transform:translateY(-9px)} 60%{transform:translateY(2px)} 100%{transform:translateY(0)} }
+        .stair-n { font-family: 'JetBrains Mono'; font-size: 10px; font-weight: 700; color: ${T.ink3}; }
+        .stair-bar.lit + .stair-n, .stair-col.on .stair-n { color: ${T.success}; }
+
+        /* S5 — son chizig'i */
+        .numline { display: flex; flex-wrap: wrap; gap: 5px; }
+        .num-cell { width: 31px; height: 31px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 12.5px; background: ${T.bg}; color: ${T.ink3}; transition: all 0.3s cubic-bezier(.4,0,.2,1); }
+        .num-cell.hit { background: ${T.accent}; color: #fff; transform: translateY(-3px) scale(1.06); box-shadow: 0 6px 15px -5px rgba(255,79,40,0.5); }
+
+        /* S6 — stakan qo'shimchalari */
+        .glass-wave { position: absolute; top: -5px; left: -4%; width: 108%; height: 11px; background: #5BC8EC; border-radius: 50%; animation: bob 1.05s ease-in-out infinite; }
+        @keyframes bob { 0%,100%{transform: scaleX(1.05) translateY(0);} 50%{transform: scaleX(0.95) translateY(2px);} }
+        .tap-emoji { font-size: 30px; position: relative; display: inline-block; }
+        .drip { position: absolute; left: 50%; top: 88%; font-size: 14px; animation: dripfall 0.5s linear infinite; }
+        @keyframes dripfall { 0%{ opacity: 0; transform: translate(-50%, 0);} 20%{opacity:1;} 100%{ opacity: 0; transform: translate(-50%, 46px);} }
+        .splash { position: absolute; top: 10px; left: 50%; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 15px; color: ${T.blue}; animation: floatup 0.72s ease-out; }
+        @keyframes floatup { from { opacity: 1; transform: translate(-50%, 8px);} to { opacity: 0; transform: translate(-50%, -24px);} }
+        .cond-pill { font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 700; padding: 6px 13px; border-radius: 99px; transition: all 0.3s ease; }
+
+        /* S7 — karta ikonkalari + misol satrlari */
+        @keyframes pulseq { 0%,100%{transform:scale(1); opacity:1;} 50%{transform:scale(1.16); opacity:0.65;} }
+        .pulse-q { display:inline-block; animation: pulseq 1.4s ease-in-out infinite; }
+        .ex-row { animation: el-pop 0.32s ease-out both; }
+
+        /* S11 — do'stlar */
+        .friend-card { display: flex; align-items: center; gap: 11px; background: ${T.paper}; border-radius: 12px; padding: 10px 14px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); transition: all 0.4s cubic-bezier(.4,0,.2,1); opacity: 0.5; }
+        .friend-card.got { opacity: 1; box-shadow: inset 0 0 0 1.5px ${T.success}, 0 8px 20px -6px rgba(31,122,77,0.25); }
+        .friend-ava { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; background: ${T.accentSoft}; flex-shrink: 0; transition: background 0.35s; }
+        .friend-card.got .friend-ava { background: ${T.successSoft}; animation: hop 0.5s ease; }
+        .friend-name { font-weight: 600; font-size: 14px; color: ${T.ink}; }
+        .friend-msg { font-size: 12px; color: ${T.ink2}; }
+        .friend-status { margin-left: auto; font-size: 17px; }
+
+        /* S13 — takror hisoblagich */
+        .rep-badge { font-family: 'Fraunces', serif; font-size: clamp(30px,7vw,48px); color: ${T.accent}; line-height: 1; }
+        @keyframes burstpop { 0%{transform:scale(0); opacity:0;} 55%{transform:scale(1.3);} 100%{transform:scale(1); opacity:1;} }
+        .burst { display: inline-block; animation: burstpop 0.5s cubic-bezier(.34,1.4,.4,1); }
+
+        /* S14 — xato silkinishi */
+        @keyframes shakeX { 0%,100%{transform:translateX(0)} 18%{transform:translateX(-3px)} 38%{transform:translateX(3px)} 58%{transform:translateX(-2px)} 78%{transform:translateX(2px)} }
+        .tok-bad { animation: shakeX 0.42s ease; }
+        @keyframes warnpulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+        .warn-pulse { animation: warnpulse 1s ease-in-out infinite; }
       `}</style>
       <div className="lesson-root">
         <Current screen={screen} storedAnswer={answers[screen]} answers={answers} onAnswer={recordAnswer} onNext={next} onPrev={prev} onReset={reset} onFinish={finishLesson} />

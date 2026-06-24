@@ -239,10 +239,10 @@ const SiteCard = ({ name = 'Akmal', role = 'Veb-dasturchi · 14 yosh', children 
 
 // ===== MINI-DO'KON MA'LUMOTLARI =====
 const PRODUCTS = [
-  { name: 'Kitob', price: '35 000' },
-  { name: 'Daftar', price: '12 000' },
-  { name: 'Ruchka', price: '5 000' },
-  { name: 'Sumka', price: '90 000' }
+  { name: 'Kitob', price: '35 000', emoji: '📚', tint: '#2563EB' },
+  { name: 'Daftar', price: '12 000', emoji: '📓', tint: '#1F9D55' },
+  { name: 'Ruchka', price: '5 000', emoji: '✏️', tint: '#F59E0B' },
+  { name: 'Sumka', price: '90 000', emoji: '🎒', tint: '#7C3AED' }
 ];
 
 // Mini-do'kon preview (katalog). L3: narx bor, savat yo'q.
@@ -255,12 +255,61 @@ const ShopPreview = ({ showPrice = true, showCart = false, accent = '#2563EB', m
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 7 }}>
       {PRODUCTS.map((p, i) => (
         <div key={i} style={{ background: T.paper, borderRadius: 9, padding: '7px 9px', boxShadow: `0 4px 12px -6px rgba(${T.shadowBase},0.16)`, display: 'flex', alignItems: 'center', gap: 9 }}>
-          <div style={{ width: 26, height: 26, borderRadius: 6, background: missing ? '#E6E1D8' : `${accent}22`, flexShrink: 0 }} />
+          <div style={{ width: 30, height: 30, borderRadius: 7, background: missing ? '#E6E1D8' : `${p.tint || accent}22`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{missing ? '' : p.emoji}</div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontWeight: 700, fontSize: 12, color: T.ink, whiteSpace: 'nowrap' }}>{p.name}</div>
             {showPrice
               ? <div style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: 11.5, color: accent }}>{p.price} so'm</div>
               : <div style={{ fontSize: 10.5, color: T.accent, fontStyle: 'italic' }}>{missing ? 'narx yo\'q' : ''}</div>}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// Yo'l-xarita: qayerdamiz va keyin nima (bosqichlar tasmasi)
+const JourneyBar = ({ stages }) => (
+  <div className="journey fade-up">
+    {stages.map((s, i) => (
+      <React.Fragment key={i}>
+        <div className={`jn jn-${s.state}`}>
+          <span className="jn-dot">{s.state === 'done' ? '✓' : i + 1}</span>
+          <span className="jn-txt"><span className="jn-lbl">{s.label}</span><span className="jn-tag">{s.tag}</span></span>
+        </div>
+        {i < stages.length - 1 && <span className="jn-line" />}
+      </React.Fragment>
+    ))}
+  </div>
+);
+
+// "Agent quryapti…" — jonli shimmer skeleton
+const BuildingPreview = () => (
+  <div className="build-skel">
+    <div className="bs-bar bs-lg" />
+    <div className="bs-bar" style={{ width: '72%' }} />
+    <div className="bs-bar" style={{ width: '90%' }} />
+    <p className="build-note">Agent quryapti…</p>
+  </div>
+);
+
+// Restoran sayti MVP preview (yakuniy natija) — menyu + narx
+const REST_MENU = [
+  { name: 'Osh', price: '30 000', emoji: '🍚', tint: '#E0892B' },
+  { name: "Lag'mon", price: '28 000', emoji: '🍜', tint: '#C2410C' },
+  { name: 'Somsa', price: '8 000', emoji: '🥟', tint: '#B45309' },
+  { name: 'Choy', price: '3 000', emoji: '🍵', tint: '#1F7A4D' }
+];
+const RestaurantPreview = () => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+    <span style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, fontSize: 'clamp(15px,2.2vw,18px)', color: T.ink }}>MILLIY TAOMLAR</span>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 7 }}>
+      {REST_MENU.map((p, i) => (
+        <div key={i} style={{ background: T.paper, borderRadius: 9, padding: '7px 9px', boxShadow: `0 4px 12px -6px rgba(${T.shadowBase},0.16)`, display: 'flex', alignItems: 'center', gap: 9 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 7, background: `${p.tint}22`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>{p.emoji}</div>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 12, color: T.ink, whiteSpace: 'nowrap' }}>{p.name}</div>
+            <div style={{ fontFamily: "'Manrope'", fontWeight: 700, fontSize: 11.5, color: '#C2410C' }}>{p.price} so'm</div>
           </div>
         </div>
       ))}
@@ -430,17 +479,22 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Zoomable>
         <div className="split">
           <Col>
-            <div className="frame" style={{ background: T.ink, color: '#fff', textAlign: 'center', padding: '26px 18px' }}>
-              <p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, fontSize: 'clamp(22px,4vw,30px)', margin: 0 }}>ONLAYN DO'KON</p>
-              <p className="small" style={{ color: 'rgba(255,255,255,0.7)', margin: '6px 0 0' }}>bitta ulkan vazifa</p>
+            <div className={`big-task ${open ? 'is-split' : ''}`}>
+              <p className="big-task-title">ONLAYN DO'KON</p>
+              <p className="big-task-sub">{open ? '6 ta kichik qadamga bo‘lindi ↓' : 'bitta ulkan, qo‘rqinchli vazifa'}</p>
             </div>
             <button className="btn" onClick={() => setOpen(true)} disabled={open} style={{ alignSelf: 'flex-start' }}>{open ? '✓ Bo\'laklandi' : 'Vazifani bo\'laklash ↓'}</button>
           </Col>
           <Col>
             <p className="flow-label">Kichik qadamlar</p>
             {open ? (
-              <div className="fade-step" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {PIECES.map((p, i) => <span key={i} className="tagpill el-in" style={{ animationDelay: `${i * 0.07}s`, background: T.accentSoft, color: T.accent }}>{p}</span>)}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {PIECES.map((p, i) => (
+                  <div key={i} className="piece-card" style={{ animationDelay: `${i * 0.08}s` }}>
+                    <span className="piece-num">{i + 1}</span>
+                    <span className="piece-label">{p}</span>
+                  </div>
+                ))}
               </div>
             ) : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Chap tomondagi tugmani bosing</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? Bitta "qo'rqinchli" vazifa — 6 ta oddiy qadamga aylandi. Endi har birini alohida bajara olamiz.</p></div>}
@@ -554,39 +608,53 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   );
 };
 
-// ===== SCREEN 6 — QADAM -> PROMPT =====
+// ===== SCREEN 6 — QADAM -> PROMPT (har buyruq → o'z natijasi) =====
 const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const OPTS = [
-    { id: 'a', label: 'ro\'yxat', good: false },
+    { id: 'a', label: 'ro\'yxat', good: false, why: 'Bitta so\'z — AI «nimaning» ro\'yxati ekanini bilmaydi.' },
     { id: 'b', label: "Maktab do'koni uchun 4 ta mahsulotdan iborat ro'yxat yarat — har birining nomi bilan", good: true },
-    { id: 'c', label: 'biror narsa qil', good: false }
+    { id: 'c', label: 'biror narsa qil', good: false, why: 'Mutlaqo noaniq — natija tasodifiy va bo\'sh chiqadi.' }
   ];
   const [picked, setPicked] = useState(storedAnswer ? 'b' : null);
-  const good = picked === 'b';
+  const [phase, setPhase] = useState(storedAnswer ? 'done' : 'idle'); // idle | building | done
+  const timer = useRef(null);
+  const good = picked === 'b' && phase === 'done';
   const done = good;
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const pick = (id) => { if (good) return; clearTimeout(timer.current); setPicked(id); setPhase('building'); timer.current = setTimeout(() => setPhase('done'), 850); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
+  const cur = OPTS.find(o => o.id === picked);
+  const showResult = picked && phase === 'done';
   return (
     <Stage eyebrow="Qadam → buyruq" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Aniq buyruqni tanlang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">1-qadamni AI <span className="italic" style={{ color: T.accent }}>buyrug'iga</span> aylantiramiz</h2></div>
-        <Mentor>Reja tayyor. Endi <b style={{ color: T.ink }}>1-qadamni</b> ("Mahsulotlar ro'yxatini yarat") AI uchun aniq buyruqqa aylantiramiz. 2-darsdan esingizda: yaxshi buyruq aniq tafsilot beradi. Qaysi buyruq eng aniq?</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Bir buyruq — bir <span className="italic" style={{ color: T.accent }}>natija</span>. Qaysi biri aniq?</h2></div>
+        <Mentor>Reja tayyor. Endi <b style={{ color: T.ink }}>1-qadamni</b> ("Mahsulotlar ro'yxatini yarat") AI buyrug'iga aylantiramiz. Har buyruqni bosib ko'ring — o'ngda AI <b style={{ color: T.ink }}>aynan shu buyruqdan</b> nima chiqarishini ko'rasiz. Aniq buyruq → aniq natija.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
             <div className="frame" style={{ padding: '12px 15px', display: 'flex', alignItems: 'center', gap: 10 }}><span className="num-badge" style={{ width: 26, height: 26, fontSize: 12 }}>1</span><span style={{ fontWeight: 600, color: T.ink }}>Mahsulotlar ro'yxatini yarat</span></div>
-            <p className="flow-label">Qaysi buyruq aniq?</p>
+            <p className="flow-label">Buyruqni tanlang — natijani solishtiring</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {OPTS.map(o => <button key={o.id} className={`hook-option ${picked === o.id ? 'on' : ''}`} disabled={good} onClick={() => setPicked(o.id)}><span className="radio">{picked === o.id && <span className="radio-dot" />}</span><span>{o.label}</span></button>)}
+              {OPTS.map(o => <button key={o.id} className={`hook-option ${picked === o.id ? 'on' : ''}`} disabled={good} onClick={() => pick(o.id)}><span className="radio">{picked === o.id && <span className="radio-dot" />}</span><span>{o.label}</span></button>)}
             </div>
           </Col>
           <Col>
-            {picked && !good && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bu juda loyqa — AI nima qilishni aniq bilmaydi. Mahsulot soni va nimasi kerakligini ayting.</p></div>}
-            {good && <>
-              <p className="flow-label">Aniq buyruq → natija</p>
-              <Browser url="dokon.uz"><ShopPreview showPrice={false} accent="#2563EB" /></Browser>
-              <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana! Aniq buyruq → AI 4 ta mahsulotni ro'yxat qildi. 1-qadam bajarildi. Keyingi qadam — narx qo'shish.</p></div>
-            </>}
-            {!picked && <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Eng aniq buyruqni tanlang</p></div>}
+            <p className="flow-label">AI natijasi</p>
+            <Browser url="maktab-dokoni.uz">
+              {!picked && <p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0, padding: '24px 0' }}>Chapdan buyruq tanlang</p>}
+              {picked && phase === 'building' && <BuildingPreview />}
+              {showResult && cur.good && <div className="result-reveal"><ShopPreview showPrice={false} accent="#2563EB" /></div>}
+              {showResult && !cur.good && (
+                <div className="result-reveal" style={{ textAlign: 'center', padding: '14px 8px' }}>
+                  <div style={{ fontSize: 30, marginBottom: 6 }}>🤷</div>
+                  <p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, fontSize: 16, margin: '0 0 4px', color: T.ink2 }}>Bo'sh natija</p>
+                  <p className="small" style={{ margin: 0, color: T.ink3, fontStyle: 'italic' }}>AI buyruqni tushunmadi…</p>
+                </div>
+              )}
+            </Browser>
+            {showResult && !cur.good && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}><b>«{cur.label}»</b> — {cur.why} Mahsulot soni va nimasi kerakligini ayting.</p></div>}
+            {good && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana! Aniq buyruq → AI 4 ta mahsulotni ro'yxat qildi. 1-qadam bajarildi. Keyingi qadam — narx qo'shish.</p></div>}
           </Col>
         </div>
         </Zoomable>
@@ -622,10 +690,10 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const approve = () => { clearTimeout(timer.current); setPhase('building'); timer.current = setTimeout(() => setPhase('done'), 1300); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="O'zakni qurish" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'O\'zakni qurib oling'} onClick={onNext} /></>}>
+    <Stage eyebrow="Asosini qurish" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Asosini qurib oling'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Reja tayyor — endi AI <span className="italic" style={{ color: T.accent }}>o'zakni</span> quradi</h2></div>
-        <Mentor>Mana eng yoqimli qism! Reja aniq bo'lgani uchun AI'ga ishonch bilan topshiramiz. Avval u <b style={{ color: T.ink }}>rejani</b> ko'rsatadi — siz <b style={{ color: T.ink }}>tasdiqlaysiz</b> — keyin do'konning o'zagini quradi.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Reja tayyor — endi AI <span className="italic" style={{ color: T.accent }}>birinchi ishlaydigan versiyani</span> quradi</h2></div>
+        <Mentor>Mana eng yoqimli qism! Bugun do'konning <b style={{ color: T.ink }}>asosini</b> quramiz — ya'ni mahsulotlar ro'yxati va narx (savat, qidiruv keyin qo'shiladi). Reja aniq bo'lgani uchun AI'ga ishonch bilan topshiramiz: avval u <b style={{ color: T.ink }}>rejani</b> ko'rsatadi — siz <b style={{ color: T.ink }}>tasdiqlaysiz</b> — keyin quradi.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -641,13 +709,14 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </Col>
           <Col>
-            <p className="flow-label">Do'kon o'zagi</p>
+            <p className="flow-label">Do'konning asosiy qismi</p>
             <Browser url="maktab-dokoni.uz">
               {phase === 'idle' && <p className="small" style={{ margin: 0, opacity: 0.5, textAlign: 'center', padding: '24px 0' }}>(rejani yuboring)</p>}
-              {(phase === 'planned' || phase === 'building') && <p className="small" style={{ margin: 0, opacity: 0.6, textAlign: 'center', padding: '24px 0' }}>{phase === 'planned' ? 'Tasdiqlashni kutyapti…' : 'Quryapti…'}</p>}
-              {done && <ShopPreview showPrice accent="#2563EB" />}
+              {phase === 'planned' && <p className="small" style={{ margin: 0, opacity: 0.6, textAlign: 'center', padding: '24px 0' }}>Tasdiqlashni kutyapti…</p>}
+              {phase === 'building' && <BuildingPreview />}
+              {done && <div className="result-reveal"><ShopPreview showPrice accent="#2563EB" /></div>}
             </Browser>
-            {done && <div ref={doneRef} className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>O'zak tayyor! Mahsulotlar va narxlar ko'rinyapti. Bu — ishlaydigan MVP. Rejasiz boshdagi tartibsizlikni eslang — farqni his qildingizmi?</p></div>}
+            {done && <div ref={doneRef} className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Asosiy qism tayyor! Mahsulotlar va narxlar ko'rinyapti — bu birinchi <b>ishlaydigan</b> versiya (MVP). Rejasiz boshdagi tartibsizlikni eslang — farqni his qildingizmi?</p></div>}
           </Col>
         </div>
         </Zoomable>
@@ -670,12 +739,12 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Tekshirish" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Hammasini tekshiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">O'zak <span className="italic" style={{ color: T.accent }}>rejaga mos</span> chiqdimi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Asosiy qism <span className="italic" style={{ color: T.accent }}>rejaga mos</span> chiqdimi?</h2></div>
         <Mentor>AI qurdi — endi siz <b style={{ color: T.ink }}>arxitektor</b> sifatida tekshirasiz: rejada nima bo'lsa, o'shalar bormi? Har bir savolni bosib, do'kon bilan solishtiring. (Savat yo'qligi — xato emas, u keyingi bosqichda.)</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
-            <p className="flow-label">Do'kon o'zagi</p>
+            <p className="flow-label">Do'konning asosiy qismi</p>
             <Browser url="maktab-dokoni.uz"><ShopPreview showPrice accent="#2563EB" /></Browser>
           </Col>
           <Col>
@@ -691,7 +760,7 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 );
               })}
             </div>
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>O'zak rejaga to'liq mos! Mahsulot va narx bor, savat esa ataylab keyinga qoldirilgan. Bu — nazoratli, rejali ishlash.</p></div>}
+            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Asosiy qism rejaga to'liq mos! Mahsulot va narx bor, savat esa ataylab keyinga qoldirilgan. Bu — nazoratli, rejali ishlash.</p></div>}
           </Col>
         </div>
         </Zoomable>
@@ -730,8 +799,13 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Keyingi bosqich" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/2 ko'ring`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">O'zak tayyor — <span className="italic" style={{ color: T.accent }}>keyin nima?</span></h2></div>
-        <Mentor>Rejaning kuchi shunda: nima qilinganini va nima qolganini <b style={{ color: T.ink }}>aniq bilasiz</b>. Bugun o'zakni qurdik. Keyingi darsda do'konni <b style={{ color: T.ink }}>to'liq MVP</b>ga aylantiramiz — savat va jami narx qo'shamiz. Ikkala kartani ko'ring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Asosiy qism tayyor — <span className="italic" style={{ color: T.accent }}>keyin nima?</span></h2></div>
+        <Mentor>Rejaning kuchi shunda: nima qilinganini va nima qolganini <b style={{ color: T.ink }}>aniq bilasiz</b>. Bugun do'konning asosini qurdik. Keyingi darsda uni <b style={{ color: T.ink }}>to'liq MVP</b>ga aylantiramiz — savat va jami narx qo'shamiz, so'ng internetga chiqaramiz (deploy). Quyidagi yo'l-xarita buni ko'rsatadi:</Mentor>
+        <JourneyBar stages={[
+          { label: 'Asosiy qism', tag: 'bugun bajardik', state: 'done' },
+          { label: "To'liq MVP", tag: 'keyingi dars', state: 'cur' },
+          { label: 'Deploy', tag: "do'kon tayyor", state: 'next' }
+        ]} />
         <Zoomable>
         <div className="split">
           <Col>
@@ -930,9 +1004,13 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Oxirgi sinov: <span className="italic" style={{ color: T.accent }}>restoran sayti</span></h2></div>
         <Mentor>Vazifa: <b style={{ color: T.ink }}>restoran sayti</b> uchun MVP'ni rejalashtiring. Qaysi xususiyat eng zarur (shart), qaysi biri keyin? Har birini to'g'ri joylang.</Mentor>
         <MvpRows items={REST} placed={placed} setPlaced={setPlaced} />
-        {passed
-          ? <div ref={passedRef} className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mukammal! Menyu va narx — MVP o'zagi; onlayn buyurtma va sharhlar — keyin. Siz endi istalgan loyihani rejalashtira olasiz.</p></div>
-          : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Eslatma: restoranni ko'rsatish uchun avval menyu va narx kerak.</p>}
+        {passed ? (
+          <div ref={passedRef} style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(10px,1.6vw,14px)' }}>
+            <p className="flow-label">Natija — restoran saytining ishlaydigan asosi</p>
+            <div className="result-reveal" style={{ maxWidth: 470 }}><Browser url="milliy-taomlar.uz"><RestaurantPreview /></Browser></div>
+            <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mukammal! Menyu va narx — eng zarur asos, sayt shu zahoti ishlaydi. Onlayn buyurtma va sharhlar esa keyingi bosqich. Siz endi istalgan loyihani rejalashtira olasiz!</p></div>
+          </div>
+        ) : <p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Eslatma: restoranni ko'rsatish uchun avval menyu va narx kerak.</p>}
       </div>
     </Stage>
   );
@@ -1023,6 +1101,42 @@ export default function PracticeLesson3({ lang: langProp, onFinished }) {
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
         @keyframes el-pop { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: none; } }
         .el-in { animation: el-pop 0.3s ease-out; }
+
+        /* === NATIJA REVEAL + "QURYAPTI" SKELETON === */
+        @keyframes result-reveal { from { opacity: 0; transform: translateY(9px) scale(0.97); } to { opacity: 1; transform: none; } }
+        .result-reveal { animation: result-reveal 0.42s cubic-bezier(.34,1.18,.5,1); }
+        @keyframes bs-shimmer { 0% { background-position: 180% 0; } 100% { background-position: -180% 0; } }
+        .build-skel { display: flex; flex-direction: column; gap: 11px; padding: 10px 2px; }
+        .build-skel .bs-bar { height: 13px; border-radius: 7px; background: linear-gradient(90deg, #ECEAE4 25%, #FAF8F3 50%, #ECEAE4 75%); background-size: 200% 100%; animation: bs-shimmer 1.15s ease-in-out infinite; }
+        .build-skel .bs-lg { height: 34px; border-radius: 10px; }
+        .build-note { text-align: center; font-size: 11.5px; color: ${T.ink3}; margin: 6px 0 0; font-family: 'JetBrains Mono'; letter-spacing: 0.04em; }
+
+        /* === KATTA VAZIFA (qora karta, bo'linish) + KICHIK QADAM KARTALARI === */
+        @keyframes piece-pop { 0% { opacity: 0; transform: translateY(-7px) scale(0.9); } 60% { transform: scale(1.025); } 100% { opacity: 1; transform: none; } }
+        @keyframes split-pulse { 0% { box-shadow: 0 14px 34px -14px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.07); } 50% { box-shadow: 0 14px 34px -14px rgba(255,79,40,0.5), inset 0 0 0 1px rgba(255,79,40,0.4); } 100% { box-shadow: 0 14px 34px -14px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.07); } }
+        .big-task { border-radius: 16px; text-align: center; padding: clamp(24px,4vw,32px) 18px; background: radial-gradient(130% 150% at 50% -10%, #262A33 0%, #15171D 60%, #0B0C10 100%); box-shadow: 0 14px 34px -14px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.07); transition: transform 0.3s ease; }
+        .big-task.is-split { transform: scale(0.97); animation: split-pulse 1.4s ease-in-out; }
+        .big-task-title { font-family: 'Source Serif 4', serif; font-weight: 600; font-size: clamp(22px,4vw,30px); margin: 0; color: #F4F1EA; }
+        .big-task-sub { font-family: 'Manrope', sans-serif; font-size: clamp(12px,1.6vw,13.5px); margin: 7px 0 0; color: rgba(255,255,255,0.62); }
+        .big-task.is-split .big-task-sub { color: #FFC56B; font-weight: 600; }
+        .piece-card { display: flex; align-items: center; gap: 11px; background: ${T.paper}; border-radius: 11px; padding: 11px 14px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.16); opacity: 0; animation: piece-pop 0.42s cubic-bezier(.34,1.4,.5,1) forwards; }
+        .piece-num { width: 26px; height: 26px; border-radius: 50%; background: ${T.accentSoft}; color: ${T.accent}; font-family: 'JetBrains Mono'; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .piece-label { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: clamp(13.5px,1.8vw,15px); color: ${T.ink}; }
+
+        /* === YO'L-XARITA (journey) === */
+        .journey { display: flex; align-items: stretch; gap: 6px; flex-wrap: wrap; }
+        .jn { flex: 1; min-width: 130px; display: flex; align-items: center; gap: 9px; background: ${T.paper}; border-radius: 12px; padding: 10px 12px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); }
+        .jn-dot { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-weight: 800; font-size: 12px; color: #fff; flex-shrink: 0; }
+        .jn-txt { display: flex; flex-direction: column; min-width: 0; }
+        .jn-lbl { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.ink}; }
+        .jn-tag { font-family: 'Manrope', sans-serif; font-size: 11px; color: ${T.ink3}; }
+        .jn-done { box-shadow: inset 0 0 0 1.5px ${T.success}, 0 6px 16px -6px rgba(31,122,77,0.25); }
+        .jn-done .jn-dot { background: ${T.success}; }
+        .jn-cur { box-shadow: inset 0 0 0 2px ${T.accent}, 0 8px 20px -6px rgba(255,79,40,0.28); }
+        .jn-cur .jn-dot { background: ${T.accent}; }
+        .jn-next .jn-dot { background: ${T.ink3}; }
+        .jn-line { align-self: center; width: 14px; height: 2px; background: ${T.ink3}; opacity: 0.4; flex-shrink: 0; border-radius: 2px; }
+        @media (max-width: 640px) { .jn-line { display: none; } .jn { min-width: 100%; } }
 
         .feedback-block { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease-out 0.1s, margin-top 0.4s ease-out; margin-top: 0; }
         .feedback-block.visible { max-height: 800px; opacity: 1; margin-top: clamp(14px,2vw,20px); }

@@ -255,7 +255,11 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const [spinning, setSpinning] = useState(false);
   const [lost, setLost] = useState(false);
   const [picked, setPicked] = useState(storedAnswer?.picked ?? null);
-  const POOL = ['Zo’r sayt ekan! — Aziz', 'Menga ham yoqdi — Malika', 'Qoyil! — Sardor'];
+  const POOL = [
+    { name: 'Aziz', text: "Zo'r sayt ekan, tabriklayman!", time: '2 daqiqa oldin', color: '#019ACB' },
+    { name: 'Malika', text: 'Menga ham juda yoqdi, ofarin', time: '1 daqiqa oldin', color: '#FF4F28' },
+    { name: 'Sardor', text: 'Qoyil — buni qanday yasading?', time: 'hozirgina', color: '#7C3AED' }
+  ];
   const OPTS = [
     { id: 'a', label: 'Internet uzilib qoldi' },
     { id: 'b', label: 'Izoh hech qayerda saqlanmagan edi' },
@@ -282,10 +286,18 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
               ) : (
                 <>
                   <p className="bw-h">Mening saytim</p>
-                  <p className="bw-sub">Izohlar:</p>
+                  <p className="bw-sub">Izohlar ({comments.length}):</p>
                   {comments.length === 0
                     ? <p className="bw-empty">{lost ? 'Izohlar yo’q… hammasi yo’qoldi!' : 'Hozircha izoh yo’q'}</p>
-                    : comments.map((c, i) => <div key={i} className="cmt el-in">{c}</div>)}
+                    : comments.map((c, i) => (
+                        <div key={i} className="cmt el-in">
+                          <span className="cmt-ava" style={{ background: c.color }}>{c.name[0]}</span>
+                          <div className="cmt-col">
+                            <div className="cmt-top"><span className="cmt-name">{c.name}</span><span className="cmt-time">{c.time}</span></div>
+                            <span className="cmt-text">{c.text}</span>
+                          </div>
+                        </div>
+                      ))}
                 </>
               )}
             </BWindow>
@@ -316,6 +328,28 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   );
 };
 
+// 4 texnologiya → birlashib → bitta yaxlit sayt (animatsiyali)
+const PernAssemble = () => (
+  <div className="assemble">
+    <div className="asm-pieces">
+      {TECH.map((t, i) => (
+        <div key={t.key} className="asm-chip" style={{ background: t.soft, color: t.color, animationDelay: `${0.1 + i * 0.13}s` }}>
+          <span className="asm-dot" style={{ background: t.color }} />{t.name}
+        </div>
+      ))}
+    </div>
+    <div className="asm-merge"><span className="asm-arrow">↓</span> birlashib — bitta sayt</div>
+    <div className="asm-site">
+      <span className="asm-badge">✓ Bitta ishlaydigan sayt</span>
+      <BWindow url="mening-saytim.uz" minH={118}>
+        <div className="rb rb-header">Mening do'konim</div>
+        <div className="rb rb-card"><span className="rb-thumb" /><span>Krossovka — 250 000 so'm</span></div>
+        <button className="rb rb-btn">Savatga qo'shish</button>
+      </BWindow>
+    </div>
+  </div>
+);
+
 // ===== SCREEN 1 — REJA =====
 const Screen1 = ({ screen, onNext, onPrev }) => {
   const STEPS = [
@@ -329,16 +363,8 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   const [showSteps, setShowSteps] = useState(false);
   const PreviewBlock = (
     <Col>
-      <p className="flow-label">Bugungi jamoa — PERN stack</p>
-      <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {TECH.map((t, i) => (
-          <div key={t.key} className="pean-row fade-up" style={{ animationDelay: `${0.08 + i * 0.06}s` }}>
-            <span className="pean-badge" style={{ background: t.color }}>{t.name[0]}</span>
-            <span style={{ fontWeight: 700, color: T.ink, minWidth: 92 }}>{t.name}</span>
-            <span className="small" style={{ color: T.ink2 }}>{t.role.split(' — ')[0]}</span>
-          </div>
-        ))}
-      </div>
+      <p className="flow-label">4 ta texnologiya → bitta yaxlit sayt</p>
+      <PernAssemble />
     </Col>
   );
   const StepsBlock = (
@@ -438,8 +464,8 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="React" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${added.length}/3 blokni qo'shing`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Million tugmali saytni <span className="italic" style={{ color: T.blue }}>qanday</span> yig'amiz?</h2></div>
-        <Mentor>Frontend dunyosining yulduzi — <b style={{ color: T.blue }}>React</b>. G'oyasi oddiy: sayt <b style={{ color: T.ink }}>bloklardan</b> yig'iladi (xuddi Minecraft'dagidek!). Bitta "Karta" blokini yozasiz — uni 100 joyda ishlatasiz. Bloklarni bosib, saytni yig'ing.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Katta saytni mayda <span className="italic" style={{ color: T.blue }}>bloklardan</span> qanday yig'amiz?</h2></div>
+        <Mentor>Frontend dunyosining yulduzi — <b style={{ color: T.blue }}>React</b>. G'oyasi oddiy: sayt <b style={{ color: T.ink }}>bloklardan</b> yig'iladi (xuddi LEGO'dek!). Bitta "Karta" blokini bir marta yasaysiz — keyin uni minglab mahsulot uchun qayta ishlatasiz. Quyidagi bloklarni bosib, sahifani yig'ing.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -1352,11 +1378,30 @@ export default function PeanStackLesson({ lang: langProp, onFinished }) {
         .bw-sub { font-size: 12px; color: ${T.ink3}; margin: 0 0 8px; font-family: 'Manrope', sans-serif; font-weight: 600; }
         .bw-empty { font-size: 13px; color: ${T.ink3}; font-style: italic; margin: 0; }
         .bw-spin { display: flex; align-items: center; gap: 10px; min-height: 110px; justify-content: center; color: ${T.ink3}; font-family: 'JetBrains Mono'; font-size: 13px; }
-        .cmt { font-size: 13.5px; color: ${T.ink}; background: ${T.bg}; border-radius: 8px; padding: 7px 11px; margin-bottom: 6px; }
+        .cmt { display: flex; align-items: flex-start; gap: 10px; background: ${T.bg}; border-radius: 10px; padding: 9px 11px; margin-bottom: 7px; }
+        .cmt-ava { width: 30px; height: 30px; border-radius: 50%; color: #fff; font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; text-transform: uppercase; }
+        .cmt-col { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+        .cmt-top { display: flex; align-items: baseline; gap: 8px; }
+        .cmt-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.ink}; }
+        .cmt-time { font-family: 'Manrope', sans-serif; font-size: 11px; color: ${T.ink3}; }
+        .cmt-text { font-family: 'Manrope', sans-serif; font-size: 13px; color: ${T.ink2}; line-height: 1.4; }
 
         /* === PERN: JAMOA / NISHONLAR === */
         .pean-row { display: flex; align-items: center; gap: 11px; background: ${T.paper}; border-radius: 12px; padding: 9px 13px; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.14); }
         .pean-badge { width: 28px; height: 28px; border-radius: 8px; color: #fff; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; font-family: 'Manrope'; }
+
+        /* === PERN: 4 KATAK → BITTA SAYT (birlashish animatsiyasi) === */
+        @keyframes asm-in { from { opacity: 0; transform: translateY(-10px) scale(0.88); } to { opacity: 1; transform: none; } }
+        @keyframes asm-pop { 0% { opacity: 0; transform: scale(0.92); } 60% { transform: scale(1.025); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes asm-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+        .assemble { display: flex; flex-direction: column; align-items: center; gap: 11px; }
+        .asm-pieces { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .asm-chip { display: inline-flex; align-items: center; gap: 7px; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: clamp(12px,1.6vw,13.5px); padding: 8px 14px; border-radius: 10px; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.18); opacity: 0; animation: asm-in 0.42s cubic-bezier(.34,1.4,.5,1) forwards; }
+        .asm-dot { width: 9px; height: 9px; border-radius: 3px; flex-shrink: 0; }
+        .asm-merge { display: flex; align-items: center; gap: 8px; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: ${T.ink3}; opacity: 0; animation: fade-in-up 0.4s ease-out forwards 0.62s; }
+        .asm-arrow { font-size: 17px; color: ${T.accent}; animation: asm-bounce 1.6s ease-in-out infinite 1s; }
+        .asm-site { position: relative; width: 100%; opacity: 0; animation: asm-pop 0.5s cubic-bezier(.34,1.3,.4,1) forwards 0.82s; }
+        .asm-badge { position: absolute; top: -10px; right: 12px; z-index: 2; background: ${T.success}; color: #fff; font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 10.5px; padding: 4px 10px; border-radius: 99px; box-shadow: 0 5px 14px -5px rgba(31,122,77,0.5); }
         .ttag { display: inline-flex; align-items: center; gap: 6px; font-family: 'Manrope'; font-weight: 700; font-size: 12.5px; padding: 4px 11px; border-radius: 99px; }
         .ttag-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
         .tech-card { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; background: ${T.paper}; border: none; border-radius: 14px; padding: 14px 15px; cursor: pointer; transition: all 0.18s; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); font-family: 'Manrope'; color: ${T.ink}; text-align: left; }
