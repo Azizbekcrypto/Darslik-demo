@@ -215,19 +215,24 @@ const RoCard = ({ name, emoji, likes, onLike, starred, onStar }) => {
   const g = gameByName(name);
   const bg = g ? g.bg : 'linear-gradient(135deg,#8E9BB5,#4A5670)';
   const em = emoji || (g ? g.emoji : '🎮');
+  const pct = g ? g.likes : 88;
   return (
     <div className="rocard el-in">
       <div className="rothumb" style={{ background: bg }}>
-        <span style={{ fontSize: 26 }}>{em}</span>
-        {starred && <span className="rostar el-in">⭐</span>}
+        <span className="rothumb-icon">{em}</span>
+        {onStar
+          ? <button className={`rostar-btn ${starred ? 'on' : ''}`} onClick={onStar} title="Sevimlilarga qo'shish" aria-label="Sevimlilarga qo'shish">{starred ? '⭐' : '☆'}</button>
+          : (starred && <span className="rostar el-in">⭐</span>)}
+        <span className="rothumb-play">▶</span>
       </div>
+      <div className="robar"><span className="robar-fill" style={{ width: `${pct}%` }} /></div>
       <div className="robody">
         <p className="roname">{name}</p>
         <div className="rostats">
           {onLike
-            ? <button className={`rolike ${likes > 0 ? 'on' : ''}`} onClick={onLike} title="Like bosib ko'ring"><span key={likes} className="hpop" style={{ display: 'inline-block' }}>👍</span> {likes}</button>
-            : <span>👍 {g ? g.likes : 88}%</span>}
-          {onStar && <button className={`rolike ${starred ? 'on' : ''}`} onClick={onStar} title="Sevimlilarga qo'shish">{starred ? '⭐' : '☆'}</button>}
+            ? <button className="rolike-btn" onClick={onLike} title="Like bosib ko'ring"><span key={likes} className="hpop">👍</span> <span className="rolike-num">{likes}</span></button>
+            : <span className="rolike-static">👍 {pct}%</span>}
+          {g && <span className="roplayers">👥 {g.players}</span>}
         </div>
       </div>
     </div>
@@ -275,8 +280,8 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   return (
     <Stage eyebrow="Kirish" screen={screen} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
-        <h1 className="title h-title fade-up" style={{ maxWidth: 780 }}>Nega bu tugma <span className="italic" style={{ color: T.accent }}>ishlamayapti</span>?</h1>
-        <Mentor>O'tgan darsda kartochka yasadik — endi unga <b style={{ color: T.ink }}>like tugmasi</b> qo'shdik. Lekin g'alati: <b style={{ color: T.ink }}>ikkita versiya</b> bor. Ikkalasida ham 👍 ni bosib ko'ring — chapdagisida nima bo'layotganiga e'tibor bering.</Mentor>
+        <h1 className="title h-title fade-up" style={{ maxWidth: 780 }}>Bir xil ikki tugma — nega <span className="italic" style={{ color: T.accent }}>biri ishlamaydi</span>?</h1>
+        <Mentor>O'tgan darsda kartochka yasadik — endi har biriga <b style={{ color: T.ink }}>👍 like tugmasi</b> qo'shdik. Kartochkalar bir xil ko'rinadi, lekin <b style={{ color: T.ink }}>1-versiyaning like'i</b> sindirilgan. Ikkalasida ham 👍 ni bosing — <b style={{ color: T.ink }}>chap (1-versiya)</b> son qotib qolishini kuzating.</Mentor>
         <Zoomable>
         <Split>
           <Col>
@@ -351,7 +356,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Stage eyebrow="Reja" screen={screen} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head">
-          <h2 className="title h-title fade-up">Kartochkani qanday <span className="italic" style={{ color: T.accent }}>jonlantiramiz</span>?</h2>
+          <h2 className="title h-title fade-up">Kartochkadagi <span className="italic" style={{ color: T.accent }}>like qanday jonlanadi</span>?</h2>
         </div>
         <Mentor>Va'da beraman: dars oxirida <b style={{ color: T.ink }}>ishlaydigan like tugmasini</b> o'zingiz yozasiz. Buning kaliti — <b style={{ color: T.ink }}>state</b> (komponent xotirasi) va <b style={{ color: T.ink }}>effect</b>. Yuqoridagi 👍 ni bosib ko'ring — bugun aynan shuni qurasiz.</Mentor>
         {!isNarrow ? (
@@ -400,9 +405,20 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
           <Col>
-            <p className="flow-label">Ekranda — bosib ko'ring</p>
-            <div style={{ maxWidth: 165 }}><RoCard name="Adopt Me!" likes={0} onLike={() => setClicks(c => Math.min(c + 1, 5))} /></div>
-            <p className="mono small" style={{ margin: 0, color: clicks > 0 ? T.accent : T.ink3 }}>{clicks > 0 ? `ekranda hamon: 👍 0 — yangilanmadi!` : '↑ tugmani bosing'}</p>
+            <p className="flow-label">Ekranda — 👍 ni bosing</p>
+            <div style={{ maxWidth: 180 }}><RoCard name="Adopt Me!" likes={0} onLike={() => setClicks(c => Math.min(c + 1, 5))} /></div>
+            <div className="gap-viz fade-up delay-1">
+              <div className="gap-box mem">
+                <span className="gap-lbl">📦 Xotira (let likes)</span>
+                <span key={clicks} className={clicks > 0 ? 'gap-num pop' : 'gap-num'}>{clicks}</span>
+              </div>
+              <span className="gap-vs">≠</span>
+              <div className="gap-box scr">
+                <span className="gap-lbl">🖥 Ekranda</span>
+                <span className="gap-num frozen">0 <span className="gap-lock">🔒</span></span>
+              </div>
+            </div>
+            {clicks > 0 && !done && <p className="mono small" style={{ margin: 0, color: T.accent }}>↑ xotira o'syapti, ekran esa qotgan…</p>}
             {done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ko'rdingizmi? Xotirada <b>likes = {clicks}</b>, ekranda esa <b>0</b>. Oddiy o'zgaruvchi o'zgarganini React <b>sezmaydi</b> — unga maxsus xotira kerak. Keyingi ekranda tanishamiz!</p></div>}
           </Col>
         </div>
@@ -423,21 +439,23 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [seen, setSeen] = useState(storedAnswer ? new Set(['val', 'set', 'init']) : new Set());
   const done = seen.size >= 3;
   const tap = (k) => { setActive(k); setSeen(prev => { const s = new Set(prev); s.add(k); return s; }); };
-  const partStyle = (k) => ({ cursor: 'pointer', borderRadius: 6, padding: '2px 5px', display: 'inline-block', background: active === k ? 'rgba(255,79,40,0.18)' : (seen.has(k) ? 'rgba(31,122,77,0.13)' : 'rgba(255,255,255,0.05)'), boxShadow: active === k ? `inset 0 0 0 1px ${T.accent}` : 'none', transition: 'all 0.18s' });
+  const COL = { val: T.blue, set: T.accent, init: T.success };
+  const tokCls = (k) => `anat-tok tok-${k} ${active === k ? 'on' : ''} ${seen.has(k) ? 'seen' : ''}`;
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
     <Stage eyebrow="useState" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/3 qism o'rganildi`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Komponent xotirasi <span className="italic" style={{ color: T.accent }}>qanday tuziladi</span>?</h2></div>
-        <Mentor>Mana React'ning maxsus xotirasi — <b style={{ color: T.ink }}>useState</b>. Bitta qator — uch qism: <b style={{ color: T.ink }}>joriy qiymat</b>, <b style={{ color: T.ink }}>yangilovchi funksiya</b> va <b style={{ color: T.ink }}>boshlang'ich qiymat</b>. Har birini bosib o'rganing.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Bu xotira qatori <span className="italic" style={{ color: T.accent }}>nimalardan iborat</span>?</h2></div>
+        <Mentor>Mana React'ning maxsus xotirasi — <b style={{ color: T.ink }}>useState</b>. Bitta qator — uch qism: <b style={{ color: T.blue }}>joriy qiymat</b>, <b style={{ color: T.accent }}>yangilovchi funksiya</b> va <b style={{ color: T.success }}>boshlang'ich qiymat</b>. Koddagi rangli qismlarni bosib o'rganing.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
-            <pre className="code-box fade-up delay-1" style={{ lineHeight: 2.1, fontSize: 'clamp(12.5px,1.6vw,14.5px)' }}>
-              <Jx>{'const'}</Jx>{' ['}<span style={partStyle('val')} onClick={() => tap('val')}><At>likes</At></span>{', '}<span style={partStyle('set')} onClick={() => tap('set')}><At>setLikes</At></span>{'] ='}{'\n'}
-              {'      '}<span style={partStyle('init')} onClick={() => tap('init')}><Jx>{'useState'}</Jx>{'('}<St>0</St>{')'}</span>{';'}
+            <pre className="code-box fade-up delay-1" style={{ lineHeight: 2.4, fontSize: 'clamp(12.5px,1.6vw,14.5px)' }}>
+              <Jx>{'const'}</Jx>{' ['}<span className={tokCls('val')} onClick={() => tap('val')}><At>likes</At></span>{', '}<span className={tokCls('set')} onClick={() => tap('set')}><At>setLikes</At></span>{'] ='}{'\n'}
+              {'      '}<span className={tokCls('init')} onClick={() => tap('init')}><Jx>{'useState'}</Jx>{'('}<St>0</St>{')'}</span>{';'}
             </pre>
-            <div className="hint fade-up delay-2"><p className="small" style={{ margin: 0, color: T.ink2 }}>O'qilishi: "menga <b>likes</b> degan xotira ber, boshlang'ichi <b>0</b>, o'zgartirish uchun <b>setLikes</b> beraman".</p></div>
+            {!active && <p className="small fade-up delay-2" style={{ margin: 0, color: T.ink3, fontStyle: 'italic' }}>👆 Yuqoridagi rangli qismlardan birini bosing</p>}
+            <div className="hint fade-up delay-2"><p className="small" style={{ margin: 0, color: T.ink2 }}>O'qilishi: "menga <b style={{ color: T.blue }}>likes</b> degan xotira ber, boshlang'ichi <b style={{ color: T.success }}>0</b>, o'zgartirish uchun <b style={{ color: T.accent }}>setLikes</b> beraman".</p></div>
           </Col>
           <Col>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
@@ -445,8 +463,8 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <span className="small mono" style={{ color: done ? T.success : T.ink3 }}>{seen.size} / 3 topildi</span>
             </div>
             {active ? (
-              <div className="sk-info" key={active}>
-                <span className="sk-tagbig"><span className="sk-wordbadge">{PARTS[active].word}</span></span>
+              <div className="sk-info" key={active} style={{ boxShadow: `0 8px 20px -6px rgba(${T.shadowBase},0.16), inset 3px 0 0 ${COL[active]}` }}>
+                <span className="sk-tagbig"><span className="sk-wordbadge" style={{ color: COL[active], background: COL[active] + '22' }}>{PARTS[active].word}</span></span>
                 <p className="body" style={{ color: T.ink, margin: '11px 0 0' }}>{PARTS[active].info}</p>
               </div>
             ) : (
@@ -503,22 +521,32 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="split">
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run} disabled={running}>{running ? 'Ishlayapti…' : (done ? '👍 Yana bosing' : '👍 Like bosildi — kuzating')}</button>
-            <div className="fade-up delay-2" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {STEPS.map((s, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 13px', borderRadius: 11, background: phase > i ? T.successSoft : T.bg, opacity: phase > i ? 1 : 0.55, transition: 'all 0.4s' }}>
-                  <span style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 12, color: phase > i ? T.success : T.ink3, minWidth: 16 }}>{phase > i ? '✓' : i + 1}</span>
-                  <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, fontSize: 13.5, color: phase > i ? T.ink : T.ink2 }}>{s}</span>
-                </div>
-              ))}
+            <div className="sflow fade-up delay-2">
+              {STEPS.map((s, i) => {
+                const reached = phase > i;
+                const now = running && phase === i + 1;
+                return (
+                  <React.Fragment key={i}>
+                    {i > 0 && <span className={`sflow-arrow ${phase > i ? 'on' : ''}`}>↓</span>}
+                    <div className={`sflow-step ${reached ? 'on' : ''} ${now ? 'now' : ''}`}>
+                      <span className="sflow-dot">{reached ? '✓' : i + 1}</span>
+                      <span className="sflow-txt">{s}</span>
+                    </div>
+                  </React.Fragment>
+                );
+              })}
             </div>
           </Col>
           <Col>
-            <p className="flow-label">Xotira (state)</p>
-            <div className="code-box" style={{ padding: '9px 13px' }}>
-              <TLine out={<span>likes: <span style={{ color: CODE.str, fontWeight: 700 }}>{phase >= 2 ? likes + (phase >= 3 ? 0 : 1) : likes}</span>{phase === 2 && <span style={{ color: CODE.attr }}> ← yangilandi!</span>}</span>} />
+            <p className="flow-label">📦 Xotira (state)</p>
+            <div className="code-box" style={{ padding: '11px 14px' }}>
+              <TLine out={<span>likes: <span key={phase >= 2 ? 'new' : 'old'} className={phase >= 2 ? 'mem-pop' : undefined} style={{ color: CODE.str, fontWeight: 700, display: 'inline-block', fontSize: 15 }}>{phase >= 2 ? likes + (phase >= 3 ? 0 : 1) : likes}</span>{phase === 2 && <span style={{ color: CODE.attr }}> ← xotira yangilandi!</span>}</span>} />
             </div>
-            <p className="flow-label" style={{ marginTop: 2 }}>Ekranda</p>
-            <div style={{ maxWidth: 165 }}><RoCard name="Blox Fruits" likes={likes} onLike={run} /></div>
+            <p className="flow-label" style={{ marginTop: 2 }}>🖥 Ekranda</p>
+            <div className={`render-wrap ${phase === 3 ? 'flash' : ''}`} style={{ maxWidth: 180 }}>
+              <RoCard name="Blox Fruits" likes={likes} onLike={run} />
+              {phase === 3 && <span className="render-badge fade-step">🔄 qayta chizildi!</span>}
+            </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Sikl: <b>set chaqirildi → xotira yangilandi → qayta chizildi</b>. Har 👍 bosilganda shu uchlik aylanadi. Mana React'ning tirikligi!</p></div>}
           </Col>
         </div>
@@ -553,8 +581,8 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Ikkinchi xotira" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Ikkalasini ham sinang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bitta komponentda <span className="italic" style={{ color: T.accent }}>nechta xotira</span> sig'adi?</h2></div>
-        <Mentor>Istalgancha! Kartochkaga <b style={{ color: T.ink }}>ikkinchi state</b> qo'shdik: ⭐ sevimlilar. Har <span className="mono">useState</span> — <b style={{ color: T.ink }}>alohida quti</b>, ular bir-biriga xalaqit bermaydi. Ikkalasini ham bosib sinang.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Bitta komponentda <span className="italic" style={{ color: T.accent }}>nechta xotira</span> bo'la oladi?</h2></div>
+        <Mentor>Istalgancha! Kartochkaga <b style={{ color: T.ink }}>ikkinchi state</b> qo'shdik: ⭐ sevimlilar (kartochka ustidagi yulduzchani bosing). Har <span className="mono">useState</span> — <b style={{ color: T.ink }}>alohida quti</b>, ular bir-biriga xalaqit bermaydi. Ikkala tugmani ham bosib sinang.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -569,8 +597,8 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
           <Col>
-            <p className="flow-label">Ikkala tugmani bosing</p>
-            <div style={{ maxWidth: 165 }}><RoCard name="Brookhaven" likes={likes} onLike={() => setLikes(l => l + 1)} starred={starred} onStar={() => { setStarred(s => !s); setStarTouched(true); }} /></div>
+            <p className="flow-label">👍 like va ⭐ yulduzni bosing</p>
+            <div style={{ maxWidth: 188 }}><RoCard name="Brookhaven" likes={likes} onLike={() => setLikes(l => l + 1)} starred={starred} onStar={() => { setStarred(s => !s); setStarTouched(true); }} /></div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>👍 bosganda ⭐ o'zgarmadi — har state <b>mustaqil quti</b>. <span className="mono">false/true</span> ham xotira bo'la oladi: son, matn, belgi — hammasi.</p></div>}
           </Col>
         </div>
@@ -630,8 +658,8 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Effect + State" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `👍 ni 3 marta bosing (${likes}/3)`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Effect state'ni <span className="italic" style={{ color: T.accent }}>kuzata oladimi</span>?</h2></div>
-        <Mentor>Eng kuchli juftlik! <span className="mono">[]</span> o'rniga <span className="mono">[likes]</span> yozsak, effect <b style={{ color: T.ink }}>likes'ni kuzatadi</b>: u o'zgargan sari qayta ishlaydi. Misol: like soni brauzer tab sarlavhasiga chiqsin. 👍 bosing va <b style={{ color: T.ink }}>oynaning sarlavhasiga</b> qarang!</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Like soni <span className="italic" style={{ color: T.accent }}>tab sarlavhasiga</span> chiqsinmi?</h2></div>
+        <Mentor>Eng kuchli juftlik! <span className="mono">[]</span> o'rniga <span className="mono">[likes]</span> yozsak, effect <b style={{ color: T.ink }}>likes'ni kuzatadi</b>: u o'zgargan sari qayta ishlaydi. Misol: like soni brauzer tab sarlavhasiga chiqsin. 👍 bosing va <b style={{ color: T.ink }}>tepadagi tab sarlavhasiga</b> qarang!</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -644,9 +672,13 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="hint fade-up delay-2"><p className="small" style={{ margin: 0, color: T.ink2 }}><span className="mono">[]</span> — faqat tug'ilganda · <span className="mono">[likes]</span> — likes har o'zgarganda · ikkalasi ham useEffect'ning "qachon ishlash" sozlamasi.</p></div>
           </Col>
           <Col>
-            <p className="flow-label">Tab sarlavhasiga qarang ↓</p>
+            <p className="flow-label">📑 Brauzer tab sarlavhasi</p>
+            <div className="tab-preview fade-up delay-1">
+              <span className="tab-chip"><span className="tab-fav">⚛</span><span key={likes} className={likes > 0 ? 'tab-num pop' : 'tab-num'} style={{ color: likes > 0 ? T.accent : T.ink3 }}>({likes})</span> robo-games</span>
+              {likes > 0 && <span className="tab-cue fade-step">← useEffect yangiladi</span>}
+            </div>
             <Win title={`(${likes}) robo-games — localhost:5173`} hotTitle={likes > 0} minH={100}>
-              <div style={{ maxWidth: 165 }}><RoCard name="Adopt Me!" likes={likes} onLike={() => setLikes(l => l + 1)} /></div>
+              <div style={{ maxWidth: 185 }}><RoCard name="Adopt Me!" likes={likes} onLike={() => setLikes(l => l + 1)} /></div>
             </Win>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Mana <b>useState + useEffect birga</b>: state o'zgardi → ekran qayta chizildi → effect ham ishladi → tab sarlavhasi yangilandi. Ma'lumot butun interfeysni boshqaryapti!</p></div>}
           </Col>
@@ -756,7 +788,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Keyingi qadam · AI" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "Agent bilan ishlab ko'ring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Jonli tugmani <span className="italic" style={{ color: T.accent }}>AI'ga buyurtma</span> qilsak-chi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Jonli tugmani <span className="italic" style={{ color: T.accent }}>AI'ga yozdirsak</span>-chi?</h2></div>
         <Mentor>Endi siz <b style={{ color: T.ink }}>state kodini o'qiy olasiz</b>! Buyruq bering, agent rejasini <b style={{ color: T.ink }}>tasdiqlang</b>, keyin kodini tekshiring: <span className="mono">useState</span> bormi, <span className="mono">set…</span> chaqirilganmi, <span className="mono">[]</span> to'g'rimi. Oxirida natijani <b style={{ color: T.ink }}>o'zingiz bosib sinang</b> — boshliq siz.</Mentor>
         <Zoomable>
         <div className="split">
@@ -782,9 +814,15 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <p className="flow-label">2. Natija — bosib sinab ko'ring</p>
             <Win title="robo-games — localhost:5173" minH={130}>
               {done && cur ? (
-                <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {cur.id === 't2' && <div className="frame-success" style={{ padding: '8px 12px' }}><p className="small" style={{ margin: 0, color: T.ink, fontWeight: 700 }}>👋 Xush kelibsiz! <span className="mono" style={{ fontSize: 10, color: T.success }}>bir marta chiqdi — []</span></p></div>}
-                  <div style={{ maxWidth: 165 }}>
+                <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {cur.id === 't2' && (
+                    <div className="welcome-toast el-in">
+                      <span className="wt-emoji">👋</span>
+                      <div className="wt-text"><b>Xush kelibsiz!</b><span>robo-games'ga qaytib keldingiz</span></div>
+                      <span className="wt-badge">[] · 1 marta</span>
+                    </div>
+                  )}
+                  <div style={{ maxWidth: 185 }}>
                     {cur.id === 't1' && <RoCard name="Adopt Me!" likes={likes} onLike={() => setLikes(l => l + 1)} />}
                     {cur.id === 't2' && <RoCard name="Adopt Me!" />}
                     {cur.id === 't3' && <RoCard name="Brookhaven" likes={likes} onLike={() => setLikes(l => l + 1)} starred={starred} onStar={() => setStarred(s => !s)} />}
@@ -837,7 +875,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Amaliyot · sozlash" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Sozlang va bosib sinang'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">O'z sanagichingizni <span className="italic" style={{ color: T.accent }}>sozlay olasizmi</span>?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">O'z <span className="italic" style={{ color: T.accent }}>like hisoblagichingizni</span> sozlay olasizmi?</h2></div>
         <Mentor>Endi o'zingiz boshqaring! <b style={{ color: T.ink }}>Boshlang'ich qiymat</b>ni (useState ichidagi son) va <b style={{ color: T.ink }}>qadam</b>ni tanlang, keyin 👍 bosib sinang. Kod qanday o'zgarishini kuzating.</Mentor>
         <Zoomable>
         <div className="split">
@@ -858,9 +896,9 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </pre>
           </Col>
           <Col>
-            <p className="flow-label">Sanagichingiz — bosib sinang</p>
+            <p className="flow-label">Hisoblagichingiz — bosib sinang</p>
             <Win title="robo-games — localhost:5173" minH={100}>
-              <div style={{ maxWidth: 165 }}><RoCard key={`${init}-${step}`} name="Tower of Hell" likes={likes} onLike={() => setClicks(c => c + 1)} /></div>
+              <div style={{ maxWidth: 185 }}><RoCard key={`${init}-${step}`} name="Tower of Hell" likes={likes} onLike={() => setClicks(c => c + 1)} /></div>
             </Win>
             <span className="tagpill fade-step" style={{ color: done ? T.success : T.ink }}>{initTried.size >= 2 ? '✓' : '○'} boshlang'ich · {stepTried.size >= 2 ? '✓' : '○'} qadam · {clicks >= 1 ? '✓' : '○'} sinash</span>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Siz hozir state'ni <b>to'liq boshqardingiz</b>: boshlang'ich qiymat, o'zgarish qadami va qayta chizish — hammasi qo'lingizda.</p></div>}
@@ -918,7 +956,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <>
                 <div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Topdingiz va tuzatdingiz — bu debugging!</p><p className="ta-sub">AI tez yozadi, siz tekshirib tuzatasiz — zo'r jamoa</p></div>
                 <p className="flow-label" style={{ margin: 0 }}>Endi ishlaydi — bosib sinang</p>
-                <div style={{ maxWidth: 165 }}><RoCard name="Adopt Me!" likes={likes} onLike={() => setLikes(l => l + 1)} /></div>
+                <Win title="robo-games — localhost:5173" minH={110}><div style={{ maxWidth: 185 }}><RoCard name="Adopt Me!" likes={likes} onLike={() => setLikes(l => l + 1)} /></div></Win>
               </>
             )}
           </Col>
@@ -1242,17 +1280,91 @@ export default function ReactStateEffectLesson({ lang: langProp, onFinished }) {
         .bp-body { padding: clamp(12px,2.2vw,18px); }
         .code-box { background: ${CODE.bg}; color: ${CODE.text}; font-family: 'JetBrains Mono', monospace; font-size: clamp(12px,1.5vw,13.5px); line-height: 1.55; padding: clamp(12px,2.2vw,16px); border-radius: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; margin: 0; box-shadow: 0 8px 22px -6px rgba(${T.shadowBase},0.2); }
         /* Roblox uslubidagi o'yin kartochkasi */
-        .rocard { border-radius: 12px; background: #fff; box-shadow: 0 4px 14px -4px rgba(0,0,0,0.16); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.15s, box-shadow 0.15s; }
-        .rocard:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -5px rgba(0,0,0,0.22); }
-        .rothumb { height: 58px; display: flex; align-items: center; justify-content: center; position: relative; }
-        .rostar { position: absolute; top: 4px; right: 7px; font-size: 14px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35)); }
-        .robody { padding: 7px 10px 9px; }
-        .roname { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 12px; color: ${T.ink}; margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .rostats { display: flex; align-items: center; gap: 8px; font-family: 'Manrope', sans-serif; font-size: 10.5px; color: ${T.ink3}; font-weight: 600; }
-        .rolike { border: none; background: transparent; cursor: pointer; padding: 0; font-family: 'Manrope', sans-serif; font-size: 10.5px; font-weight: 600; color: ${T.ink3}; transition: color 0.15s; }
-        .rolike.on { color: ${T.success}; font-weight: 800; }
+        .rocard { border-radius: 13px; background: #fff; box-shadow: 0 5px 16px -4px rgba(0,0,0,0.18); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.15s, box-shadow 0.15s; }
+        .rocard:hover { transform: translateY(-2px); box-shadow: 0 12px 26px -5px rgba(0,0,0,0.28); }
+        .rocard:hover .rothumb-play { opacity: 1; transform: scale(1); }
+        .rothumb { position: relative; height: 72px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .rothumb::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.34), transparent 62%); }
+        .rothumb::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 44%; background: linear-gradient(transparent, rgba(0,0,0,0.26)); }
+        .rothumb-icon { position: relative; z-index: 1; font-size: 34px; line-height: 1; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.32)); }
+        .rothumb-play { position: absolute; z-index: 2; bottom: 7px; right: 7px; width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.92); color: #1A2436; font-size: 9px; display: flex; align-items: center; justify-content: center; padding-left: 1px; box-shadow: 0 2px 7px rgba(0,0,0,0.3); opacity: 0; transform: scale(0.55); transition: all 0.2s; }
+        .rostar { position: absolute; z-index: 2; top: 6px; right: 8px; font-size: 16px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35)); }
+        .rostar-btn { position: absolute; z-index: 3; top: 6px; right: 6px; width: 27px; height: 27px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,0.92); font-size: 15px; line-height: 1; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px -1px rgba(0,0,0,0.3); transition: transform 0.15s, background 0.15s; }
+        .rostar-btn:hover { transform: scale(1.13); }
+        .rostar-btn:active { transform: scale(0.92); }
+        .rostar-btn.on { background: #FFF1CC; box-shadow: 0 2px 11px -1px rgba(255,180,0,0.65); }
+        .robar { height: 4px; background: rgba(0,0,0,0.13); }
+        .robar-fill { display: block; height: 100%; background: #1FA463; transition: width 0.4s ease; }
+        .robody { padding: 8px 11px 10px; }
+        .roname { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 12.5px; color: ${T.ink}; margin: 0 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rostats { display: flex; align-items: center; gap: 9px; font-family: 'Manrope', sans-serif; font-size: 11px; color: ${T.ink3}; font-weight: 700; }
+        .rolike-btn { border: none; cursor: pointer; font-family: 'Manrope', sans-serif; font-size: 12px; font-weight: 800; color: ${T.success}; background: ${T.successSoft}; padding: 5px 11px; border-radius: 99px; display: inline-flex; align-items: center; gap: 5px; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 7px -2px rgba(31,122,77,0.45); }
+        .rolike-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 12px -2px rgba(31,122,77,0.55); }
+        .rolike-btn:active { transform: scale(0.94); }
+        .rolike-num { min-width: 9px; text-align: left; }
+        .rolike-static { color: ${T.success}; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
+        .roplayers { color: ${T.ink3}; display: inline-flex; align-items: center; gap: 3px; }
         @keyframes heart-pop { 0% { transform: scale(1); } 40% { transform: scale(1.45); } 100% { transform: scale(1); } }
         .hpop { animation: heart-pop 0.4s ease; display: inline-block; }
+        /* === XOTIRA ≠ EKRAN ko'rsatkichi (muammo) === */
+        .gap-viz { display: flex; align-items: stretch; gap: 8px; }
+        .gap-box { flex: 1; border-radius: 11px; padding: 9px 11px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .gap-box.mem { background: ${T.accentSoft}; }
+        .gap-box.scr { background: ${T.bg}; box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.07); }
+        .gap-lbl { font-family: 'Manrope'; font-weight: 700; font-size: 10px; letter-spacing: 0.03em; color: ${T.ink2}; }
+        .gap-num { font-family: 'Fraunces', serif; font-size: 26px; line-height: 1; color: ${T.accent}; }
+        .gap-num.frozen { color: ${T.ink3}; display: inline-flex; align-items: center; gap: 5px; }
+        .gap-lock { font-size: 13px; }
+        .gap-vs { align-self: center; font-family: 'Fraunces', serif; font-size: 20px; color: ${T.ink3}; font-weight: 700; }
+        @keyframes gap-pop { 0% { transform: scale(0.5); opacity: 0.4; } 55% { transform: scale(1.28); } 100% { transform: scale(1); opacity: 1; } }
+        .gap-num.pop { display: inline-block; animation: gap-pop 0.4s cubic-bezier(.34,1.45,.5,1); }
+
+        /* === USESTATE ANATOMIYA (rangli, bosishga chorlovchi qismlar) === */
+        .anat-tok { cursor: pointer; border-radius: 6px; padding: 2px 6px; display: inline-block; transition: all 0.18s; }
+        .anat-tok:not(.seen):not(.on) { animation: tok-invite 2.2s ease-in-out infinite; }
+        @keyframes tok-invite { 0%,100% { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.14); } 50% { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.34); } }
+        .tok-val.on { background: rgba(1,154,203,0.22); box-shadow: inset 0 0 0 1.5px ${T.blue}; }
+        .tok-val.seen:not(.on) { background: rgba(1,154,203,0.12); }
+        .tok-set.on { background: rgba(255,79,40,0.2); box-shadow: inset 0 0 0 1.5px ${T.accent}; }
+        .tok-set.seen:not(.on) { background: rgba(255,79,40,0.1); }
+        .tok-init.on { background: rgba(31,122,77,0.2); box-shadow: inset 0 0 0 1.5px ${T.success}; }
+        .tok-init.seen:not(.on) { background: rgba(31,122,77,0.12); }
+
+        /* === SET → QAYTA CHIZISH OQIMI === */
+        .sflow { display: flex; flex-direction: column; gap: 5px; }
+        .sflow-step { display: flex; align-items: center; gap: 10px; padding: 10px 13px; border-radius: 11px; background: ${T.bg}; transition: background 0.4s, box-shadow 0.3s, transform 0.3s; }
+        .sflow-step.on { background: ${T.successSoft}; }
+        .sflow-step.now { background: ${T.accentSoft}; box-shadow: inset 0 0 0 1.5px ${T.accent}; transform: translateX(3px); }
+        .sflow-dot { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 12px; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: #fff; color: ${T.ink3}; box-shadow: inset 0 0 0 1.5px rgba(0,0,0,0.1); transition: all 0.3s; }
+        .sflow-step.on .sflow-dot { background: ${T.success}; color: #fff; box-shadow: none; }
+        .sflow-step.now .sflow-dot { background: ${T.accent}; color: #fff; box-shadow: none; }
+        .sflow-txt { font-family: 'Manrope'; font-weight: 600; font-size: 13.5px; color: ${T.ink2}; flex: 1; min-width: 0; }
+        .sflow-step.on .sflow-txt, .sflow-step.now .sflow-txt { color: ${T.ink}; }
+        .sflow-arrow { text-align: center; color: ${T.ink3}; font-size: 14px; line-height: 1; margin: -1px 0; transition: color 0.3s; }
+        .sflow-arrow.on { color: ${T.success}; }
+        @keyframes mem-pop { 0% { transform: scale(0.6); } 55% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        .mem-pop { animation: mem-pop 0.45s cubic-bezier(.34,1.45,.5,1); }
+        .render-wrap { position: relative; border-radius: 14px; transition: box-shadow 0.3s; }
+        .render-wrap.flash { box-shadow: 0 0 0 3px rgba(31,122,77,0.4); animation: render-flash 0.7s ease-out; }
+        @keyframes render-flash { 0% { box-shadow: 0 0 0 3px rgba(31,122,77,0.7); } 100% { box-shadow: 0 0 0 3px rgba(31,122,77,0); } }
+        .render-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-family: 'Manrope'; font-weight: 700; font-size: 10.5px; color: #fff; background: ${T.success}; padding: 3px 9px; border-radius: 99px; box-shadow: 0 4px 10px -3px rgba(31,122,77,0.5); z-index: 4; }
+
+        /* === BRAUZER TAB PREVIEW (useEffect [likes]) === */
+        .tab-preview { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+        .tab-chip { display: inline-flex; align-items: center; gap: 6px; font-family: 'Manrope'; font-weight: 700; font-size: 12px; color: ${T.ink}; background: ${T.paper}; padding: 7px 14px 7px 11px; border-radius: 10px 10px 0 0; box-shadow: 0 -2px 10px -4px rgba(${T.shadowBase},0.2), inset 0 -2px 0 ${T.accent}; }
+        .tab-fav { color: ${T.blue}; font-size: 13px; }
+        .tab-num { font-family: 'JetBrains Mono'; font-weight: 700; display: inline-block; }
+        .tab-num.pop { animation: gap-pop 0.4s cubic-bezier(.34,1.45,.5,1); }
+        .tab-cue { font-family: 'Manrope'; font-weight: 700; font-size: 11px; color: ${T.success}; }
+
+        /* === WELCOME TOAST (vibecoding t2) === */
+        .welcome-toast { display: flex; align-items: center; gap: 11px; padding: 11px 14px; border-radius: 13px; background: linear-gradient(120deg,#1F7A4D,#2BA86A); box-shadow: 0 10px 24px -8px rgba(31,122,77,0.6); }
+        .wt-emoji { font-size: 24px; line-height: 1; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25)); }
+        .wt-text { display: flex; flex-direction: column; line-height: 1.25; flex: 1; min-width: 0; }
+        .wt-text b { font-family: 'Manrope'; font-weight: 800; font-size: 14px; color: #fff; }
+        .wt-text span { font-family: 'Manrope'; font-weight: 500; font-size: 11px; color: rgba(255,255,255,0.85); }
+        .wt-badge { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 9.5px; color: #fff; background: rgba(255,255,255,0.22); padding: 3px 8px; border-radius: 99px; white-space: nowrap; }
+
         /* VS Code muhiti (yakuniy ekran) */
         .vsc { background: #1E1E1E; border-radius: 13px; overflow: hidden; box-shadow: 0 10px 26px -6px rgba(${T.shadowBase},0.3); }
         .vsc-bar { background: #252526; display: flex; align-items: flex-end; }

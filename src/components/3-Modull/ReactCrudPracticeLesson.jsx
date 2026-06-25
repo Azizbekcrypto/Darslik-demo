@@ -299,7 +299,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   return (
     <Stage eyebrow="Kirish" screen={screen} scrollSignal={picked !== null} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
-        <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Ro'yxat ko'rinadi — lekin nega uni <span className="italic" style={{ color: T.accent }}>o'zgartirib bo'lmaydi</span>?</h1>
+        <h1 className="title h-title fade-up" style={{ maxWidth: 820 }}>Kartochkalar ko'rinadi — lekin nega ularni <span className="italic" style={{ color: T.accent }}>o'zgartirib bo'lmaydi</span>?</h1>
         <Mentor>Mana "Mening o'yinlarim" ro'yxati. Yangi o'yin <b style={{ color: T.ink }}>qo'shmoqchi</b> bo'ling yoki bittasini <b style={{ color: T.ink }}>o'chirmoqchi</b> bo'ling — tugmalarni bosib ko'ring. Nima sezdingiz?</Mentor>
         <Zoomable>
         <Split>
@@ -474,21 +474,31 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="1-qadam · loyihalash" screen={screen} scrollSignal={done} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `Rejani tuzing (${Math.min(taskIdx, OPS.length)}/4)`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Har amal <span className="italic" style={{ color: T.accent }}>ro'yxatni</span> qanday o'zgartiradi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Har amal <span className="italic" style={{ color: T.accent }}>o'yinlarni</span> qanday o'zgartiradi?</h2></div>
         <Mentor>AI kod yozishidan oldin <b style={{ color: T.ink }}>siz</b> rejani tuzasiz: ro'yxat (massiv) <span className="mono">games</span> — har amal unga nima qiladi? Har bir amal uchun to'g'ri natijani tanlang.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
             <p className="flow-label">CRUD amallari</p>
-            <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="opcol fade-up delay-1">
               {OPS.map((o, i) => {
                 const matched = i < taskIdx;
                 const activeRow = !done && i === taskIdx;
+                const badge = o.key === 'D' ? T.danger : (o.key === 'C' ? T.success : (o.key === 'U' ? '#B45309' : T.blue));
                 return (
-                  <div key={o.key} className="routerow" style={{ boxShadow: activeRow ? `inset 0 0 0 1.5px ${T.accent}` : (matched ? `inset 0 0 0 1.5px ${T.success}` : `0 4px 12px -6px rgba(${T.shadowBase},0.14)`), background: matched ? T.successSoft : T.paper }}>
-                    <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 12.5, color: matched ? T.success : T.ink }}>{o.amal}</span>
-                    <span style={{ marginLeft: 'auto', fontSize: 12, color: T.ink3 }}>→</span>
-                    <span style={{ fontFamily: "'Manrope',sans-serif", fontSize: 11, fontWeight: 600, color: matched ? T.success : T.ink3 }}>{matched ? EFFECTS.find(e => e.id === o.effId).label : (activeRow ? '?' : '…')}</span>
+                  <div key={o.key} className={`opcard ${activeRow ? 'active' : ''} ${matched ? 'matched' : ''}`}>
+                    <div className="opcard-top">
+                      <span className="opcard-badge" style={{ background: badge }}>{o.en}</span>
+                      <span className="opcard-amal">{o.amal}</span>
+                      {matched && <span className="opcard-tick">✓</span>}
+                      {activeRow && <span className="opcard-now">hozir</span>}
+                    </div>
+                    <div className="opcard-eff">
+                      {matched
+                        ? <span className="opcard-effdone el-in">{EFFECTS.find(e => e.id === o.effId).label}</span>
+                        : activeRow ? <span className="opcard-q">natijasini o'ngdan tanlang ↓</span>
+                          : <span className="opcard-wait">kutilmoqda…</span>}
+                    </div>
                   </div>
                 );
               })}
@@ -500,9 +510,10 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 <div className="sk-info" key={taskIdx}><p className="body" style={{ margin: 0, color: T.ink }}><b style={{ color: T.accent }}>{cur.amal}</b> ({cur.en}) bosilganda <span className="mono">games</span> ro'yxatiga nima bo'ladi?</p></div>
                 <p className="flow-label" style={{ margin: 0 }}>Natijani tanlang</p>
                 <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {EFFECTS.map(e => (
-                    <button key={e.id} className={`gchip ${shakeId === e.id ? 'shake' : ''}`} onClick={() => tap(e.id)} style={{ justifyContent: 'flex-start', padding: '11px 14px' }}>{e.label}</button>
-                  ))}
+                  {EFFECTS.map(e => {
+                    const used = OPS.slice(0, taskIdx).some(o => o.effId === e.id);
+                    return <button key={e.id} className={`effbtn ${shakeId === e.id ? 'shake' : ''} ${used ? 'used' : ''}`} disabled={used} onClick={() => tap(e.id)}>{used && <span className="effbtn-tick">✓</span>}{e.label}</button>;
+                  })}
                 </div>
               </>
             ) : (
@@ -1272,6 +1283,25 @@ export default function ReactCrudPracticeLesson({ lang: langProp, onFinished }) 
         .cardbtn:hover { background: #EFEBE3; color: ${T.ink}; transform: translateY(-1px); }
         /* Route/qator (loyihalash ro'yxati) */
         .routerow { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 11px; transition: all 0.3s; }
+        /* CRUD amal kartalari (loyihalash — tanlanayotgani balandda, yozuv pastda) */
+        .opcol { display: flex; flex-direction: column; gap: 9px; }
+        .opcard { background: ${T.paper}; border-radius: 13px; padding: 11px 14px; box-shadow: 0 4px 12px -6px rgba(${T.shadowBase},0.16); transition: transform 0.3s cubic-bezier(.34,1.3,.5,1), box-shadow 0.3s, background 0.3s; opacity: 0.62; }
+        .opcard-top { display: flex; align-items: center; gap: 9px; }
+        .opcard-badge { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 10.5px; color: #fff; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.02em; flex-shrink: 0; }
+        .opcard-amal { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13.5px; color: ${T.ink}; }
+        .opcard-tick { margin-left: auto; color: ${T.success}; font-weight: 800; font-size: 14px; }
+        .opcard-now { margin-left: auto; font-family: 'Manrope'; font-weight: 800; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: #fff; background: ${T.accent}; padding: 3px 8px; border-radius: 99px; }
+        .opcard-eff { margin-top: 7px; font-family: 'Manrope', sans-serif; font-size: 11.5px; font-weight: 600; }
+        .opcard-effdone { color: ${T.success}; display: inline-block; }
+        .opcard-q { color: ${T.accent}; }
+        .opcard-wait { color: ${T.ink3}; font-style: italic; }
+        .opcard.active { opacity: 1; transform: scale(1.04); background: ${T.paper}; box-shadow: inset 0 0 0 2px ${T.accent}, 0 12px 26px -8px rgba(255,79,40,0.35); }
+        .opcard.matched { opacity: 1; background: ${T.successSoft}; box-shadow: inset 0 0 0 1.5px ${T.success}; }
+        /* Natija tanlash tugmalari */
+        .effbtn { position: relative; width: 100%; text-align: left; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; padding: 13px 15px; border-radius: 11px; border: 1.5px solid rgba(0,0,0,0.08); background: ${T.paper}; color: ${T.ink}; cursor: pointer; transition: all 0.16s; box-shadow: 0 4px 12px -6px rgba(${T.shadowBase},0.16); display: flex; align-items: center; gap: 8px; }
+        .effbtn:hover:not(:disabled) { transform: translateY(-1px); border-color: rgba(255,79,40,0.45); box-shadow: 0 8px 18px -6px rgba(255,79,40,0.28); }
+        .effbtn.used { background: ${T.successSoft}; border-color: ${T.success}; color: ${T.success}; cursor: default; opacity: 0.85; }
+        .effbtn-tick { font-weight: 800; }
         /* Silkinish (xato tanlov / ishlamaydigan tugma) */
         @keyframes shake { 0%,100% { transform: none; } 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-3px); } }
         .shake { animation: shake 0.4s ease; }

@@ -318,20 +318,25 @@ const RoCard = ({ name, emoji, players, likeable }) => {
   const em = emoji || (g ? g.emoji : '🎮');
   const baseLikes = g ? g.likes : 88;
   const [liked, setLiked] = useState(false);
+  const pct = baseLikes + (liked ? 1 : 0);
   return (
     <div className="rocard el-in">
-      <div className="rothumb" style={{ background: bg }}><span style={{ fontSize: 26 }}>{em}</span></div>
+      <div className="rothumb" style={{ background: bg }}>
+        <span className="rothumb-icon">{em}</span>
+        <span className="rothumb-play">▶</span>
+      </div>
+      <div className="robar"><span className="robar-fill" style={{ width: `${pct}%` }} /></div>
       <div className="robody">
         <p className="roname">{name}</p>
         <div className="rostats">
           {likeable ? (
             <button className={`rolike ${liked ? 'on' : ''}`} onClick={() => setLiked(v => !v)} title="Like bosib ko'ring">
-              <span className={liked ? 'hpop' : undefined} style={{ display: 'inline-block' }}>👍</span> {baseLikes + (liked ? 1 : 0)}%
+              <span className={liked ? 'hpop' : undefined} style={{ display: 'inline-block' }}>👍</span> {pct}%
             </button>
           ) : (
-            <span>👍 {baseLikes}%</span>
+            <span className="rolike-static">👍 {baseLikes}%</span>
           )}
-          {players && <span>👥 {players}</span>}
+          {players && <span className="roplayers">👥 {players}</span>}
         </div>
       </div>
     </div>
@@ -394,7 +399,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   return (
     <Stage eyebrow="Kirish" screen={screen} audioState={audio} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
-        <h1 className="title h-title fade-up" style={{ maxWidth: 780 }}>Bitta tugma bilan <span className="italic" style={{ color: T.accent }}>butun loyiha</span> paydo bo'ladimi?</h1>
+        <h1 className="title h-title fade-up" style={{ maxWidth: 780 }}>Bitta buyruq <span className="italic" style={{ color: T.accent }}>butun loyihani</span> yaratib beradimi?</h1>
         <Mentor>Roblox Studio'da yangi o'yin boshlasangiz — <b style={{ color: T.ink }}>tayyor maydoncha</b> keladi: yer, osmon, yorug'lik. Hammasini noldan qurmaysiz-ku! Sayt qurishda ham shunday yordamchi bor. <b style={{ color: T.ink }}>Enter'ni bosing</b> — kompyuteringizda nima paydo bo'lishini kuzating.</Mentor>
         <Zoomable>
         <Split>
@@ -845,7 +850,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Props" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `3 xil nom sinang (${tried.size}/3)`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bitta komponent — <span className="italic" style={{ color: T.accent }}>har xil ma'lumot</span>. Qanday?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Bitta komponentdan <span className="italic" style={{ color: T.accent }}>turli kartochka</span> qanday chiqadi?</h2></div>
         <Mentor>Yechim — <b style={{ color: T.ink }}>props</b>: komponentga ma'lumot uzatish, xuddi tegga atribut yozganday: <span className="mono">{'<GameCard name="Blox Fruits" />'}</span>. Nomlarni bosib ko'ring: <b style={{ color: T.ink }}>komponent bitta, ma'lumot har xil</b>!</Mentor>
         <Zoomable>
         <div className="split">
@@ -918,13 +923,22 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="split">
           <Col>
             <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run} disabled={running}>{running ? 'Ishlayapti…' : (done ? "↻ Yana ko'rsatish" : "▶ Ma'lumot yo'lini kuzating")}</button>
-            <div className="fade-up delay-2" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {STEPS.map((s, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 13px', borderRadius: 11, background: phase > i ? T.successSoft : T.bg, opacity: phase > i ? 1 : 0.55, transition: 'all 0.4s' }}>
-                  <span style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 12, color: phase > i ? T.success : T.ink3, minWidth: 16 }}>{phase > i ? '✓' : i + 1}</span>
-                  <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 600, fontSize: 13.5, color: phase > i ? T.ink : T.ink2 }}>{s}</span>
-                </div>
-              ))}
+            <div className="prop-flow fade-up delay-2">
+              {STEPS.map((s, i) => {
+                const reached = phase > i;
+                const now = running && phase === i + 1;
+                const hasToken = now || (phase >= 3 && i === 2);
+                return (
+                  <React.Fragment key={i}>
+                    {i > 0 && <span className={`prop-arrow ${phase > i ? 'on' : ''}`}>↓</span>}
+                    <div className={`prop-step ${reached ? 'on' : ''} ${now ? 'now' : ''}`}>
+                      <span className="prop-dot">{reached ? '✓' : i + 1}</span>
+                      <span className="prop-txt">{s}</span>
+                      {hasToken && <span className="prop-token">📦 "Blox Fruits"</span>}
+                    </div>
+                  </React.Fragment>
+                );
+              })}
             </div>
           </Col>
           <Col>
@@ -950,9 +964,9 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   );
 };
 
-// ===== SCREEN 11 — VIBECODING (AI agentga komponent buyurtma qilish) =====
+// ===== SCREEN 11 — VIBECODING (AI agentga komponent yozdirish) =====
 const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's11', text: `Prompt berishni praktika darslarida o'rgangansiz. Endi katta farq bor: siz React kodini o'qiy olasiz! AI agentga komponent buyurtma qiling: rejani tasdiqlang, keyin yozgan kodini o'zingiz tekshiring — props to'g'rimi, katta harf joyidami.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's11', text: `Prompt berishni praktika darslarida o'rgangansiz. Endi katta farq bor: siz React kodini o'qiy olasiz! AI agentga komponent yozdiring: rejani tasdiqlang, keyin yozgan kodini o'zingiz tekshiring — props to'g'rimi, katta harf joyidami.`, trigger: 'on_mount', waits_for: null }]);
   const TASKS = [
     { id: 't1', label: "Kartochkaga o'yinchilar sonini qo'shib ber", plan: ["GameCard'ga players degan yangi props qo'shaman", "Kartochka pastida {props.players} chiqaraman"], code: <><Jx>{'<GameCard '}</Jx><At>name</At>=<St>"Adopt Me!"</St> <At>players</At>=<St>"402K"</St><Jx>{' />'}</Jx></> },
     { id: 't2', label: 'Saytga sarlavha komponenti yasab ber', plan: ['Header degan yangi komponent yozaman', "App boshida <Header /> deb chaqiraman"], code: <><Jx>{'function'}</Jx> <At>Header</At>{'() { '}<Jx>{'return'}</Jx> <Jx>{'<h1>'}</Jx>🎮 Robo Games<Jx>{'</h1>'}</Jx>{'; }'}</> },
@@ -970,7 +984,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Keyingi qadam · AI" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "Agent bilan ishlab ko'ring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Komponentni <span className="italic" style={{ color: T.accent }}>AI'ga buyurtma</span> qilsak-chi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Komponentni <span className="italic" style={{ color: T.accent }}>AI'ga yozdirsak</span>-chi?</h2></div>
         <Mentor>Prompt berishni praktikada o'rgangansiz. Endi katta farq bor: siz <b style={{ color: T.ink }}>React kodini o'qiy olasiz</b>! Buyruq bering, agent rejasini <b style={{ color: T.ink }}>tasdiqlang</b>, keyin yozgan kodini <b style={{ color: T.ink }}>o'zingiz tekshiring</b>: props to'g'rimi, Katta harf joyidami. Boshliq — siz.</Mentor>
         <Zoomable>
         <div className="split">
@@ -1467,13 +1481,23 @@ export default function ReactFirstComponentLesson({ lang: langProp, onFinished }
         .code-box { background: ${CODE.bg}; color: ${CODE.text}; font-family: 'JetBrains Mono', monospace; font-size: clamp(12px,1.5vw,13.5px); line-height: 1.55; padding: clamp(12px,2.2vw,16px); border-radius: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; margin: 0; box-shadow: 0 8px 22px -6px rgba(${T.shadowBase},0.2); }
         /* Roblox uslubidagi o'yin kartochkasi */
         .rocard { border-radius: 12px; background: #fff; box-shadow: 0 4px 14px -4px rgba(0,0,0,0.16); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.15s, box-shadow 0.15s; }
-        .rocard:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -5px rgba(0,0,0,0.22); }
-        .rothumb { height: 58px; display: flex; align-items: center; justify-content: center; }
+        .rocard:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -5px rgba(0,0,0,0.26); }
+        .rocard:hover .rothumb-play { opacity: 1; transform: scale(1); }
+        .rothumb { position: relative; height: 66px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .rothumb::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.34), transparent 62%); }
+        .rothumb::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 42%; background: linear-gradient(transparent, rgba(0,0,0,0.24)); }
+        .rothumb-icon { position: relative; z-index: 1; font-size: 31px; line-height: 1; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3)); }
+        .rothumb-play { position: absolute; z-index: 2; bottom: 6px; right: 6px; width: 19px; height: 19px; border-radius: 50%; background: rgba(255,255,255,0.92); color: #1A2436; font-size: 8px; display: flex; align-items: center; justify-content: center; padding-left: 1px; box-shadow: 0 2px 7px rgba(0,0,0,0.28); opacity: 0; transform: scale(0.55); transition: all 0.2s; }
+        .robar { height: 4px; background: rgba(0,0,0,0.13); }
+        .robar-fill { display: block; height: 100%; background: #1FA463; transition: width 0.4s ease; }
         .robody { padding: 7px 10px 9px; }
-        .roname { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 12px; color: ${T.ink}; margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .rostats { display: flex; align-items: center; gap: 8px; font-family: 'Manrope', sans-serif; font-size: 10.5px; color: ${T.ink3}; font-weight: 600; }
-        .rolike { border: none; background: transparent; cursor: pointer; padding: 0; font-family: 'Manrope', sans-serif; font-size: 10.5px; font-weight: 600; color: ${T.ink3}; transition: color 0.15s; }
-        .rolike.on { color: ${T.success}; font-weight: 800; }
+        .roname { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 12px; color: ${T.ink}; margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rostats { display: flex; align-items: center; gap: 9px; font-family: 'Manrope', sans-serif; font-size: 10.5px; color: ${T.ink3}; font-weight: 700; }
+        .rolike { border: none; background: transparent; cursor: pointer; padding: 0; font-family: 'Manrope', sans-serif; font-size: 10.5px; font-weight: 700; color: ${T.success}; transition: color 0.15s, transform 0.15s; display: inline-flex; align-items: center; gap: 3px; }
+        .rolike:hover { transform: scale(1.07); }
+        .rolike.on { color: #16A35A; font-weight: 800; }
+        .rolike-static { color: ${T.success}; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
+        .roplayers { color: ${T.ink3}; display: inline-flex; align-items: center; gap: 3px; }
         /* VS Code muhiti (yakuniy ekran) */
         .vsc { background: #1E1E1E; border-radius: 13px; overflow: hidden; box-shadow: 0 10px 26px -6px rgba(${T.shadowBase},0.3); }
         .vsc-bar { background: #252526; display: flex; align-items: flex-end; }

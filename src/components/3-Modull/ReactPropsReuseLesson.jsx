@@ -241,17 +241,20 @@ const RoCard = ({ name, emoji, players, top, xray, onClick }) => {
   const g = gameByName(name);
   const bg = g ? g.bg : 'linear-gradient(135deg,#8E9BB5,#4A5670)';
   const em = emoji || (g ? g.emoji : '🎮');
+  const pct = g ? g.likes : 88;
   return (
     <div className={`rocard el-in ${onClick ? 'tappable' : ''}`} onClick={onClick} style={{ position: 'relative' }}>
       <div className="rothumb" style={{ background: bg }}>
-        <span style={{ fontSize: 26 }}>{em}</span>
+        <span className="rothumb-icon">{em}</span>
         {top && <span className="topbadge el-in">🔥 TOP</span>}
+        <span className="rothumb-play">▶</span>
       </div>
+      <div className="robar"><span className="robar-fill" style={{ width: `${pct}%` }} /></div>
       <div className="robody">
         <p className="roname">{name}</p>
         <div className="rostats">
-          <span>👍 {g ? g.likes : 88}%</span>
-          {players && <span>👥 {players}</span>}
+          <span className="rolike-static">👍 {pct}%</span>
+          {players && <span className="roplayers">👥 {players}</span>}
         </div>
       </div>
       {xray && (
@@ -262,6 +265,12 @@ const RoCard = ({ name, emoji, players, top, xray, onClick }) => {
     </div>
   );
 };
+// Rentgen/skan ikonkasi (emoji o'rniga toza SVG)
+const ScanIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /><line x1="3" y1="12" x2="21" y2="12" />
+  </svg>
+);
 // Terminal/konsol qatori
 const TLine = ({ cmd, out, dim }) => (
   <div className="el-in" style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 'clamp(11.5px,1.4vw,13px)', lineHeight: 1.7, color: dim ? CODE.comment : CODE.text }}>
@@ -285,12 +294,12 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
     <Stage eyebrow="Kirish" screen={screen} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
         <h1 className="title h-title fade-up" style={{ maxWidth: 780 }}>6 ta har xil kartochka — <span className="italic" style={{ color: T.accent }}>nechta kod</span>?</h1>
-        <Mentor>Mana robo-games katalogi — xuddi Roblox bosh sahifasiday. Hammasi har xil: nomlar, ranglar, o'yinchilar. Endi <b style={{ color: T.ink }}>🩻 Rentgen</b>ni yoqing — kartochkalarning "ichini" ko'rasiz. Nimani sezdingiz?</Mentor>
+        <Mentor>Mana robo-games katalogi — xuddi Roblox bosh sahifasiday. Hammasi har xil: nomlar, ranglar, o'yinchilar. Endi <b style={{ color: T.ink }}>Rentgen rejimini</b> yoqing — kartochkalarning "ichini" ko'rasiz. Nimani sezdingiz?</Mentor>
         <Zoomable>
         <Split>
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <button className={`chip ${xray ? 'chip-on' : ''}`} onClick={toggle}>🩻 Rentgen {xray ? 'yoqilgan' : 'rejimi'}</button>
+              <button className={`chip ${xray ? 'chip-on' : ''}`} onClick={toggle}><ScanIcon /> Rentgen {xray ? 'yoqilgan' : 'rejimi'}</button>
               {xray && <span className="mono small fade-step" style={{ color: T.accent }}>ichkarida — hammasi BIR XIL!</span>}
             </div>
             <div className="fade-up delay-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 9 }}>
@@ -357,7 +366,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Stage eyebrow="Reja" screen={screen} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head">
-          <h2 className="title h-title fade-up">Butun katalogni <span className="italic" style={{ color: T.accent }}>bitta qator kod</span> bilan chizsak-chi?</h2>
+          <h2 className="title h-title fade-up">Butun katalogni <span className="italic" style={{ color: T.accent }}>bitta qator kod</span> bilan chiza olamizmi?</h2>
         </div>
         <Mentor>Va'da beraman: dars oxirida <b style={{ color: T.ink }}>Roblox'dagiday to'liq katalog</b> qurasiz — ro'yxatga yangi o'yin qo'shsangiz, kartochkasi <b style={{ color: T.ink }}>o'zi paydo bo'ladi</b>. Buning kaliti: ma'lumotni komponentlarga to'g'ri uzatish.</Mentor>
         {!isNarrow ? (
@@ -413,17 +422,17 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             <p className="flow-label">GameCard — qabul qiluvchi</p>
-            <div className="code-box fade-up delay-2" style={{ padding: '11px 14px', position: 'relative', minHeight: 92 }}>
-              {phase === 1 && <div className="parcel fly-in" style={{ position: 'absolute', top: 8, left: '50%', fontSize: 24 }}>📦</div>}
+            <div className="code-box fade-up delay-2" style={{ padding: '11px 14px', position: 'relative', minHeight: 104, overflow: 'hidden' }}>
+              {phase === 1 && <div className="parcel2"><span className="parcel2-box">📦</span><span className="parcel2-lbl">name="Doors", players="310K"</span></div>}
               <TLine out={<span><Jx>{'function'}</Jx> GameCard(<At>props</At>) {'{'}</span>} />
-              <TLine out={<span style={{ paddingLeft: 14, display: 'inline-block' }}>props = {'{'} name: {phase >= 2 ? <St>"Doors"</St> : <span style={{ color: CODE.comment }}>?</span>}, players: {phase >= 2 ? <St>"310K"</St> : <span style={{ color: CODE.comment }}>?</span>} {'}'}</span>} />
+              <TLine out={<span style={{ paddingLeft: 14, display: 'inline-block' }}>props = {'{'} name: {phase >= 2 ? <span className="slot-pop"><St>"Doors"</St></span> : <span style={{ color: CODE.comment }}>?</span>}, players: {phase >= 2 ? <span className="slot-pop"><St>"310K"</St></span> : <span style={{ color: CODE.comment }}>?</span>} {'}'}</span>} />
               <TLine out={<span>{'}'}</span>} />
             </div>
             <p className="flow-label" style={{ marginTop: 2 }}>Ekranda</p>
-            <Win title="robo-games — localhost:5173" minH={86}>
+            <Win title="robo-games — localhost:5173" minH={104}>
               {phase >= 3
-                ? <div className="fade-step" style={{ maxWidth: 160 }}><RoCard name="Doors" players="310K" /></div>
-                : <p style={{ color: T.ink3, fontStyle: 'italic', margin: 0, fontFamily: 'Georgia, serif', fontSize: 13 }}>{phase >= 1 ? 'posilka yo\'lda…' : 'kutilmoqda…'}</p>}
+                ? <div className="card-pop" style={{ maxWidth: 175 }}><RoCard name="Doors" players="310K" /></div>
+                : <p style={{ color: T.ink3, fontStyle: 'italic', margin: 0, fontFamily: 'Georgia, serif', fontSize: 13 }}>{phase >= 1 ? '📦 posilka yo\'lda…' : 'kutilmoqda…'}</p>}
             </Win>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yo'l: <b>atribut yozildi → props'ga tushdi → kartochka chizildi</b>. Atribut nomi = props ichidagi nom: <span className="mono">name</span> → <span className="mono">props.name</span>.</p></div>}
           </Col>
@@ -436,14 +445,14 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 3 — BIR NECHTA PROPS =====
 const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const [name, setName] = useState(storedAnswer ? 'Piggy' : null);
-  const [players, setPlayers] = useState(storedAnswer ? '180K' : null);
-  const [emoji, setEmoji] = useState(storedAnswer ? '🐷' : null);
+  const [name, setName] = useState(storedAnswer ? 'Bee Swarm' : null);
+  const [players, setPlayers] = useState(storedAnswer ? '260K' : null);
+  const [emoji, setEmoji] = useState(storedAnswer ? '🐝' : null);
   const done = !!(name && players && emoji);
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
-  const NAMES = ['Piggy', 'Bee Swarm', 'Doors'];
-  const PLAYERS = ['180K', '260K', '310K'];
-  const EMOJIS = ['🐷', '🐝', '🚪'];
+  const NAMES = ['Bee Swarm', 'Doors', 'Pet Sim 99'];
+  const PLAYERS = ['260K', '310K', '230K'];
+  const EMOJIS = ['🐝', '🚪', '🐶'];
   return (
     <Stage eyebrow="Bir nechta props" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "3 ta props'ni to'ldiring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
@@ -452,17 +461,17 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Zoomable>
         <div className="split">
           <Col>
-            <p className="flow-label">name</p>
-            <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-              {NAMES.map(v => <button key={v} className="gchip" style={name === v ? { background: T.accent, color: '#fff' } : undefined} onClick={() => setName(v)}>{v}</button>)}
+            <p className="flow-label">name <span className="propchip-tag">matn props</span></p>
+            <div className="fade-up delay-1" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {NAMES.map(v => <button key={v} className={`propchip ${name === v ? 'sel' : ''}`} onClick={() => setName(v)}>{name === v && <span className="propchip-tick">✓</span>}{v}</button>)}
             </div>
-            <p className="flow-label" style={{ marginTop: 2 }}>players</p>
-            <div className="fade-up delay-2" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-              {PLAYERS.map(v => <button key={v} className="gchip" style={players === v ? { background: T.accent, color: '#fff' } : undefined} onClick={() => setPlayers(v)}>👥 {v}</button>)}
+            <p className="flow-label" style={{ marginTop: 2 }}>players <span className="propchip-tag">son props</span></p>
+            <div className="fade-up delay-2" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {PLAYERS.map(v => <button key={v} className={`propchip ${players === v ? 'sel' : ''}`} onClick={() => setPlayers(v)}>{players === v && <span className="propchip-tick">✓</span>}👥 {v}</button>)}
             </div>
-            <p className="flow-label" style={{ marginTop: 2 }}>emoji</p>
-            <div className="fade-up delay-2" style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-              {EMOJIS.map(v => <button key={v} className="gchip" style={emoji === v ? { background: T.accent } : undefined} onClick={() => setEmoji(v)}>{v}</button>)}
+            <p className="flow-label" style={{ marginTop: 2 }}>emoji <span className="propchip-tag">belgi props</span></p>
+            <div className="fade-up delay-2" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {EMOJIS.map(v => <button key={v} className={`propchip propchip-emoji ${emoji === v ? 'sel' : ''}`} onClick={() => setEmoji(v)}>{v}</button>)}
             </div>
           </Col>
           <Col>
@@ -474,10 +483,10 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <Jx>{'/>'}</Jx>
             </pre>
             <p className="flow-label">Kartochka</p>
-            <div style={{ maxWidth: 160 }}>
+            <div style={{ maxWidth: 178 }}>
               {name
-                ? <RoCard key={`${name}-${players}-${emoji}`} name={name} players={players || undefined} emoji={emoji || undefined} />
-                : <div className="frame-dash" style={{ padding: '18px 12px' }}><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>props tanlang</p></div>}
+                ? <div className="card-pop" key={`${name}-${players}-${emoji}`}><RoCard name={name} players={players || undefined} emoji={emoji || undefined} /></div>
+                : <div className="frame-dash" style={{ padding: '22px 12px' }}><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>props tanlang — kartochka shu yerda</p></div>}
             </div>
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>3 ta props — 3 ta atribut. Komponent ularni <span className="mono">props.name</span>, <span className="mono">props.players</span>, <span className="mono">props.emoji</span> deb o'qiydi.</p></div>}
           </Col>
@@ -505,65 +514,71 @@ const Screen4 = (props) => (
 
 // ===== SCREEN 5 — MA'LUMOT DARYOSI (faqat pastga, 2 daraja) =====
 const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const [flow, setFlow] = useState(storedAnswer ? 2 : 0); // 0 idle, 1 App→Card, 2 Card→Button
+  const KIDS = [GAMES[0], EXTRA[0], EXTRA[2]]; // Adopt Me!, Doors, Bee Swarm
+  const [flow, setFlow] = useState(storedAnswer ? 2 : 0); // 0 idle, 1 tushyapti, 2 yetkazildi
   const [running, setRunning] = useState(false);
   const [reversed, setReversed] = useState(!!storedAnswer);
   const [shaking, setShaking] = useState(false);
+  const [upTick, setUpTick] = useState(0);
   const timer = useRef(null);
   const done = flow >= 2 && reversed;
   useEffect(() => () => clearTimeout(timer.current), []);
   const sendDown = () => {
     if (running) return;
-    clearTimeout(timer.current); setRunning(true); setFlow(0);
-    timer.current = setTimeout(() => {
-      setFlow(1);
-      timer.current = setTimeout(() => { setFlow(2); setRunning(false); }, 900);
-    }, 250);
+    clearTimeout(timer.current); setRunning(true); setFlow(1);
+    timer.current = setTimeout(() => { setFlow(2); setRunning(false); }, 1000);
   };
   const sendUp = () => {
-    setReversed(true); setShaking(true);
-    timer.current = setTimeout(() => setShaking(false), 500);
+    setReversed(true); setShaking(true); setUpTick(t => t + 1);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setShaking(false), 520);
   };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
-  const Level = ({ label, sub, lit, isLast }) => (
-    <>
-      <div className={shaking && isLast ? 'shake' : ''} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 15px', borderRadius: 12, background: lit ? T.successSoft : T.paper, boxShadow: lit ? `inset 0 0 0 1.5px ${T.success}` : `0 4px 12px -6px rgba(${T.shadowBase},0.14)`, transition: 'all 0.4s' }}>
-        <span style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 12.5, color: lit ? T.success : T.ink2 }}>{label}</span>
-        <span style={{ fontFamily: "'Manrope',sans-serif", fontSize: 11.5, color: lit ? T.ink : T.ink3, marginLeft: 'auto', transition: 'color 0.4s' }}>{sub}</span>
-      </div>
-    </>
-  );
-  const Dots = ({ active }) => (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', height: 22, justifyContent: 'center' }}>
-      {active
-        ? <div style={{ position: 'relative', width: 8, height: 22 }}>{[0, 1, 2].map(i => <span key={i} className="flow-dot" style={{ animationDelay: `${i * 0.25}s` }} />)}</div>
-        : <span style={{ color: T.ink3, fontSize: 12 }}>↓</span>}
-    </div>
-  );
   return (
     <Stage eyebrow="Ma'lumot daryosi" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "Ikkala yo'nalishni sinang"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bola komponent otasiga ma'lumot <span className="italic" style={{ color: T.accent }}>yubora oladimi</span>?</h2></div>
-        <Mentor>Hozir bilib olamiz! Props <b style={{ color: T.ink }}>daryo kabi</b> oqadi: yuqoridan pastga — otadan bolaga, boladan nabiraga. <b style={{ color: T.ink }}>Ikkala tugmani</b> ham sinab ko'ring: avval pastga yuborish, keyin… teskarisini ham.</Mentor>
+        <Mentor>Tasavvur qiling: tepada <b style={{ color: T.ink }}>App (ota)</b>, pastida <b style={{ color: T.ink }}>3 ta bola kartochka</b>. Ota har bolaga ma'lumat (props) <b style={{ color: T.ink }}>sharik kabi tashlaydi</b> — yuqoridan pastga. <b style={{ color: T.ink }}>Pastga</b> tugmasini, keyin <b style={{ color: T.ink }}>teskarisini</b> sinab ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
-            <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column' }}>
-              <Level label="App" sub={'name="Doors" jo\'natdi'} lit={flow >= 1} />
-              <Dots active={running && flow < 1} />
-              <Level label="GameCard" sub={flow >= 1 ? 'props.name = "Doors" ✓' : 'kutmoqda…'} lit={flow >= 1} />
-              <Dots active={running && flow === 1} />
-              <Level label="LikeButton" sub={flow >= 2 ? 'props.game = "Doors" ✓' : 'kutmoqda…'} lit={flow >= 2} isLast />
+            <div className="tree fade-up delay-1">
+              <div className="tree-parent-row">
+                <div className={`tree-parent ${shaking ? 'shake' : ''}`}>
+                  <span className="tp-tag">App</span>
+                  <span className="tp-sub">ota — props yuboradi</span>
+                  {reversed && <span className="tp-block">⛔</span>}
+                </div>
+              </div>
+              <div className="tree-pipes">
+                <span className="tree-bus" />
+                {KIDS.map((g, i) => (
+                  <span key={i} className={`tree-pipe ${flow >= 2 ? 'done' : ''}`}>
+                    {running && flow >= 1 && <span className="tree-ball" style={{ animationDelay: `${i * 0.16}s` }} />}
+                  </span>
+                ))}
+              </div>
+              <div className="tree-kids">
+                {KIDS.map((g, i) => (
+                  <div key={g.name} className="tree-kid">
+                    {flow >= 2
+                      ? <RoCard name={g.name} />
+                      : <div className="tree-kid-wait"><span className="tk-tag">bola {i + 1}</span><span className="tk-q">props = ?</span></div>}
+                  </div>
+                ))}
+              </div>
+              {upTick > 0 && <span key={upTick} className="tree-upball">🚫 tepaga yo'l yo'q</span>}
             </div>
           </Col>
           <Col>
+            <p className="flow-label">Ma'lumotni yuborib ko'ring</p>
             <div className="fade-up delay-2" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={sendDown} disabled={running}>⬇ Pastga yuborish {flow >= 2 ? '✓' : ''}</button>
-              <button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={sendUp}>⬆ Teskari yuborib ko'rish {reversed ? '✓' : ''}</button>
+              <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={sendDown} disabled={running}>⬇ App'dan bolalarga yuborish {flow >= 2 ? '✓' : ''}</button>
+              <button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={sendUp}>⬆ Boladan otaga yuborib ko'rish {reversed ? '✓' : ''}</button>
             </div>
-            {flow >= 2 && !reversed && <div className="hint fade-step"><p className="body" style={{ margin: 0, color: T.ink2 }}>Daryo pastga oqdi: App → GameCard → LikeButton. Endi <b style={{ color: T.ink }}>teskarisini</b> ham sinab ko'ring ↑</p></div>}
-            {reversed && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>❌ Yo'l yo'q! Bola otaga props uzata <b>olmaydi</b> — daryo tepaga oqmaydi. Bu React'ning qat'iy qoidasi: ma'lumot <b>faqat yuqoridan pastga</b>. Shuning uchun xatolarni topish oson — ma'lumot qayerdan kelganini doim bilasiz.</p></div>}
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir tomonlama oqim: <span className="mono">App → GameCard → LikeButton</span>. Har daraja faqat <b>o'z otasidan</b> oladi.</p></div>}
+            {flow >= 2 && !reversed && <div className="hint fade-step"><p className="body" style={{ margin: 0, color: T.ink2 }}>Sharik pastga tushdi: App → 3 ta bola, har biri o'z props'ini oldi. Endi <b style={{ color: T.ink }}>teskarisini</b> sinang ↑</p></div>}
+            {reversed && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>❌ Yo'l yo'q! Bola otaga props uzata <b>olmaydi</b> — sharik tepaga ketmaydi. Bu React'ning qat'iy qoidasi: ma'lumot <b>faqat yuqoridan pastga</b>. Shuning uchun xatoni topish oson — ma'lumot qayerdan kelganini doim bilasiz.</p></div>}
+            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir tomonlama oqim: <span className="mono">App → bola kartochkalar</span>. Har bola faqat <b>o'z otasidan</b> oladi, hech qachon aksincha emas.</p></div>}
           </Col>
         </div>
         </Zoomable>
@@ -593,14 +608,21 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [shaking, setShaking] = useState(false);
   const [parentName, setParentName] = useState('Adopt Me!');
   const [parentSent, setParentSent] = useState(!!storedAnswer);
+  const [dropping, setDropping] = useState(false);
+  const [dropTick, setDropTick] = useState(0);
   const timer = useRef(null);
+  const dropTimer = useRef(null);
   const done = triedMutate && parentSent;
-  useEffect(() => () => clearTimeout(timer.current), []);
+  useEffect(() => () => { clearTimeout(timer.current); clearTimeout(dropTimer.current); }, []);
   const mutate = () => {
     setTriedMutate(true); setShaking(true);
     timer.current = setTimeout(() => setShaking(false), 500);
   };
-  const fromParent = () => { setParentName(n => (n === 'Adopt Me!' ? 'Bee Swarm' : 'Adopt Me!')); setParentSent(true); };
+  const fromParent = () => {
+    setDropTick(t => t + 1); setDropping(true);
+    clearTimeout(dropTimer.current);
+    dropTimer.current = setTimeout(() => { setParentName(n => (n === 'Adopt Me!' ? 'Bee Swarm' : 'Adopt Me!')); setParentSent(true); setDropping(false); }, 650);
+  };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
     <Stage eyebrow="Faqat o'qish" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "Ikkala usulni sinang"} onClick={onNext} /></>}>
@@ -622,8 +644,12 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </Col>
           <Col>
-            <p className="flow-label">Kartochka</p>
-            <div className={shaking ? 'shake' : ''} style={{ maxWidth: 160 }}><RoCard key={parentName} name={parentName} /></div>
+            <p className="flow-label">App (ota) → kartochka</p>
+            <div className="drop-stage">
+              <div className="drop-app"><span className="drop-app-tag">📦 App</span><span className="drop-app-sub">yangi name yuboradi</span></div>
+              <div className="drop-pipe">{dropping && <span key={dropTick} className="drop-ball" />}</div>
+              <div className={shaking ? 'shake' : ''} style={{ maxWidth: 175, width: '100%' }}><RoCard key={parentName} name={parentName} /></div>
+            </div>
             {triedMutate && !parentSent && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Ichkaridan bo'lmadi! Props — <b>sovg'a kabi</b>: olasiz, ishlatasiz, lekin o'zgartira olmaysiz. Endi 2-tugmani sinang.</p></div>}
             {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Qoida: props — <b>faqat o'qish uchun</b>. O'zgartirishni faqat <b>ota</b> qiladi (yangi qiymat yuboradi). Komponent o'zida nimanidir o'zgartirmoqchi bo'lsa — buning uchun <b>state</b> bor (o'tgan dars!).</p></div>}
           </Col>
@@ -645,7 +671,7 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Ma'lumotlar ro'yxati" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/3 qatorni ko'ring`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Roblox'dagi minglab o'yin ma'lumoti <span className="italic" style={{ color: T.accent }}>qayerda saqlanadi</span>?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Roblox'dagi barcha o'yinlar ma'lumoti <span className="italic" style={{ color: T.accent }}>qayerda saqlanadi</span>?</h2></div>
         <Mentor>Katta saytlarning siri: ma'lumot <b style={{ color: T.ink }}>kod ichiga yozilmaydi</b> — alohida <b style={{ color: T.ink }}>ro'yxatda (massivda)</b> turadi. Har qator — bitta o'yin, ichida props uchun hamma narsa tayyor. Qatorlarni bosib ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
@@ -705,7 +731,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Katalog" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Katalogni chizing'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Ro'yxatdan katalogga — <span className="italic" style={{ color: T.accent }}>bitta qator</span> yetadimi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Ro'yxatdan katalogga — <span className="italic" style={{ color: T.accent }}>bitta map qatori</span> yetadimi?</h2></div>
         <Mentor>Yetadi! <span className="mono">games.map(…)</span> — ro'yxatdagi <b style={{ color: T.ink }}>har bir o'yin uchun</b> bitta kartochka yasaydi: qatorni oladi → props qilib uzatadi → kartochka chizadi. Tugmani bosib, konveyerni kuzating.</Mentor>
         <Zoomable>
         <div className="split">
@@ -1313,14 +1339,23 @@ export default function ReactPropsReuseLesson({ lang: langProp, onFinished }) {
         .bp-body { padding: clamp(12px,2.2vw,18px); }
         .code-box { background: ${CODE.bg}; color: ${CODE.text}; font-family: 'JetBrains Mono', monospace; font-size: clamp(12px,1.5vw,13.5px); line-height: 1.55; padding: clamp(12px,2.2vw,16px); border-radius: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; margin: 0; box-shadow: 0 8px 22px -6px rgba(${T.shadowBase},0.2); }
         /* Roblox uslubidagi o'yin kartochkasi */
-        .rocard { border-radius: 12px; background: #fff; box-shadow: 0 4px 14px -4px rgba(0,0,0,0.16); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.15s, box-shadow 0.15s; }
-        .rocard:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -5px rgba(0,0,0,0.22); }
+        .rocard { border-radius: 13px; background: #fff; box-shadow: 0 5px 16px -4px rgba(0,0,0,0.18); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.15s, box-shadow 0.15s; }
+        .rocard:hover { transform: translateY(-2px); box-shadow: 0 12px 26px -5px rgba(0,0,0,0.28); }
+        .rocard:hover .rothumb-play { opacity: 1; transform: scale(1); }
         .rocard.tappable { cursor: pointer; }
-        .rothumb { height: 58px; display: flex; align-items: center; justify-content: center; position: relative; }
-        .topbadge { position: absolute; top: 4px; left: 6px; font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 8.5px; color: #fff; background: rgba(14,14,16,0.72); padding: 2px 7px; border-radius: 99px; letter-spacing: 0.04em; }
-        .robody { padding: 7px 10px 9px; }
-        .roname { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 12px; color: ${T.ink}; margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .rostats { display: flex; align-items: center; gap: 8px; font-family: 'Manrope', sans-serif; font-size: 10.5px; color: ${T.ink3}; font-weight: 600; }
+        .rothumb { position: relative; height: 68px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .rothumb::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.34), transparent 62%); }
+        .rothumb::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 44%; background: linear-gradient(transparent, rgba(0,0,0,0.26)); }
+        .rothumb-icon { position: relative; z-index: 1; font-size: 32px; line-height: 1; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.32)); }
+        .rothumb-play { position: absolute; z-index: 1; bottom: 6px; right: 6px; width: 19px; height: 19px; border-radius: 50%; background: rgba(255,255,255,0.92); color: #1A2436; font-size: 8px; display: flex; align-items: center; justify-content: center; padding-left: 1px; box-shadow: 0 2px 7px rgba(0,0,0,0.3); opacity: 0; transform: scale(0.55); transition: all 0.2s; }
+        .topbadge { position: absolute; z-index: 2; top: 6px; left: 6px; font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 8.5px; color: #fff; background: linear-gradient(135deg,#FF6B35,#FF4F28); padding: 3px 8px; border-radius: 99px; letter-spacing: 0.04em; box-shadow: 0 2px 8px -1px rgba(255,79,40,0.6); }
+        .robar { height: 4px; background: rgba(0,0,0,0.13); }
+        .robar-fill { display: block; height: 100%; background: #1FA463; transition: width 0.4s ease; }
+        .robody { padding: 8px 11px 10px; }
+        .roname { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 12.5px; color: ${T.ink}; margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rostats { display: flex; align-items: center; gap: 9px; font-family: 'Manrope', sans-serif; font-size: 11px; color: ${T.ink3}; font-weight: 700; }
+        .rolike-static { color: ${T.success}; font-weight: 700; display: inline-flex; align-items: center; gap: 3px; }
+        .roplayers { color: ${T.ink3}; display: inline-flex; align-items: center; gap: 3px; }
         @keyframes heart-pop { 0% { transform: scale(1); } 40% { transform: scale(1.45); } 100% { transform: scale(1); } }
         .hpop { animation: heart-pop 0.4s ease; display: inline-block; }
         /* Rentgen rejimi */
@@ -1334,6 +1369,56 @@ export default function ReactPropsReuseLesson({ lang: langProp, onFinished }) {
         /* Silkinish (teskari oqim / read-only) */
         @keyframes shake { 0%,100% { transform: none; } 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-3px); } }
         .shake { animation: shake 0.4s ease; }
+        /* === KARTOCHKA POP === */
+        @keyframes card-pop { 0% { opacity: 0; transform: scale(0.82) translateY(6px); } 60% { transform: scale(1.04); } 100% { opacity: 1; transform: none; } }
+        .card-pop { animation: card-pop 0.4s cubic-bezier(.34,1.45,.5,1); }
+
+        /* === POSILKA 2 (yorliqli) — Screen2 === */
+        @keyframes parcel-arc { 0% { opacity: 0; transform: translate(-50%,-24px) scale(0.6) rotate(-10deg); } 25% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,42px) scale(1.05) rotate(8deg); } }
+        .parcel2 { position: absolute; top: 6px; left: 50%; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 3px; animation: parcel-arc 0.95s cubic-bezier(.5,0,.5,1) forwards; pointer-events: none; }
+        .parcel2-box { font-size: 26px; filter: drop-shadow(0 4px 6px rgba(255,79,40,0.45)); }
+        .parcel2-lbl { font-family: 'JetBrains Mono'; font-size: 9px; font-weight: 700; color: ${T.accent}; background: #fff; padding: 2px 7px; border-radius: 99px; box-shadow: 0 2px 6px -1px rgba(255,79,40,0.4); white-space: nowrap; }
+        @keyframes slot-pop { 0% { transform: scale(0.5); filter: brightness(1.8); } 60% { transform: scale(1.18); } 100% { transform: scale(1); filter: none; } }
+        .slot-pop { display: inline-block; animation: slot-pop 0.42s cubic-bezier(.34,1.45,.5,1); }
+
+        /* === PROPS TANLASH CHIPLARI — Screen3 === */
+        .propchip { font-family: 'Manrope'; font-weight: 700; font-size: 12.5px; padding: 8px 14px; border-radius: 10px; border: 1.5px solid rgba(0,0,0,0.08); background: ${T.paper}; color: ${T.ink}; cursor: pointer; transition: all 0.16s; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 3px 9px -5px rgba(${T.shadowBase},0.2); }
+        .propchip:hover { transform: translateY(-1px); border-color: rgba(255,79,40,0.4); }
+        .propchip.sel { background: ${T.accent}; color: #fff; border-color: ${T.accent}; box-shadow: 0 6px 15px -5px rgba(255,79,40,0.5); }
+        .propchip-tick { font-size: 11px; }
+        .propchip-emoji { font-size: 18px; padding: 6px 13px; }
+        .propchip-tag { font-family: 'JetBrains Mono'; font-weight: 600; font-size: 8.5px; color: ${T.ink3}; background: ${T.bg}; padding: 2px 6px; border-radius: 5px; margin-left: 6px; letter-spacing: 0; text-transform: none; }
+
+        /* === OTA → BOLALAR DARAXTI — Screen5 === */
+        .tree { position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+        .tree-parent-row { display: flex; justify-content: center; }
+        .tree-parent { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; background: ${T.ink}; color: #fff; border-radius: 12px; padding: 9px 22px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.4); }
+        .tp-tag { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14px; }
+        .tp-sub { font-family: 'Manrope'; font-size: 10px; opacity: 0.7; }
+        .tp-block { position: absolute; right: -11px; top: -11px; font-size: 19px; animation: card-pop 0.3s ease; }
+        .tree-pipes { position: relative; display: grid; grid-template-columns: 1fr 1fr 1fr; height: 40px; }
+        .tree-bus { position: absolute; top: 0; left: 16.67%; right: 16.67%; height: 2px; background: ${T.ink3}; opacity: 0.5; }
+        .tree-pipe { position: relative; justify-self: center; width: 2px; height: 40px; background: repeating-linear-gradient(${T.ink3} 0 4px, transparent 4px 8px); }
+        .tree-pipe.done { background: ${T.success}; }
+        .tree-ball { position: absolute; left: 50%; top: 0; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: ${T.accent}; box-shadow: 0 0 9px rgba(255,79,40,0.7); animation: ball-drop 1s ease-in forwards; }
+        @keyframes ball-drop { 0% { top: -8px; opacity: 0; } 20% { opacity: 1; } 100% { top: 40px; opacity: 0.4; } }
+        .tree-kids { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .tree-kid { transition: all 0.4s; }
+        .tree-kid-wait { border: 1.5px dashed ${T.ink3}; border-radius: 12px; padding: 16px 6px; display: flex; flex-direction: column; align-items: center; gap: 5px; opacity: 0.7; }
+        .tk-tag { font-family: 'Manrope'; font-weight: 700; font-size: 11px; color: ${T.ink2}; }
+        .tk-q { font-family: 'JetBrains Mono'; font-size: 10px; color: ${T.ink3}; }
+        .tree-upball { position: absolute; left: 50%; bottom: 34%; transform: translateX(-50%); font-family: 'Manrope'; font-weight: 700; font-size: 11px; color: ${T.accent}; background: #fff; padding: 3px 10px; border-radius: 99px; box-shadow: 0 4px 11px -3px rgba(255,79,40,0.45); white-space: nowrap; z-index: 5; animation: upbounce 1s ease-out forwards; }
+        @keyframes upbounce { 0% { opacity: 0; transform: translate(-50%,12px); } 20% { opacity: 1; } 55% { transform: translate(-50%,-16px); } 72% { transform: translate(-50%,-7px); } 100% { opacity: 0; transform: translate(-50%,-22px); } }
+
+        /* === APP → KARTOCHKA SHARIK — Screen6 (read-only) === */
+        .drop-stage { display: flex; flex-direction: column; align-items: center; gap: 0; }
+        .drop-app { display: flex; flex-direction: column; align-items: center; gap: 1px; background: ${T.ink}; color: #fff; border-radius: 11px; padding: 8px 20px; box-shadow: 0 6px 16px -5px rgba(${T.shadowBase},0.4); }
+        .drop-app-tag { font-family: 'Manrope'; font-weight: 800; font-size: 13px; }
+        .drop-app-sub { font-family: 'Manrope'; font-size: 9.5px; opacity: 0.7; }
+        .drop-pipe { position: relative; width: 2px; height: 34px; background: repeating-linear-gradient(${T.ink3} 0 4px, transparent 4px 8px); }
+        .drop-ball { position: absolute; left: 50%; top: 0; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: ${T.success}; box-shadow: 0 0 9px rgba(31,122,77,0.7); animation: ball-drop2 0.65s ease-in forwards; }
+        @keyframes ball-drop2 { 0% { top: -6px; opacity: 0; } 25% { opacity: 1; } 100% { top: 34px; opacity: 0.35; } }
+
         /* VS Code muhiti (yakuniy ekran) */
         .vsc { background: #1E1E1E; border-radius: 13px; overflow: hidden; box-shadow: 0 10px 26px -6px rgba(${T.shadowBase},0.3); }
         .vsc-bar { background: #252526; display: flex; align-items: flex-end; }

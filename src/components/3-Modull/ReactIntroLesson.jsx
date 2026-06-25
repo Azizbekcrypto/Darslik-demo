@@ -320,35 +320,57 @@ const SkinCard = ({ n }) => {
     </div>
   );
 };
-// Like demo: mode='old' — butun sahifa qayta yuklanadi; mode='react' — faqat son yangilanadi
+// Minecraft "skrinshot" — CSS piksel qasr (katta emoji o'rniga haqiqiy o'yin kadri tuyg'usi)
+const McShot = () => (
+  <div className="mc-shot" aria-hidden="true">
+    <span className="mc-sun" />
+    <span className="mc-cloud m1" /><span className="mc-cloud m2" />
+    <div className="mc-castle">
+      <span className="mc-tower" />
+      <span className="mc-keep"><span className="mc-flag" /><span className="mc-door" /></span>
+      <span className="mc-tower" />
+    </div>
+    <span className="mc-ground" />
+  </div>
+);
+// Like demo: mode='old' — butun post qayta yuklanadi; mode='react' — faqat son yangilanadi
 const LikeDemo = ({ mode, title, onLiked }) => {
-  const [likes, setLikes] = useState(12);
+  const [likes, setLikes] = useState(248);
+  const [liked, setLiked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [rk, setRk] = useState(0);
   const [pop, setPop] = useState(false);
   const timer = useRef(null);
   useEffect(() => () => clearTimeout(timer.current), []);
+  const apply = () => { setLikes(l => l + (liked ? -1 : 1)); setLiked(v => !v); if (onLiked) onLiked(); };
   const click = () => {
     if (loading) return;
     if (mode === 'old') {
       setLoading(true);
-      timer.current = setTimeout(() => { setLikes(l => l + 1); setRk(k => k + 1); setLoading(false); if (onLiked) onLiked(); }, 950);
+      timer.current = setTimeout(() => { apply(); setRk(k => k + 1); setLoading(false); }, 950);
     } else {
-      setLikes(l => l + 1); setPop(true); timer.current = setTimeout(() => setPop(false), 420); if (onLiked) onLiked();
+      apply(); setPop(true); timer.current = setTimeout(() => setPop(false), 420);
     }
   };
   return (
-    <Win title={title} minH={132}>
+    <Win title={title}>
       {loading && <div className="reload-cover"><span className="spinner" /><span className="small" style={{ color: T.ink2 }}>Sahifa qayta yuklanmoqda…</span></div>}
-      <div key={rk} className={mode === 'old' ? 'fade-step' : undefined}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 9 }}>
-          <span style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#8FBF6B,#3E7A33)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}>🟩</span>
-          <div><p style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 12.5, color: T.ink, margin: 0 }}>mc_quruvchi</p><p style={{ fontFamily: "'Manrope',sans-serif", fontSize: 10.5, color: T.ink3, margin: 0 }}>Yangi qal'a qurdim · 2 soat oldin</p></div>
+      <div key={rk} className={mode === 'old' ? 'post fade-step' : 'post'}>
+        <div className="post-head">
+          <span className="post-ava">🟩</span>
+          <div className="post-meta"><span className="post-user">mc_quruvchi <span className="post-verif">✓</span></span><span className="post-time">Toshkent · 2 soat oldin</span></div>
+          <span className="post-more">···</span>
         </div>
-        <div style={{ height: 46, borderRadius: 9, background: 'linear-gradient(135deg,#8FBF6B,#6D4C41)', marginBottom: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🏰</div>
-        <button className={`likebtn ${pop ? 'liked' : ''}`} onClick={click}>
-          <span className={pop ? 'hpop' : undefined} style={{ color: pop ? T.accent : T.ink2 }}>♥</span> {likes}
-        </button>
+        <McShot />
+        <div className="post-actions">
+          <button className={`post-like ${liked ? 'on' : ''}`} onClick={click} title="Like bosing">
+            <span className={pop ? 'hpop' : undefined}>{liked ? '♥' : '♡'}</span>
+          </button>
+          <svg className="post-ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" /></svg>
+          <svg className="post-ic" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+        </div>
+        <div className="post-likes">{likes.toLocaleString('ru-RU')} ta like</div>
+        <div className="post-cap"><b>mc_quruvchi</b> Yangi qasrni qurib bo'ldim — kelib ko'ringlar! 🏰</div>
       </div>
     </Win>
   );
@@ -426,7 +448,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
 
 // ===== SCREEN 1 — REJA =====
 const Screen1 = ({ screen, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's1', text: `Va'da beraman: dars oxirida Instagram nega buncha tez ishlashini aniq bilasiz. Butun sir ikkita g'oyada — komponent va Virtual DOM. Bugun shu ikkalasini ochamiz, 5 ta qadamda. Keyingi darsda esa birinchi React komponentingizni o'zingiz yozasiz.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's1', text: `Va'da beraman: dars oxirida Instagram nega buncha tez ishlashini aniq bilasiz. Buning ortida bor-yo'g'i ikkita oddiy tushuncha turadi — komponent va Virtual DOM. Bugun shu ikkalasini o'rganamiz, 5 ta qadamda. Keyingi darsda esa birinchi React komponentingizni o'zingiz yozasiz.`, trigger: 'on_mount', waits_for: null }]);
   const STEPS = [
     { text: 'Oddiy saytning dardi', tag: 'HTML + JS' },
     { text: 'React nima? Kim ishlatadi?', tag: 'kutubxona' },
@@ -438,11 +460,11 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   const [showSteps, setShowSteps] = useState(false);
   const PreviewBlock = (
     <Col>
-      <p className="flow-label">Bugungi 2 katta g'oya</p>
+      <p className="flow-label">Bugun o'rganadigan 2 tushuncha</p>
       <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}>
           <span style={{ fontSize: 32 }}>🧩</span>
-          <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>KOMPONENT</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Sahifaning bloki: bir marta yoz — ming marta ishlat</p></div>
+          <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>KOMPONENT</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>Sahifaning bloki: bir marta yoz — istalgancha ishlat</p></div>
         </div>
         <div className="frame" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px' }}>
           <span style={{ fontSize: 32 }}>⚡</span>
@@ -466,7 +488,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head">
           <h2 className="title h-title fade-up">Instagram nega buncha <span className="italic" style={{ color: T.accent }}>tez</span> ishlaydi?</h2>
         </div>
-        <Mentor>Va'da beraman: dars oxirida <b style={{ color: T.ink }}>Instagram nega buncha tez ishlashini</b> aniq bilasiz. Butun sir ikkita g'oyada — <b style={{ color: T.ink }}>komponent</b> va <b style={{ color: T.ink }}>Virtual DOM</b>. Bugun shu ikkalasini ochamiz, 5 ta qadamda.</Mentor>
+        <Mentor>Va'da beraman: dars oxirida <b style={{ color: T.ink }}>Instagram nega buncha tez ishlashini</b> aniq bilasiz. Buning ortida bor-yo'g'i <b style={{ color: T.ink }}>ikkita oddiy tushuncha</b> turadi — <b style={{ color: T.ink }}>komponent</b> va <b style={{ color: T.ink }}>Virtual DOM</b>. Bugun shu ikkalasini o'rganamiz, 5 ta qadamda.</Mentor>
         {!isNarrow ? (
           <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
@@ -496,7 +518,7 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Muammo" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `Kamida 3 ta skin (${n}/3)`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">100 ta skin kartochkasini <span className="italic" style={{ color: T.accent }}>qo'lda</span> yozasizmi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Har bir kartochkani <span className="italic" style={{ color: T.accent }}>qo'lda</span> nusxalab chiqasizmi?</h2></div>
         <Mentor>Mana oddiy HTML'da yasalgan <b style={{ color: T.ink }}>Minecraft skinlar sayti</b>. Yana bitta skin kerakmi? Kodni <b style={{ color: T.ink }}>nusxalaysiz</b>. Yana bittasi? Yana nusxalaysiz. <b style={{ color: T.ink }}>"Skin qo'shish"</b> tugmasini bosib ko'ring — kod qanday shishib ketishini kuzating.</Mentor>
         <Zoomable>
         <div className="split">
@@ -551,7 +573,7 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="React nima?" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/4 ilova ko'rildi`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bu muammoni kim, qanday <span className="italic" style={{ color: T.accent }}>yechgan</span>?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Shu nusxalash muammosini kim <span className="italic" style={{ color: T.accent }}>hal qilgan</span>?</h2></div>
         <Mentor>React — JavaScript'da yozilgan <b style={{ color: T.ink }}>kutubxona</b>, ya'ni tayyor asboblar to'plami. Uni 2013-yilda <b style={{ color: T.ink }}>Facebook</b> yaratgan va hammaga bepul tarqatgan. Ilovalarni bosing — qaysilari React'da qurilganini bilib oling.</Mentor>
         <Zoomable>
         <div className="split">
@@ -704,7 +726,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Qayta ishlatish" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `Kamida 3 ta qo'shing (${n}/3)`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bir marta yozib, <span className="italic" style={{ color: T.accent }}>ming marta</span> ishlatish mumkinmi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Bir marta yozib, <span className="italic" style={{ color: T.accent }}>istalgancha</span> ishlatish mumkinmi?</h2></div>
         <Mentor>Esingizdami, oddiy HTML'da kod qanday <b style={{ color: T.ink }}>shishib ketgan</b> edi? Endi React usuli: <span className="mono">SkinCard</span> <b style={{ color: T.ink }}>bir marta</b> yoziladi, keyin xohlagancha chaqiriladi. Qo'shib ko'ring — kod qatorini kuzating.</Mentor>
         <Zoomable>
         <div className="split">
@@ -800,6 +822,13 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 ))}
               </div>
             </div>
+            {tried.size > 0 && (
+              <div className="redraw-tag" key={`rt-${mode}-${grade}-${flashKey}`}>
+                {mode === 'old'
+                  ? <span className="rt-bad">🔁 12 katak qaytadan chizildi</span>
+                  : <span className="rt-good">✓ faqat 1 katak yangilandi</span>}
+              </div>
+            )}
           </Col>
         </div>
         </Zoomable>
@@ -829,13 +858,13 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <div style={{ flex: 1, minWidth: 0, background: CODE.bg, borderRadius: 10, padding: '9px 10px' }}>
       <p className="mono" style={{ fontSize: 9.5, color: CODE.comment, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</p>
       <p className="mono" style={{ fontSize: 11.5, color: CODE.text, margin: 0 }}>post: "Qal'a"</p>
-      <p className="mono" style={{ fontSize: 11.5, color: CODE.text, margin: '3px 0 0', borderRadius: 5, padding: '1px 4px', background: hot ? 'rgba(255,79,40,0.22)' : 'transparent', boxShadow: hot ? `inset 0 0 0 1px ${T.accent}` : 'none', display: 'inline-block' }}>like: <span style={{ color: CODE.str }}>{likes}</span></p>
+      <p className={`mono ${hot ? 'vdom-hot' : ''}`} style={{ fontSize: 11.5, color: CODE.text, margin: '3px 0 0', borderRadius: 5, padding: '1px 4px', background: hot ? 'rgba(255,79,40,0.22)' : 'transparent', display: 'inline-block' }}>like: <span style={{ color: CODE.str }}>{likes}</span></p>
     </div>
   );
   return (
     <Stage eyebrow="Virtual DOM" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Jarayonni kuzating'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">React nima o'zgarganini <span className="italic" style={{ color: T.accent }}>qayerdan</span> biladi?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">React qaysi joy o'zgarganini <span className="italic" style={{ color: T.accent }}>qanday</span> aniqlaydi?</h2></div>
         <Mentor>React xotirasida sahifaning yengil nusxasini — <b style={{ color: T.ink }}>qoralamasini</b> saqlaydi. Bu <b style={{ color: T.ink }}>Virtual DOM</b> deyiladi. O'zgarish bo'lganda: yangi qoralama → eskisi bilan solishtirish → <b style={{ color: T.ink }}>faqat farq</b> sahifaga. Tugmani bosib kuzating.</Mentor>
         <Zoomable>
         <div className="split">
@@ -852,10 +881,12 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </Col>
           <Col>
             <p className="flow-label">Xotirada (Virtual DOM)</p>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ position: 'relative', display: 'flex', gap: 8 }}>
               <Snap label="Eski nusxa" likes={12} hot={phase === 2} />
               {phase >= 1 ? <Snap label="Yangi nusxa" likes={13} hot={phase === 2} /> : <div style={{ flex: 1, border: `1.5px dashed ${T.ink3}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 70 }}><span className="small" style={{ color: T.ink3, fontStyle: 'italic' }}>kutilmoqda…</span></div>}
+              {phase === 2 && <span className="vdom-vs" key="vs">🔍</span>}
             </div>
+            <div className={`vdom-flow ${phase >= 3 ? 'on' : ''}`}>{phase >= 3 ? '↓ faqat shu farqni o\'tkazadi' : '↓ farq sahifaga'}</div>
             <p className="flow-label" style={{ marginTop: 2 }}>Haqiqiy sahifa</p>
             <Win title="ilova.uz" minH={56}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -949,11 +980,30 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const done = seen.has('web') && seen.has('phone');
   const sw = (v) => { setView(v); setSeen(prev => { const s = new Set(prev); s.add(v); return s; }); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
+  const SHOP = [
+    { name: 'Creeper', emoji: '🟩', bg: 'linear-gradient(135deg,#8FBF6B,#3E7A33)', price: '12 000' },
+    { name: 'Ninja', emoji: '🥷', bg: 'linear-gradient(135deg,#7A87A8,#2E3A56)', price: '18 000' },
+    { name: 'Robot', emoji: '🤖', bg: 'linear-gradient(135deg,#AFC2D2,#5E7A92)', price: '15 000' },
+    { name: 'Qahramon', emoji: '🦸', bg: 'linear-gradient(135deg,#F0B27A,#C96B2E)', price: '9 000' }
+  ];
   const AppUI = ({ compact }) => (
-    <div style={{ padding: compact ? '10px 11px' : 0 }}>
-      <p style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 800, fontSize: compact ? 12 : 13.5, color: T.ink, margin: '0 0 7px' }}>Mening ilovam</p>
-      <div style={{ height: compact ? 40 : 48, borderRadius: 9, background: 'linear-gradient(135deg,#AFC8EE,#D9C5EC)', marginBottom: 8 }} />
-      <button className="likebtn liked"><span style={{ color: T.accent }}>♥</span> 27</button>
+    <div className={`shop ${compact ? 'shop-c' : ''}`}>
+      <div className="shop-top">
+        <span className="shop-logo">⛏ Skin Market</span>
+        <span className="shop-cart">🛒<span className="shop-badge">2</span></span>
+      </div>
+      <div className="shop-search">🔍 Skin qidirish…</div>
+      <div className="shop-grid">
+        {SHOP.map((p, i) => (
+          <div key={i} className="shop-card">
+            <div className="shop-thumb" style={{ background: p.bg }}>{p.emoji}</div>
+            <div className="shop-cap">
+              <span className="shop-name">{p.name}</span>
+              <div className="shop-buy"><span className="shop-price">{p.price} so'm</span><span className="shop-add">+</span></div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
   return (
@@ -969,9 +1019,9 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <button className={`chip ${view === 'phone' ? 'chip-on' : ''}`} onClick={() => sw('phone')}>Telefonda — React Native {seen.has('phone') ? '✓' : ''}</button>
             </div>
             <pre className="code-box fade-up delay-2">
-              <Cm>{'// kod O’ZGARMAYDI:'}</Cm>{'\n'}
-              <Jx>{'function'}</Jx>{' LikeButton() { … }'}{'\n'}
-              <Jx>{'<LikeButton />'}</Jx>{'\n'}
+              <Cm>{'// AYNAN SHU kod ishlaydi:'}</Cm>{'\n'}
+              <Jx>{'function'}</Jx>{' SkinCard() { … }'}{'\n'}
+              <Jx>{'<SkinCard '}</Jx><span style={{ color: CODE.attr }}>price</span>{'='}<span style={{ color: CODE.str }}>"12 000"</span><Jx>{' />'}</Jx>{'\n'}
               <Cm>{view === 'web' ? '// → brauzerda sayt bo’ladi' : '// → telefonda ilova bo’ladi'}</Cm>
             </pre>
           </Col>
@@ -979,7 +1029,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <p className="flow-label">{view === 'web' ? 'Brauzer (sayt)' : 'Telefon (ilova)'}</p>
             <div className="demo-swap" key={view}>
               {view === 'web' ? (
-                <Win title="mening-ilovam.uz" minH={110}><AppUI /></Win>
+                <Win title="skin-market.uz" minH={110}><AppUI /></Win>
               ) : (
                 <div className="phone"><div className="phone-notch" /><div className="phone-scr"><AppUI compact /></div></div>
               )}
@@ -1015,7 +1065,7 @@ const Screen12 = (props) => (
 
 // ===== SCREEN 13 — AMALIYOT: SAHIFANI KOMPONENTLARDAN YIG'ISH =====
 const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's13', text: `Endi o'zingiz quring! Chiplardan bosib, o'z Minecraft saytingizni komponentlardan yig'ing. Eng zo'ri: bitta komponentni necha marta xohlasangiz, shuncha marta ishlating — xuddi Minecraft'da bitta blokni qayta-qayta qo'yganday! Kamida 3 ta blok qo'ying.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's13', text: `Endi o'zingiz quring! Quyidagi tugmalarni bosib, o'z Minecraft saytingizni komponentlardan yig'ing. Eng zo'ri: bitta komponentni necha marta xohlasangiz, shuncha marta ishlating — xuddi Minecraft'da bitta blokni qayta-qayta qo'yganday! Kamida 3 ta blok qo'ying.`, trigger: 'on_mount', waits_for: null }]);
   const COMP = {
     nav: { l: '<Navbar />', name: 'Menyu' },
     search: { l: '<SearchBar />', name: 'Qidiruv' },
@@ -1043,7 +1093,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Amaliyot · sahifa yig'amiz" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `Kamida 3 ta blok (${items.length}/3)`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'z saytingizni <span className="italic" style={{ color: T.accent }}>bloklardan</span> quring.</h2></div>
-        <Mentor>Endi o'zingiz quring! Chiplardan bosib, o'z Minecraft saytingizni komponentlardan yig'ing. Eng zo'ri: <b style={{ color: T.ink }}>bitta komponentni necha marta xohlasangiz</b> — shuncha ishlating, xuddi Minecraft'da bitta blokni qayta-qayta qo'yganday! Kamida 3 ta blok qo'ying.</Mentor>
+        <Mentor>Endi o'zingiz quring! Quyidagi <b style={{ color: T.ink }}>tugmalarni bosib</b>, o'z Minecraft saytingizni komponentlardan yig'ing. Eng zo'ri: <b style={{ color: T.ink }}>bitta komponentni necha marta xohlasangiz</b> — shuncha ishlating, xuddi Minecraft'da bitta blokni qayta-qayta qo'yganday! Kamida 3 ta blok qo'ying.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -1195,11 +1245,14 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               {picked.length === 0 ? (
                 <p style={{ color: T.ink3, fontStyle: 'italic', margin: 0, fontFamily: "'JetBrains Mono',monospace", fontSize: 13 }}>{'// qadamlarni tartib bilan tanlang…'}</p>
               ) : picked.map((id, i) => (
-                <div key={i} className="algo-line el-in" style={{ borderLeft: `3px solid ${passed ? T.success : T.accent}` }}>
-                  <span style={{ fontFamily: "'JetBrains Mono',monospace", color: T.ink3, fontSize: 12, minWidth: 16 }}>{i + 1}</span>
-                  <span style={{ fontSize: 16 }}>{STEPS[id].ic}</span>
-                  <span style={{ flex: 1, fontFamily: "'Manrope',sans-serif", fontSize: 14, color: T.ink }}>{STEPS[id].t}</span>
-                </div>
+                <React.Fragment key={i}>
+                  {i > 0 && <span className={`flow-arrow ${passed ? 'on' : ''}`}>↓</span>}
+                  <div className={`algo-line ${passed ? 'line-win' : 'el-in'}`} style={{ borderLeft: `3px solid ${passed ? T.success : T.accent}`, animationDelay: passed ? `${i * 0.1}s` : undefined }}>
+                    <span style={{ fontFamily: "'JetBrains Mono',monospace", color: passed ? T.success : T.ink3, fontSize: 12, minWidth: 16, fontWeight: 700 }}>{i + 1}</span>
+                    <span style={{ fontSize: 16 }}>{STEPS[id].ic}</span>
+                    <span style={{ flex: 1, fontFamily: "'Manrope',sans-serif", fontSize: 14, color: T.ink }}>{STEPS[id].t}</span>
+                  </div>
+                </React.Fragment>
               ))}
             </div>
             {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Mukammal! Bosildi → qoralama → solishtirish → faqat farq. React aynan shunday ishlaydi!</p></div>}
@@ -1214,10 +1267,10 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 16 — YAKUN =====
 const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
-  const audio = useAudio([{ id: 's16', text: "Tabriklaymiz — React dunyosiga birinchi qadamni qo'ydingiz! Esda saqlang: React — interfeys uchun JavaScript kutubxonasi. Komponent — sahifaning bloki: bir marta yoz, ming marta ishlat. Virtual DOM esa solishtiradi va faqat o'zgargan joyni yangilaydi. Keyingi darsda birinchi komponentingizni o'zingiz yozasiz.", trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's16', text: "Tabriklaymiz — React dunyosiga birinchi qadamni qo'ydingiz! Esda saqlang: React — interfeys uchun JavaScript kutubxonasi. Komponent — sahifaning bloki: bir marta yoz, istalgancha ishlat. Virtual DOM esa solishtiradi va faqat o'zgargan joyni yangilaydi. Keyingi darsda birinchi komponentingizni o'zingiz yozasiz.", trigger: 'on_mount', waits_for: null }]);
   const RECAP = [
     "React — interfeys uchun JavaScript kutubxonasi (Facebook, 2013)",
-    "Komponent — sahifaning bloki: bir marta yoz, ming marta ishlat",
+    "Komponent — sahifaning bloki: bir marta yoz, istalgancha ishlat",
     "Virtual DOM — solishtiradi, faqat farqni yangilaydi",
     "Oddiy sayt to'liq yangilanadi, React — kerakli joynigina",
     "React Native — shu bilim bilan telefon ilovalari"
@@ -1519,17 +1572,91 @@ export default function ReactIntroLesson({ lang: langProp, onFinished }) {
         .appbtn.seen { box-shadow: inset 0 0 0 1.5px ${T.success}, 0 4px 10px -5px rgba(${T.shadowBase},0.12); }
         .appbtn.active { box-shadow: inset 0 0 0 1.5px ${T.accent}, 0 8px 18px -6px rgba(255,79,40,0.25); }
         .applogo { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Manrope'; font-weight: 800; font-size: 15px; flex-shrink: 0; }
-        .zone { cursor: pointer; transition: box-shadow 0.18s; border-radius: 10px; position: relative; }
+        .zone { cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; border-radius: 10px; position: relative; }
+        .zone:not(.seen)::after { content: ''; position: absolute; inset: 0; border-radius: 10px; pointer-events: none; animation: zone-invite 2.2s ease-in-out infinite; }
+        @keyframes zone-invite { 0%,100% { box-shadow: 0 0 0 1.5px rgba(255,79,40,0.16); } 50% { box-shadow: 0 0 0 2.5px rgba(255,79,40,0.42); } }
+        .zone:hover:not(.seen) { transform: translateY(-1px); }
         .zone.seen { box-shadow: 0 0 0 1.5px ${T.success}; }
-        .zone.active { box-shadow: 0 0 0 2px ${T.accent}; }
-        .zlbl { position: absolute; top: -9px; right: -5px; font-family: 'JetBrains Mono'; font-size: 9px; background: ${T.ink}; color: #fff; padding: 2px 7px; border-radius: 6px; z-index: 3; white-space: nowrap; animation: fade-step 0.3s; }
-        @keyframes jflash { 0% { background: ${T.accentSoft}; } 100% { background: #fff; } }
-        .jflash { animation: jflash 0.9s ease-out; }
-        @keyframes jpop { 0% { transform: scale(0.55); } 100% { transform: scale(1); } }
-        .jhot { animation: jpop 0.45s ease-out; background: ${T.successSoft} !important; box-shadow: inset 0 0 0 1.5px ${T.success}; }
+        .zone.seen::after { display: none; }
+        .zone.active { box-shadow: 0 0 0 2px ${T.accent}; animation: zone-pop 0.4s ease; }
+        @keyframes zone-pop { 0% { transform: scale(1); } 35% { transform: scale(1.04); } 100% { transform: scale(1); } }
+        .zlbl { position: absolute; top: -9px; right: -5px; font-family: 'JetBrains Mono'; font-size: 9px; background: ${T.ink}; color: #fff; padding: 2px 7px; border-radius: 6px; z-index: 3; white-space: nowrap; animation: zlbl-in 0.38s cubic-bezier(.34,1.45,.5,1); }
+        @keyframes zlbl-in { from { opacity: 0; transform: translateY(5px) scale(0.78); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes jflash { 0% { background: #fff; transform: scale(1); } 22% { background: ${T.accent}; color: #fff; transform: scale(0.88); } 60% { background: ${T.accentSoft}; } 100% { background: #fff; transform: scale(1); } }
+        .jflash { animation: jflash 0.7s ease-out both; }
+        @keyframes jpop { 0% { transform: scale(0.5); } 55% { transform: scale(1.16); } 100% { transform: scale(1); } }
+        .jhot { animation: jpop 0.5s cubic-bezier(.34,1.45,.5,1); background: ${T.successSoft} !important; box-shadow: inset 0 0 0 2px ${T.success}; }
+        .redraw-tag { font-family: 'Manrope'; font-weight: 700; font-size: 12px; animation: fade-step 0.3s; }
+        .redraw-tag .rt-bad { color: ${T.accent}; } .redraw-tag .rt-good { color: ${T.success}; }
         .phone { width: clamp(150px,17vw,185px); background: #0E0E10; border-radius: 26px; padding: 9px; box-shadow: 0 14px 30px -10px rgba(${T.shadowBase},0.45); margin: 0 auto; }
         .phone-notch { width: 54px; height: 5px; border-radius: 99px; background: #3a3a3e; margin: 0 auto 7px; }
         .phone-scr { background: #fff; border-radius: 18px; overflow: hidden; }
+
+        /* === IJTIMOIY POST (LikeDemo) === */
+        .post { display: flex; flex-direction: column; }
+        .post-head { display: flex; align-items: center; gap: 9px; padding: 1px 1px 9px; }
+        .post-ava { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; background: linear-gradient(135deg,#8FBF6B,#3E7A33); box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px ${T.accent}; }
+        .post-meta { display: flex; flex-direction: column; line-height: 1.25; flex: 1; min-width: 0; }
+        .post-user { font-family: 'Manrope'; font-weight: 700; font-size: 12.5px; color: ${T.ink}; display: flex; align-items: center; gap: 4px; }
+        .post-verif { width: 13px; height: 13px; background: ${T.blue}; color: #fff; border-radius: 50%; font-size: 8px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .post-time { font-family: 'Manrope'; font-size: 10.5px; color: ${T.ink3}; }
+        .post-more { color: ${T.ink3}; font-weight: 700; letter-spacing: 1px; align-self: flex-start; }
+        .post-actions { display: flex; align-items: center; gap: 13px; padding: 9px 1px 5px; color: ${T.ink2}; }
+        .post-like { border: none; background: transparent; cursor: pointer; padding: 0; font-size: 22px; line-height: 1; color: ${T.ink2}; transition: color 0.15s, transform 0.15s; }
+        .post-like:hover { transform: scale(1.12); }
+        .post-like.on { color: ${T.accent}; }
+        .post-ic { color: ${T.ink2}; cursor: default; }
+        .post-likes { font-family: 'Manrope'; font-weight: 700; font-size: 12.5px; color: ${T.ink}; padding: 0 1px; }
+        .post-cap { font-family: 'Manrope'; font-size: 11.5px; color: ${T.ink2}; padding: 4px 1px 0; line-height: 1.4; } .post-cap b { color: ${T.ink}; font-weight: 700; }
+
+        /* === MINECRAFT SKRINSHOT (CSS piksel qasr) === */
+        .mc-shot { position: relative; height: 148px; border-radius: 10px; overflow: hidden; background: linear-gradient(#a3d5f7 0%, #c8e9fb 55%, #e4f4fd 100%); }
+        .mc-sun { position: absolute; top: 14px; right: 18px; width: 22px; height: 22px; background: #FFD25A; border-radius: 5px; box-shadow: 0 0 0 5px rgba(255,210,90,0.28); }
+        .mc-cloud { position: absolute; height: 9px; background: rgba(255,255,255,0.92); border-radius: 99px; }
+        .mc-cloud.m1 { top: 24px; left: 20px; width: 42px; box-shadow: 11px -7px 0 -2px rgba(255,255,255,0.92); }
+        .mc-cloud.m2 { top: 50px; left: 78px; width: 28px; }
+        .mc-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 32px; background: #7a5230; }
+        .mc-ground::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 11px; background: #5fa544; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.12); }
+        .mc-castle { position: absolute; bottom: 27px; left: 50%; transform: translateX(-50%); display: flex; align-items: flex-end; }
+        .mc-tower { width: 21px; height: 48px; background: #9ba1a7; position: relative; box-shadow: inset -4px 0 0 rgba(0,0,0,0.14), inset 5px 0 0 rgba(255,255,255,0.16); }
+        .mc-tower::before { content: ''; position: absolute; top: -6px; left: -1px; right: -1px; height: 6px; background: repeating-linear-gradient(90deg, #9ba1a7 0 6px, transparent 6px 12px); }
+        .mc-keep { width: 40px; height: 64px; background: #aeb4ba; position: relative; margin: 0 -3px; z-index: 1; box-shadow: inset -5px 0 0 rgba(0,0,0,0.12), inset 5px 0 0 rgba(255,255,255,0.18); }
+        .mc-keep::before { content: ''; position: absolute; top: -7px; left: -1px; right: -1px; height: 7px; background: repeating-linear-gradient(90deg, #aeb4ba 0 7px, transparent 7px 14px); }
+        .mc-keep::after { content: ''; position: absolute; top: 13px; left: 50%; transform: translateX(-50%); width: 7px; height: 9px; background: #3a4a63; border-radius: 2px; box-shadow: -12px 0 0 #3a4a63, 12px 0 0 #3a4a63; }
+        .mc-door { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 15px; height: 21px; background: #4a3526; border-radius: 8px 8px 0 0; box-shadow: inset 0 0 0 2px rgba(0,0,0,0.2); }
+        .mc-flag { position: absolute; top: -22px; left: 50%; width: 2px; height: 16px; background: #6b6b70; }
+        .mc-flag::after { content: ''; position: absolute; top: 0; left: 2px; border-left: 13px solid ${T.accent}; border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+
+        /* === SKIN MARKET (React Native ekrani) === */
+        .shop { font-family: 'Manrope', sans-serif; }
+        .shop-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+        .shop-logo { font-weight: 800; font-size: 12.5px; color: ${T.ink}; }
+        .shop-cart { position: relative; font-size: 14px; }
+        .shop-badge { position: absolute; top: -5px; right: -8px; background: ${T.accent}; color: #fff; font-size: 8px; font-weight: 700; min-width: 13px; height: 13px; border-radius: 99px; display: flex; align-items: center; justify-content: center; padding: 0 2px; }
+        .shop-search { background: ${T.bg}; border-radius: 8px; padding: 6px 10px; font-size: 10.5px; color: ${T.ink3}; margin-bottom: 9px; }
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .shop-card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 10px -4px rgba(${T.shadowBase},0.16); }
+        .shop-thumb { height: 46px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .shop-cap { padding: 6px 8px; }
+        .shop-name { font-weight: 700; font-size: 11px; color: ${T.ink}; display: block; }
+        .shop-buy { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; gap: 4px; }
+        .shop-price { font-family: 'JetBrains Mono'; font-size: 9.5px; font-weight: 600; color: ${T.ink2}; }
+        .shop-add { width: 18px; height: 18px; border-radius: 6px; background: ${T.accent}; color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; line-height: 1; flex-shrink: 0; }
+        .shop-c .shop-thumb { height: 38px; font-size: 18px; } .shop-c .shop-name { font-size: 10px; } .shop-c .shop-grid { gap: 6px; } .shop-c .shop-logo { font-size: 11.5px; }
+
+        /* === VIRTUAL DOM oqimi === */
+        .vdom-vs { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 32px; height: 32px; border-radius: 50%; background: #fff; box-shadow: 0 6px 16px -4px rgba(${T.shadowBase},0.32); display: flex; align-items: center; justify-content: center; font-size: 15px; z-index: 2; animation: vs-pop 0.4s cubic-bezier(.34,1.45,.5,1); }
+        @keyframes vs-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.4); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+        @keyframes vdom-pulse { 0%,100% { box-shadow: inset 0 0 0 1px ${T.accent}; } 50% { box-shadow: inset 0 0 0 2px ${T.accent}, 0 0 10px -2px rgba(255,79,40,0.6); } }
+        .vdom-hot { animation: vdom-pulse 0.8s ease-in-out infinite; }
+        .vdom-flow { font-family: 'Manrope'; font-weight: 600; font-size: 11px; color: ${T.ink3}; text-align: center; padding: 3px 0; transition: color 0.3s; }
+        .vdom-flow.on { color: ${T.success}; animation: fade-step 0.3s; }
+
+        /* === TARTIB OQIMI (yakuniy) === */
+        .flow-arrow { text-align: center; color: ${T.ink3}; font-size: 13px; line-height: 1; margin: -3px 0; animation: fade-step 0.3s; transition: color 0.3s; }
+        .flow-arrow.on { color: ${T.success}; }
+        @keyframes line-win { 0% { background: ${T.bg}; transform: translateX(0); } 45% { background: ${T.successSoft}; transform: translateX(5px); } 100% { background: ${T.successSoft}; transform: translateX(0); } }
+        .algo-line.line-win { background: ${T.successSoft}; animation: line-win 0.5s ease both; }
 
         /* MOBIL: yig'iladigan Mentor */
         .mentor-mob .mentor-msg { overflow: hidden; max-height: 360px; transition: max-height 0.38s cubic-bezier(.4,0,.2,1), opacity 0.25s ease, padding 0.38s ease, box-shadow 0.3s ease; }

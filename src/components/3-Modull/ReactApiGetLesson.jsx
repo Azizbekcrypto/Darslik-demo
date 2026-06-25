@@ -5,7 +5,7 @@ import mentorImg from '../../assets/common/mentor.png';
 // REACT MODULI · 5-DARS — API BILAN ISHLASH: GET — PLATFORM STANDARD v16 (AUDIOSIZ)
 // Mavzu: nega ma'lumot serverda turadi (1 markaz — hamma qurilma), API = ofitsiant,
 //        fetch anatomiyasi (GET so'rovi, URL, endpoint), JSON javob (.json()),
-//        loading holati (skeleton), useEffect + fetch + state — to'liq naqsh,
+//        loading holati (skeleton), useEffect + fetch + state — to'liq usul,
 //        endpointlar (/games /top /new), 404 xatosi.
 // Misol sayt: robo-games (davom) — katalog endi "serverdan" yuklanadi (robo-api.uz).
 // Animatsiyalar: 3 qurilma sinxron yangilanishi (server kuchi), so'rov-javob konsoli,
@@ -220,6 +220,7 @@ const Jx = ({ children }) => <span style={{ color: CODE.tag }}>{children}</span>
 const At = ({ children }) => <span style={{ color: CODE.attr }}>{children}</span>;
 const St = ({ children }) => <span style={{ color: CODE.str }}>{children}</span>;
 const Cm = ({ children }) => <span style={{ color: CODE.comment, fontStyle: 'italic' }}>{children}</span>;
+const Code = ({ children }) => <code className="codechip">{children}</code>; // matnda real kodcha
 const Win = ({ title, children, minH }) => (
   <div className="bp-window"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">{title}</span></div><div className="bp-body" style={{ minHeight: minH, position: 'relative' }}>{children}</div></div>
 );
@@ -297,7 +298,8 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
         <Zoomable>
         <Split>
           <Col>
-            <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={() => setPublished(true)} disabled={published}>{published ? "✓ E'lon qilindi" : "Yangi o'yinni e'lon qilish"}</button>
+            <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={() => setPublished(true)} disabled={published}>{published ? "✓ E'lon qilindi" : "📡 Yangi o'yinni e'lon qilish"}</button>
+            {published && <p className="broadcast-cue fade-step">📡 <b>robo-api.uz</b> serverdan 3 qurilmaga bir vaqtda yuborildi</p>}
             <div className="fade-up delay-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 9 }}>
               {DEVICES.map((d, i) => (
                 <div key={d} style={{ minWidth: 0 }}>
@@ -305,7 +307,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
                   <Win title="robo-games" minH={60}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                       <RoCard name="Adopt Me!" />
-                      {published && <div className="el-in" style={{ animationDelay: `${0.2 + i * 0.35}s`, animationFillMode: 'backwards' }}><RoCard name="Doors" /></div>}
+                      {published && <div className="el-in push-in" style={{ animationDelay: `${0.2 + i * 0.35}s`, animationFillMode: 'backwards' }}><RoCard name="Doors" /></div>}
                     </div>
                   </Win>
                 </div>
@@ -342,19 +344,21 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     { text: "fetch — so'rov yuborish", tag: "fetch('…/games')" },
     { text: 'JSON — server javobi', tag: 'res.json()' },
     { text: 'Yuklanish holati', tag: 'skeleton' },
-    { text: "To'liq naqsh", tag: 'useEffect + fetch + state' }
+    { text: "To'liq usul", tag: 'useEffect + fetch + state' }
   ];
   const isNarrow = useIsMobile(768);
   const [showSteps, setShowSteps] = useState(false);
+  const [pvLoaded, setPvLoaded] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setPvLoaded(true), 950); return () => clearTimeout(t); }, []);
   const PreviewBlock = (
     <Col>
-      <p className="flow-label">Dars oxirida — sizning natijangiz</p>
+      <p className="flow-label">Dars oxirida — sizning natijangiz {pvLoaded ? '' : '· yuklanmoqda…'}</p>
       <Win title="robo-games — localhost:5173" minH={100}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-          <RoCard name="Adopt Me!" />
-          <RoCard name="Blox Fruits" />
-          <RoCard name="Brookhaven" />
-        </div>
+        {!pvLoaded
+          ? <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}><SkelCard /><SkelCard /><SkelCard /></div>
+          : <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              {['Adopt Me!', 'Blox Fruits', 'Brookhaven'].map((n, i) => <div key={n} className="el-in" style={{ animationDelay: `${i * 0.13}s`, animationFillMode: 'backwards' }}><RoCard name={n} /></div>)}
+            </div>}
       </Win>
       <pre className="code-box" style={{ padding: '10px 14px' }}>{'fetch('}<St>'https://robo-api.uz/games'</St>{')'}</pre>
       <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ kartochkalar endi serverdan yuklanadi</p>
@@ -411,22 +415,25 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Ro'yxatni kod ichidan <span className="italic" style={{ color: T.accent }}>serverga ko'chirsak</span> nima o'zgaradi?</h2></div>
         <Mentor>Hozir <span className="mono">games</span> ro'yxati App.jsx ichida yashayapti — uni faqat shu sayt ko'radi. Endi uni internetdagi maxsus kompyuterga — <b style={{ color: T.ink }}>serverga</b> ko'chiramiz. Server unga <b style={{ color: T.ink }}>manzil</b> beradi, va istalgan qurilma o'sha manzildan oladi.</Mentor>
         <Zoomable>
-        <div className="split">
-          <Col>
+        <div className="migrate fade-up delay-1">
+          <div className="mig-box">
             <p className="flow-label">App.jsx — sizning kodingiz</p>
-            <pre className="code-box fade-up delay-1" style={{ lineHeight: 1.9, position: 'relative' }}>
-              {phase === 1 && <div className="parcel fly-in" style={{ position: 'absolute', top: 6, left: '50%', fontSize: 24 }}>📦</div>}
+            <pre className="code-box" style={{ lineHeight: 1.9, margin: 0 }}>
               {phase < 2
-                ? <span style={{ borderRadius: 6, padding: '2px 5px', display: 'inline-block', background: phase === 1 ? 'rgba(255,79,40,0.22)' : 'transparent', transition: 'all 0.3s' }}><Jx>{'const'}</Jx>{' games = ['}<St>"Adopt Me!"</St>{', '}<St>"Doors"</St>{', '}<St>"Brookhaven"</St>{'];'}</span>
+                ? <span className={phase === 1 ? 'mig-leaving' : ''} style={{ borderRadius: 6, padding: '2px 5px', display: 'inline-block', transition: 'all 0.3s' }}><Jx>{'const'}</Jx>{' games = ['}<St>"Adopt Me!"</St>{', '}<St>"Doors"</St>{', '}<St>"Brookhaven"</St>{'];'}</span>
                 : <span className="el-in"><Cm>{'// ro’yxat endi serverda — kod yengillashdi!'}</Cm></span>}
               {'\n\n'}
               {'{games.map(g => '}<Jx>{'<GameCard '}</Jx><At>name</At>{'={g}'}<Jx>{' />'}</Jx>{')}'}
             </pre>
-            <button className="btn fade-up delay-2" style={{ alignSelf: 'flex-start' }} onClick={move} disabled={phase !== 0}>{phase === 0 ? "Serverga ko'chirish" : phase === 1 ? "Ko'chmoqda…" : "✓ Ko'chirildi"}</button>
-          </Col>
-          <Col>
+          </div>
+          <div className="mig-arrow">
+            {phase === 1 && <span className="mig-packet">📦 games</span>}
+            <span className="mig-line" />
+            <span className="mig-cap" style={{ color: phase >= 2 ? T.success : T.ink3 }}>{phase === 0 ? "ko'chirish" : phase === 1 ? "ko'chmoqda…" : "✓ ko'chdi"}</span>
+          </div>
+          <div className="mig-box">
             <p className="flow-label">robo-api.uz — server</p>
-            <div className="code-box fade-up delay-2" style={{ padding: '11px 14px', minHeight: 96 }}>
+            <div className="code-box" style={{ padding: '11px 14px', minHeight: 96, margin: 0, boxShadow: phase >= 2 ? `0 0 0 2px ${T.success}, 0 8px 22px -6px rgba(${T.shadowBase},0.2)` : undefined, transition: 'box-shadow 0.4s' }}>
               <TLine out={<span style={{ color: CODE.attr, fontWeight: 700 }}>robo-api.uz</span>} />
               {phase < 2
                 ? <TLine out={<span style={{ color: CODE.comment, fontStyle: 'italic' }}>{phase === 1 ? "posilka yo'lda…" : "bo'sh — ma'lumot kutilmoqda…"}</span>} />
@@ -435,9 +442,12 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                     <TLine out={<span className="el-in" style={{ display: 'inline-block' }}>{'[ '}<St>"Adopt Me!"</St>{', '}<St>"Doors"</St>{', '}<St>"Brookhaven"</St>{' ]'}</span>} />
                   </>}
             </div>
-            {done && <span className="tagpill fade-step" style={{ color: T.success }}>✓ manzil tayyor: https://robo-api.uz/games</span>}
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Endi bu ro'yxatni telefon ham, noutbuk ham, boshqa sayt ham — <b>manzili orqali</b> oladi. Bitta markaz — hamma uchun. Savol qoldi: kod uni <b>qanday so'rab oladi</b>?</p></div>}
-          </Col>
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(10px,1.6vw,14px)', marginTop: 12 }}>
+          <button className="btn fade-up delay-2" style={{ alignSelf: 'flex-start' }} onClick={move} disabled={phase !== 0}>{phase === 0 ? "📦 Serverga ko'chirish" : phase === 1 ? "Ko'chmoqda…" : "✓ Ko'chirildi"}</button>
+          {done && <span className="tagpill fade-step" style={{ color: T.success, alignSelf: 'flex-start' }}>✓ manzil tayyor: https://robo-api.uz/games</span>}
+          {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Endi bu ro'yxatni telefon ham, noutbuk ham, boshqa sayt ham — <b>manzili orqali</b> oladi. Bitta markaz — hamma uchun. Savol qoldi: kod uni <b>qanday so'rab oladi</b>?</p></div>}
         </div>
         </Zoomable>
       </div>
@@ -457,15 +467,11 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const done = seen.size >= 3;
   const tap = (k) => { setActive(k); setSeen(prev => { const s = new Set(prev); s.add(k); return s; }); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
-  const partStyle = (k) => ({
-    cursor: 'pointer', borderRadius: 6, padding: '3px 5px', transition: 'all 0.18s',
-    background: active === k ? 'rgba(255,79,40,0.22)' : (seen.has(k) ? 'rgba(31,122,77,0.14)' : 'rgba(255,255,255,0.07)'),
-    boxShadow: active === k ? `inset 0 0 0 1px ${T.accent}` : 'none'
-  });
+  const tokCls = (k) => `fa-tok ${active === k ? 'on' : ''} ${seen.has(k) ? 'seen' : ''}`;
   const Row = ({ k, lbl, val }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, background: seen.has(k) ? T.successSoft : T.paper, boxShadow: seen.has(k) ? `inset 0 0 0 1.5px ${T.success}` : `0 4px 12px -6px rgba(${T.shadowBase},0.14)`, transition: 'all 0.3s' }}>
       <span style={{ fontFamily: "'Manrope',sans-serif", fontWeight: 700, fontSize: 11, letterSpacing: '0.08em', color: seen.has(k) ? T.success : T.ink3, minWidth: 64 }}>{lbl}</span>
-      <span className="mono" style={{ fontSize: 12.5, color: seen.has(k) ? T.ink : T.ink3 }}>{seen.has(k) ? val : '?'}</span>
+      <span key={seen.has(k) ? 'v' : 'q'} className={`mono ${seen.has(k) ? 'el-in' : ''}`} style={{ fontSize: 12.5, color: seen.has(k) ? T.ink : T.ink3 }}>{seen.has(k) ? val : '?'}</span>
     </div>
   );
   return (
@@ -477,15 +483,15 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="split">
           <Col>
             <pre className="code-box fade-up delay-1" style={{ fontSize: 'clamp(13px,1.9vw,16px)', lineHeight: 2.1, padding: '16px 18px' }}>
-              <span onClick={() => tap('fetch')} style={partStyle('fetch')}><Jx>fetch</Jx></span>
+              <span onClick={() => tap('fetch')} className={tokCls('fetch')}><Jx>fetch</Jx></span>
               {'('}
-              <span onClick={() => tap('url')} style={partStyle('url')}><St>'https://robo-api.uz</St></span>
-              <span onClick={() => tap('ep')} style={partStyle('ep')}><St>/games'</St></span>
+              <span onClick={() => tap('url')} className={tokCls('url')}><St>'https://robo-api.uz</St></span>
+              <span onClick={() => tap('ep')} className={tokCls('ep')}><St>/games'</St></span>
               {')'}
             </pre>
             {active
               ? <div className="sk-info" key={active}><p className="note-h" style={{ color: T.accent }}>{PARTS[active].title}</p><p className="body" style={{ margin: 0, color: T.ink }}>{PARTS[active].desc}</p></div>
-              : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>Kod qismlarini bosing</p></div>}
+              : <div className="frame-dash"><p className="small" style={{ color: T.ink3, textAlign: 'center', fontStyle: 'italic', margin: 0 }}>👆 Kodning rangli qismlarini bosing</p></div>}
           </Col>
           <Col>
             <p className="flow-label">So'rov pasporti</p>
@@ -541,57 +547,48 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="JSON" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : (got ? 'Endi .json() qiling' : "So'rov yuboring")} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Server javobni <span className="italic" style={{ color: T.accent }}>qaysi tilda</span> qaytaradi?</h2></div>
-        <Mentor>Server javobi — <b style={{ color: T.ink }}>JSON</b>: kompyuterlarning umumiy ma'lumot tili. Ko'rinishi massivga o'xshaydi, lekin kelganda u hali <b style={{ color: T.ink }}>shunchaki matn</b>. Kod ishlatadigan haqiqiy massivga aylantirish uchun bitta qadam bor: <span className="mono">.json()</span>. Ikkala tugmani ketma-ket sinang.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Server javobi nega <span className="italic" style={{ color: T.accent }}>darrov ishlamaydi</span>?</h2></div>
+        <Mentor>Server javobi <b style={{ color: T.ink }}>shunchaki matn</b> bo'lib keladi (qo'shtirnoq ichida!) — unga <Code>map()</Code> qilib bo'lmaydi. Avval <Code>.json()</Code> uni <b style={{ color: T.ink }}>haqiqiy massivga</b> tarjima qiladi. 1-tugma — so'rov yuboring, keyin 2-tugma — tarjima qiling.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
             <div className="fade-up delay-1" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={send} disabled={loading || got}>1 · So'rov yuborish {got ? '✓' : ''}</button>
-              <button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => { if (got) setParsed(true); }} disabled={!got || parsed}>2 · .json() qilish {parsed ? '✓' : ''}</button>
+              <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={send} disabled={loading || got}>1 · 📨 So'rov yuborish {got ? '✓' : ''}</button>
+              <button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => { if (got) setParsed(true); }} disabled={!got || parsed}>2 · 🔄 .json() — tarjima qilish {parsed ? '✓' : ''}</button>
             </div>
-            <p className="flow-label" style={{ margin: 0 }}>Konsol</p>
-            <div className="code-box" style={{ padding: '10px 13px', minHeight: 88 }}>
-              {!got && !loading && <TLine out={<span style={{ color: CODE.comment, fontStyle: 'italic' }}>so'rov yuborilmagan…</span>} />}
-              {loading && <TLine out={<span style={{ color: CODE.comment }}>GET /games — javob kutilmoqda…</span>} />}
+            <p className="flow-label" style={{ margin: 0 }}>Server javobi</p>
+            <div className="json-stage">
+              {!got && !loading && <div className="json-empty">📭 hali so'rov yuborilmagan…</div>}
+              {loading && <div className="json-empty">⏳ GET /games — javob kutilmoqda…</div>}
               {got && !parsed && (
-                <>
-                  <TLine out={<span style={{ color: CODE.comment }}>{'// javob keldi — hozircha MATN:'}</span>} />
-                  <TLine out={<span className="el-in" style={{ display: 'inline-block', color: CODE.str }}>{'\'[{"name":"Adopt Me!"},{"name":"Doors"}]\''}</span>} />
-                </>
+                <div className="json-card txt" key="txt">
+                  <div className="json-head"><span className="json-tag bad">🔒 MATN (string)</span><span className="json-note bad">❌ map() hali ishlamaydi</span></div>
+                  <pre className="json-body">{'\'[ {"name":"Adopt Me!"}, {"name":"Doors"} ]\''}</pre>
+                </div>
               )}
               {parsed && (
-                <>
-                  <TLine out={<span style={{ color: CODE.comment }}>{'// res.json() — endi HAQIQIY massiv:'}</span>} />
-                  <TLine out={<span className="el-in" style={{ display: 'inline-block' }}>{'[ { name: '}<St>"Adopt Me!"</St>{' }, { name: '}<St>"Doors"</St>{' } ]'}</span>} />
-                  <TLine out={<span className="el-in" style={{ color: CODE.str }}>✓ games.map(…) ishlashga tayyor</span>} />
-                </>
+                <div className="json-card arr" key="arr">
+                  <div className="json-head"><span className="json-tag good">📦 MASSIV (array)</span><span className="json-note good">✓ endi map() ishlaydi</span></div>
+                  <pre className="json-body">{'[\n  { name: '}<St>"Adopt Me!"</St>{' },\n  { name: '}<St>"Doors"</St>{' }\n]'}</pre>
+                </div>
               )}
             </div>
+            {got && !parsed && <p className="small fade-step" style={{ margin: 0, color: T.accent, fontStyle: 'italic' }}>↑ Bu hali matn. 2-tugmani bosing — massivga aylansin.</p>}
           </Col>
           <Col>
-            <p className="flow-label">Javobning yo'li</p>
-            <div className="fade-up delay-2" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {[
-                { k: 1, t: 'Javob keldi — JSON matn', on: got },
-                { k: 2, t: '.json() — massivga aylantirdi', on: parsed },
-                { k: 3, t: 'map — kartochkalarni chizdi', on: parsed }
-              ].map(s => (
-                <div key={s.k} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '9px 13px', borderRadius: 12, background: s.on ? T.successSoft : T.paper, boxShadow: s.on ? `inset 0 0 0 1.5px ${T.success}` : `0 4px 12px -6px rgba(${T.shadowBase},0.14)`, transition: 'all 0.3s' }}>
-                  <span style={{ fontFamily: "'JetBrains Mono',monospace", fontWeight: 700, fontSize: 12, color: s.on ? T.success : T.ink3 }}>{s.on ? '✓' : s.k}</span>
-                  <span style={{ fontFamily: "'Manrope',sans-serif", fontSize: 13, color: s.on ? T.ink : T.ink3, transition: 'color 0.3s' }}>{s.t}</span>
-                </div>
-              ))}
-            </div>
-            {parsed && (
-              <Win title="robo-games — localhost:5173" minH={80}>
-                <div className="fade-step" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxWidth: 280 }}>
-                  <RoCard name="Adopt Me!" />
-                  <RoCard name="Doors" />
-                </div>
-              </Win>
-            )}
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Eslab qoling: javob keldi — avval <span className="mono">.json()</span>, keyin ishlatish. Tarjimasiz massiv yo'q, massivsiz map yo'q.</p></div>}
+            <p className="flow-label">Ekranda — map() natijasi</p>
+            <Win title="robo-games — localhost:5173" minH={118}>
+              {parsed
+                ? <div className="fade-step" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, maxWidth: 280 }}>
+                    <RoCard name="Adopt Me!" />
+                    <RoCard name="Doors" />
+                  </div>
+                : <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 96 }}>
+                    <span style={{ fontSize: 26, opacity: got ? 1 : 0.4 }}>{got ? '🔒' : '📭'}</span>
+                    <p style={{ color: T.ink3, fontStyle: 'italic', margin: 0, fontFamily: 'Georgia, serif', fontSize: 13, textAlign: 'center' }}>{got ? "Javob hali MATN — map() ishlamaydi. Avval .json() qiling." : "So'rov yuboring…"}</p>
+                  </div>}
+            </Win>
+            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Yo'l aniq: <b>matn → .json() → massiv → map → kartochkalar</b>. Tarjimasiz massiv yo'q, massivsiz map yo'q!</p></div>}
           </Col>
         </div>
         </Zoomable>
@@ -660,8 +657,8 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 </div>
               )}
               {mode && loaded && (
-                <div className="fade-step" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                  {LIST.map(g => <RoCard key={g.name} name={g.name} />)}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                  {LIST.map((g, i) => <div key={g.name} className="el-in" style={{ animationDelay: `${i * 0.13}s`, animationFillMode: 'backwards' }}><RoCard name={g.name} /></div>)}
                 </div>
               )}
             </Win>
@@ -699,14 +696,14 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     { z: 4, t: "setGames — React kartochkalarni chizdi" }
   ];
   return (
-    <Stage eyebrow="To'liq naqsh" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Naqshni ishga tushiring'} onClick={onNext} /></>}>
+    <Stage eyebrow="To'liq usul" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : 'Usulni ishga tushiring'} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(8px,1.2vw,12px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Hammasi birga: to'liq naqsh <span className="italic" style={{ color: T.accent }}>qanday ishlaydi</span>?</h2></div>
+        <div className="head"><h2 className="title h-title fade-up">Hammasi birga: to'liq usul <span className="italic" style={{ color: T.accent }}>qanday ishlaydi</span>?</h2></div>
         <Mentor>Mana professional saytlarning yuragi — <b style={{ color: T.ink }}>4 qadam</b>: bo'sh state → useEffect so'rov yuboradi → javob keladi → setGames chizadi. ▶ tugmasini bosib, <b style={{ color: T.ink }}>kod bilan ekranni birga</b> kuzating.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
-            <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run} disabled={running}>{running ? 'Ishlayapti…' : (done ? '↻ Yana koʻrish' : '▶ Naqshni ishga tushirish')}</button>
+            <button className="btn fade-up delay-1" style={{ alignSelf: 'flex-start' }} onClick={run} disabled={running}>{running ? 'Ishlayapti…' : (done ? '↻ Yana koʻrish' : '▶ Usulni ishga tushirish')}</button>
             <pre className="code-box fade-up delay-2" style={{ lineHeight: 1.95 }}>
               <span style={hl(1)}><Jx>{'const'}</Jx>{' [games, setGames] = useState([]);'}</span>{'\n\n'}
               <span style={hl(2)}>{'useEffect(() => {'}</span>{'\n'}
@@ -768,7 +765,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Endpointlar" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `Kamida 2 eshikni sinang (${tried.size}/2)`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bitta serverdan <span className="italic" style={{ color: T.accent }}>har xil ro'yxat</span> olsa bo'ladimi?</h2></div>
-        <Mentor>Bo'ladi! Server — katta bino, <b style={{ color: T.ink }}>endpointlar — eshiklar</b>: <span className="mono">/games</span> hammasi, <span className="mono">/top</span> eng zo'rlari, <span className="mono">/new</span> yangilari. Eshikni tanlang — <span className="mono">fetch</span> o'sha ro'yxatni olib keladi.</Mentor>
+        <Mentor>Bo'ladi! Server — katta bino, <b style={{ color: T.ink }}>endpointlar — eshiklar</b>: <Code>/games</Code> hammasi, <Code>/top</Code> eng zo'rlari, <Code>/new</Code> yangilari. Eshikni tanlang — <Code>fetch()</Code> o'sha ro'yxatni olib keladi.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -828,8 +825,8 @@ const Screen9 = (props) => (
 // ===== SCREEN 10 — 404 (xato manzil) =====
 const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const LIST = GAMES.slice(0, 3);
-  const [cur, setCur] = useState(storedAnswer ? 'good' : null); // 'bad' | 'good'
-  const [triedBad, setTriedBad] = useState(!!storedAnswer);
+  const [cur, setCur] = useState(storedAnswer ? 'good' : 'bad'); // default: xato manzil (404)
+  const [triedBad, setTriedBad] = useState(true); // sahifa xatodan boshlanadi
   const [triedGood, setTriedGood] = useState(!!storedAnswer);
   const done = triedBad && triedGood;
   const send = (which) => {
@@ -838,10 +835,10 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="404" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "Ikkala manzilni sinang"} onClick={onNext} /></>}>
+    <Stage eyebrow="404" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "To'g'ri manzilni bosib tuzating"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Manzilda <span className="italic" style={{ color: T.accent }}>bitta harf xato</span> bo'lsa-chi?</h2></div>
-        <Mentor>Internet darsidagi <span className="mono">youtub.com</span>ni eslaysizmi? Serverlarda ham shunday: <b style={{ color: T.ink }}>yo'q eshikni</b> so'rasangiz, server <b style={{ color: T.ink }}>404 — "Topilmadi"</b> deb javob beradi. Avval xato manzilni, keyin to'g'risini sinab ko'ring.</Mentor>
+        <Mentor>Mana, sayt hozir <b style={{ color: T.ink }}>xato manzilga</b> so'rov yuboryapti — <Code>/gmaes</Code> (harflar aralashib ketgan!). Server <b style={{ color: T.ink }}>404 — "Topilmadi"</b> deb javob berdi, katalog bo'sh. Endi <b style={{ color: T.ink }}>to'g'ri manzil</b> tugmasini bosib, o'zingiz tuzating.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -903,7 +900,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Keyingi qadam · AI" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : "Agent bilan ishlab ko'ring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Serverli saytni <span className="italic" style={{ color: T.accent }}>AI bilan</span> boyitsak-chi?</h2></div>
-        <Mentor>Endi siz so'rov naqshini bilasiz — agent kodini <b style={{ color: T.ink }}>tekshira olasiz</b>: manzil to'g'rimi, .json() bormi, javob state'ga tushyaptimi. Buyruq bering, rejani <b style={{ color: T.ink }}>tasdiqlang</b>, natijani sinang.</Mentor>
+        <Mentor>Endi siz so'rov usulini bilasiz — agent kodini <b style={{ color: T.ink }}>tekshira olasiz</b>: manzil to'g'rimi, .json() bormi, javob state'ga tushyaptimi. Buyruq bering, rejani <b style={{ color: T.ink }}>tasdiqlang</b>, natijani sinang.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -1043,7 +1040,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 </div>
               )}
             </Win>
-            {done && loaded && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tartib muhim edi: so'rovsiz javob yo'q, tarjimasiz massiv yo'q, setGames'siz ekran yo'q. Siz naqshni <b>tushunib</b> yig'dingiz.</p></div>}
+            {done && loaded && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tartib muhim edi: so'rovsiz javob yo'q, tarjimasiz massiv yo'q, setGames'siz ekran yo'q. Siz usulni <b>tushunib</b> yig'dingiz.</p></div>}
           </Col>
         </div>
         </Zoomable>
@@ -1065,7 +1062,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Debugging" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : (found ? 'Endi tuzating' : 'Xatoni toping')} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">AI yordam beradi — siz esa <span className="italic" style={{ color: T.accent }}>tekshirasiz</span>.</h2></div>
-        <Mentor>AI so'rov kodini bir zumda yozib berdi — naqsh to'g'ri. Lekin katalog <b style={{ color: T.ink }}>yuklanmayapti</b>: skeleton aylanaveryapti, konsolda <b style={{ color: T.ink }}>404</b>. Siz endi 404 nima deyishini bilasiz. Xato qaysi qatorda?</Mentor>
+        <Mentor>AI so'rov kodini bir zumda yozib berdi — usul to'g'ri. Lekin katalog <b style={{ color: T.ink }}>yuklanmayapti</b>: skeleton aylanaveryapti, konsolda <b style={{ color: T.ink }}>404</b>. Siz endi 404 nima deyishini bilasiz. Xato qaysi qatorda?</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -1147,7 +1144,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Yakuniy · amaliy" screen={screen} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? 'Davom etish' : "So'rovni yozing"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: so'rovni <span className="italic" style={{ color: T.accent }}>o'zingiz</span> yuboring.</h2></div>
-        <Mentor>VS Code'da <span className="mono">App.jsx</span> ochiq: naqsh tayyor — useState bor, .json() bor, setGames bor. Faqat <b style={{ color: T.ink }}>4-qator bo'sh: so'rovning o'zi yo'q!</b> Yozing: <b style={{ color: T.ink }}>fetch(</b> + <b style={{ color: T.ink }}>'https://robo-api.uz/games'</b> qo'shtirnoqda + <b style={{ color: T.ink }}>)</b>.</Mentor>
+        <Mentor>VS Code'da <span className="mono">App.jsx</span> ochiq: usul tayyor — useState bor, .json() bor, setGames bor. Faqat <b style={{ color: T.ink }}>4-qator bo'sh: so'rovning o'zi yo'q!</b> Yozing: <b style={{ color: T.ink }}>fetch(</b> + <b style={{ color: T.ink }}>'https://robo-api.uz/games'</b> qo'shtirnoqda + <b style={{ color: T.ink }}>)</b>.</Mentor>
         <Zoomable>
         <div className="split split-wide">
           <Col>
@@ -1217,7 +1214,7 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
     "fetch — so'rov: shu manzilga borib, olib kel (GET)",
     "Javob JSON matn — .json() uni massivga aylantiradi",
     "Kutish payti — skeleton: \"ma'lumot yo'lda\" signali",
-    "To'liq naqsh: useEffect + fetch + .json() + setGames"
+    "To'liq usul: useEffect + fetch + .json() + setGames"
   ];
   const HOMEWORK = [
     { b: 'Jonli katalog', t: "— robo-games loyihangizga agent bilan haqiqiy API ulang: \"o'yinlar ro'yxatini serverdan fetch bilan yukla\" deb buyuring" },
@@ -1248,7 +1245,7 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
   return (
     <Stage eyebrow="Tayyor" screen={screen} navContent={<><NavBack onPrev={onPrev} /><button className="btn-ghost" onClick={onReset} style={{ padding: 'clamp(11px,1.6vw,13px) clamp(16px,2.2vw,22px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Qaytadan</button><button className="btn-white-accent" onClick={onFinish} style={{ marginLeft: 'auto', padding: 'clamp(11px,1.6vw,13px) clamp(22px,2.6vw,30px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Yakunlash ✓</button></>}>
       <div className="screen">
-        <div className="hero"><div className="hero-l"><span className="done-chip fade-up"><span className="tick">✓</span> Dars tugadi</span><h2 className="title h-title fade-up d1">Katalogingiz endi <span className="italic" style={{ color: T.accent }}>jonli</span>.</h2><p className="body h-sub fade-up d2">{PASSED ? "Tabriklaymiz! Saytingiz endi serverdan ma'lumot oladi — xuddi haqiqiy Roblox kabi. Siz frontend bilan serverni bog'ladingiz." : "Yaxshi harakat! fetch naqshini mustahkamlash uchun bir-ikki ekranni qayta ko'ring."}</p></div><ScoreRing correct={correct} total={total} /></div>
+        <div className="hero"><div className="hero-l"><span className="done-chip fade-up"><span className="tick">✓</span> Dars tugadi</span><h2 className="title h-title fade-up d1">Katalogingiz endi <span className="italic" style={{ color: T.accent }}>jonli</span>.</h2><p className="body h-sub fade-up d2">{PASSED ? "Tabriklaymiz! Saytingiz endi serverdan ma'lumot oladi — xuddi haqiqiy Roblox kabi. Siz frontend bilan serverni bog'ladingiz." : "Yaxshi harakat! fetch usulini mustahkamlash uchun bir-ikki ekranni qayta ko'ring."}</p></div><ScoreRing correct={correct} total={total} /></div>
         <div className="split">
           <div className="card fade-up d3"><div className="card-lbl" style={{ color: T.success }}><span className="tick" style={{ width: 16, height: 16, borderRadius: '50%', background: T.success, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>✓</span> Endi siz bilasiz</div><ul className="recap">{RECAP.map((r, i) => (<li key={i} style={{ animationDelay: `${0.3 + i * 0.07}s` }}><span className="ck">✓</span><span>{r}</span></li>))}</ul></div>
           <div className="card hw fade-up d4"><div className="card-lbl" style={{ color: T.accent }}>📝 Uyga vazifa</div><p className="body" style={{ margin: '0 0 10px', color: T.ink }}>Antigravity bilan o'z loyihangizda sinang:</p><ul>{HOMEWORK.map((h, i) => (<li key={i}><b>{h.b}</b> <span className="t">{h.t}</span></li>))}</ul><p className="hw-note">Keyingi darsda kuch yana oshadi: serverdan faqat olish emas — unga YUBORISH ham o'rganamiz. O'z o'yiningizni katalogga qo'shasiz! 🚀</p></div>
@@ -1493,6 +1490,50 @@ export default function ReactApiGetLesson({ lang: langProp, onFinished }) {
         .skel { background: linear-gradient(100deg, #ECE9E2 38%, #F8F6F1 50%, #ECE9E2 62%); background-size: 220% 100%; animation: shimmer 1.15s linear infinite; }
         @keyframes fly-in { 0% { opacity: 0; transform: translate(-50%, -14px) scale(0.7); } 35% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, 40px) scale(1); } }
         .fly-in { transform: translateX(-50%); animation: fly-in 0.95s ease-in forwards; z-index: 3; }
+
+        /* Matn ichidagi real kodcha */
+        .codechip { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; font-weight: 600; background: ${CODE.bg}; color: ${CODE.str}; padding: 1.5px 6px; border-radius: 5px; white-space: nowrap; }
+
+        /* Server'ga ko'chish (Screen2) */
+        .migrate { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .mig-box { flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+        .mig-arrow { flex: 0 0 86px; position: relative; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+        .mig-line { width: 100%; height: 2px; background: repeating-linear-gradient(90deg, ${T.ink3} 0 5px, transparent 5px 10px); }
+        .mig-cap { font-family: 'Manrope'; font-weight: 700; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase; }
+        .mig-packet { position: absolute; top: -6px; left: 0; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 10px; color: #fff; background: ${T.accent}; padding: 4px 8px; border-radius: 99px; white-space: nowrap; box-shadow: 0 5px 12px -3px rgba(255,79,40,0.55); animation: mig-fly 1s ease-in-out forwards; z-index: 3; }
+        @keyframes mig-fly { 0% { left: -8%; opacity: 0; } 18% { opacity: 1; } 82% { opacity: 1; } 100% { left: 90%; opacity: 0; } }
+        @keyframes mig-leave { 0% { opacity: 1; transform: none; } 100% { opacity: 0.35; transform: scale(0.92) translateX(10px); } }
+        .mig-leaving { animation: mig-leave 1s ease-in forwards; }
+        @media (max-width: 620px) { .mig-arrow { flex-basis: 100%; flex-direction: row; height: 36px; justify-content: center; } .mig-arrow .mig-line { width: 55%; } .mig-packet { top: 50%; transform: translateY(-50%); } }
+
+        /* JSON tarjima quvuri (Screen5) */
+        .json-stage { min-height: 118px; }
+        .json-empty { border: 1.5px dashed ${T.ink3}; border-radius: 12px; padding: 26px 14px; text-align: center; font-family: 'Georgia', serif; font-style: italic; color: ${T.ink3}; font-size: 13px; }
+        .json-card { border-radius: 12px; padding: 12px 14px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.18); }
+        .json-card.txt { background: #20283A; animation: fade-step 0.35s ease-out; }
+        .json-card.arr { background: ${CODE.bg}; box-shadow: 0 0 0 2px ${T.success}, 0 8px 20px -6px rgba(31,122,77,0.3); animation: json-flip 0.55s cubic-bezier(.34,1.3,.5,1); transform-origin: top center; }
+        @keyframes json-flip { 0% { transform: perspective(500px) rotateX(-78deg); opacity: 0; } 100% { transform: perspective(500px) rotateX(0); opacity: 1; } }
+        .json-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 9px; }
+        .json-tag { font-family: 'Manrope'; font-weight: 800; font-size: 10.5px; padding: 3px 9px; border-radius: 99px; letter-spacing: 0.03em; }
+        .json-tag.bad { background: rgba(255,255,255,0.13); color: #C9B89A; }
+        .json-tag.good { background: rgba(31,122,77,0.35); color: #8FE3B5; }
+        .json-note { font-family: 'Manrope'; font-weight: 700; font-size: 10.5px; }
+        .json-note.bad { color: ${T.accent}; }
+        .json-note.good { color: #8FE3B5; }
+        .json-body { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: ${CODE.text}; margin: 0; white-space: pre-wrap; word-break: break-word; line-height: 1.55; }
+        .json-card.txt .json-body { color: #8A93A6; }
+
+        /* fetch qismlari — bosishga chorlovchi (Screen3) */
+        .fa-tok { cursor: pointer; border-radius: 6px; padding: 3px 5px; transition: all 0.18s; }
+        .fa-tok:not(.seen):not(.on) { animation: fa-invite 2.2s ease-in-out infinite; }
+        @keyframes fa-invite { 0%,100% { box-shadow: inset 0 0 0 1.5px rgba(255,79,40,0.2); background: rgba(255,255,255,0.05); } 50% { box-shadow: inset 0 0 0 1.5px rgba(255,79,40,0.5); background: rgba(255,79,40,0.08); } }
+        .fa-tok.on { background: rgba(255,79,40,0.22); box-shadow: inset 0 0 0 1px ${T.accent}; }
+        .fa-tok.seen:not(.on) { background: rgba(31,122,77,0.14); }
+
+        /* Hook broadcast (Screen0) */
+        .broadcast-cue { font-family: 'Manrope'; font-weight: 700; font-size: 12px; color: ${T.success}; margin: 0; }
+        .push-in { position: relative; border-radius: 12px; animation: el-pop 0.3s ease-out, push-ring 0.95s ease-out; }
+        @keyframes push-ring { 0% { box-shadow: 0 0 0 0 rgba(31,122,77,0.5); } 100% { box-shadow: 0 0 0 9px rgba(31,122,77,0); } }
 
         /* MOBIL: yig'iladigan Mentor */
         .mentor-mob .mentor-msg { overflow: hidden; max-height: 360px; transition: max-height 0.38s cubic-bezier(.4,0,.2,1), opacity 0.25s ease, padding 0.38s ease, box-shadow 0.3s ease; }
