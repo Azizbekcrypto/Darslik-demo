@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
 import mentorImg from '../../assets/common/mentor.png';
 
+// ===== RASM — mentor avatari (boshqa darslar bilan bir xil: assets/common/mentor.png) =====
+
 // ============================================================
 // HTML 1-DARS — PLATFORM STANDARD v15 (Notion: design_system + platform_contract + infrastructure_v1)
 // Arxitektura va asosiy dizayn — Notiondan. 17 ekran bizning kontentimiz.
@@ -323,6 +325,28 @@ const Zoomable = ({ children }) => {
   );
 };
 
+// Konfetti — dars muvaffaqiyatli tugaganda yog'iladigan bayram effekti
+const Confetti = () => {
+  const COLORS = [T.accent, T.success, T.blue, '#FFD380', '#FF7755', '#7DD181'];
+  return (
+    <div className="confetti" aria-hidden="true">
+      {Array.from({ length: 44 }).map((_, i) => {
+        const left = (i * 2.31 + (i % 7) * 4) % 100;
+        const size = 6 + (i % 4) * 2;
+        return (
+          <span key={i} className="confetti-bit" style={{
+            left: `${left}%`, background: COLORS[i % COLORS.length],
+            width: size, height: size * 1.5,
+            animationDelay: `${(i % 11) * 0.16}s`,
+            animationDuration: `${2.4 + (i % 6) * 0.45}s`,
+            borderRadius: i % 2 ? '2px' : '50%'
+          }} />
+        );
+      })}
+    </div>
+  );
+};
+
 // ===== SCREEN 0 — HOOK =====
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const audio = useAudio([{ id: 's0', text: `Brauzerga youtube.com yozib Enter bosasiz — bir soniyada sayt chiqadi. Lekin shu bir soniyada parda ortida katta sayohat bo'ladi. Sizningcha, sayt qayerdan keladi?`, trigger: 'on_mount', waits_for: { type: 'option_picked' } }]);
@@ -338,8 +362,8 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   return (
     <Stage eyebrow="Kirish" screen={screen} audioState={audio} navContent={<NavNext disabled={picked === null} label="Davom etish" onClick={onNext} />}>
       <div className="screen">
-        <h1 className="title h-title fade-up" style={{ maxWidth: 760 }}>Enter bosganda sayt <span className="italic" style={{ color: T.accent }}>qayerdan</span> keladi?</h1>
-        <Mentor>Brauzerga <b style={{ color: T.ink }}>youtube.com</b> yozib Enter bosasiz — bir soniyada sayt chiqadi. Lekin shu bir soniyada parda ortida katta <b style={{ color: T.ink }}>sayohat</b> bo'ladi. Tugmani bosib ko'ring, keyin taxmin qiling.</Mentor>
+        <h1 className="title h-title fade-up" style={{ maxWidth: 760 }}>Sayt manzilini yozib Enter bossangiz, u <span className="italic" style={{ color: T.accent }}>qayerdan</span> keladi?</h1>
+        <Mentor>Telefon yoki kompyuterda <b style={{ color: T.ink }}>youtube.com</b> yozib Enter bossangiz — bir soniyada sayt chiqadi. Lekin shu bir soniya ichida parda ortida katta <b style={{ color: T.ink }}>sayohat</b> bo'lib o'tadi. Avval tugmani bosing, keyin taxmin qiling: sayt qayerdan keladi?</Mentor>
         <Split>
           <Col>
             <div className="urlbar fade-up delay-1"><span className="urlbar-lock">🔒</span><span className="urlbar-text">youtube.com</span><button className="urlbar-go" onClick={go} disabled={phase !== 'idle'}>Enter ↵</button></div>
@@ -367,7 +391,29 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   );
 };
 
-// ===== SCREEN 1 — REJA =====
+// ===== SCREEN 1 — REJA (aylana shaklidagi jonli sayohat) =====
+// Stansiyalar aylana bo'ylab joylashadi; paket aylana yo'l bo'ylab soat yo'nalishida aylanadi —
+// uydan (Siz) chiqib, brauzer → DNS → server orqali yana uyga qaytadi (chinakam aylanma sayohat).
+const JR_R = 38; // aylana radiusi (markazdan %)
+const JR_STATIONS = [
+  { k: 'you', ic: '🧑', l: 'Siz', a: 0 },
+  { k: 'browser', ic: '🌐', l: 'Brauzer', a: 90 },
+  { k: 'dns', ic: '🗂️', l: 'DNS', a: 180 },
+  { k: 'server', ic: '🖥️', l: 'Server', a: 270 }
+];
+const jrPos = (a) => {
+  const rad = (a * Math.PI) / 180;
+  return { left: `${(50 + JR_R * Math.sin(rad)).toFixed(2)}%`, top: `${(50 - JR_R * Math.cos(rad)).toFixed(2)}%` };
+};
+// Har qadam: qaysi stansiya yonadi (active), paket turi (kind), yorlig'i (pkt), izoh (cap)
+const JR_STEPS = [
+  { active: 'browser', kind: 'req',  pkt: '⌨️ youtube.com',  cap: '1-qadam — Enter bosildi! Brauzer manzilni oldi.' },
+  { active: 'dns',     kind: 'req',  pkt: 'youtube.com = ?', cap: "2-qadam — Brauzer DNS'dan IP raqamini so'raydi." },
+  { active: 'server',  kind: 'ip',   pkt: '142.250.190.78',  cap: "3-qadam — DNS IP'ni topdi — so'rov to'g'ri serverga ketdi." },
+  { active: 'you',     kind: 'page', pkt: '▶️ YouTube',       cap: '4-qadam — Server YouTube sahifasini qaytardi — mana, ekraningizda ochildi!' }
+];
+const JR_STEP_MS = 1785; // jarayon 15% sekinlashtirildi (1550 → 1785)
+
 const Screen1 = ({ screen, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's1', text: `Bugun bir savolga to'liq javob topamiz: youtube.com yozib Enter bosganingizda, sayt sizning ekraningizga qanday yetib keladi? 5 qadamda ortidagi sirni ochamiz.`, trigger: 'on_mount', waits_for: null }]);
   const STEPS = [
@@ -377,31 +423,77 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     { text: 'DNS — manzilni topadi', tag: 'domen → IP' },
     { text: 'Server — sayt shu yerda', tag: '' }
   ];
-  const isNarrow = useIsMobile(768);
-  const [showSteps, setShowSteps] = useState(false);
-  const JOURNEY = [{ ic: '🧑', l: 'Siz' }, { ic: '🌐', l: 'Brauzer' }, { ic: '🗂️', l: 'DNS' }, { ic: '🖥️', l: 'Server' }, { ic: '📄', l: 'Sahifa' }];
-  const PreviewBlock = (
-    <Col>
-      <p className="flow-label">Dars oxirida bilasiz — bu yo'lni</p>
-      <div className="jmini fade-up delay-1">
-        {JOURNEY.map((j, i) => (<React.Fragment key={i}><div className="jmini-node"><span className="jmini-ic">{j.ic}</span><span className="jmini-l">{j.l}</span></div>{i < JOURNEY.length - 1 && <span className="jmini-arr">→</span>}</React.Fragment>))}
-      </div>      <p className="body" style={{ margin: 0, color: T.ink2 }}>…va kompyuter buni <b style={{ color: T.ink }}>1 soniyada</b> bajaradi.</p>
-    </Col>
-  );
+  const DONE = JR_STEPS.length;
+  const [jstep, setJstep] = useState(-1); // -1 = idle, 0..DONE-1 = sayohat, DONE = tugadi
+  const [turn, setTurn] = useState(0);    // paketning aylana burchagi (har qadam +90°, doim oldinga)
+  const [playing, setPlaying] = useState(false);
+  const baseRef = useRef(0);              // har sayohat oxiridagi to'plangan burchak (orqaga aylanmaslik uchun)
+  const timer = useRef(null);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const play = useCallback(() => {
+    clearTimeout(timer.current);
+    const base = baseRef.current;
+    setPlaying(true); setJstep(0); setTurn(base + 90);
+    let i = 0;
+    const advance = () => {
+      timer.current = setTimeout(() => {
+        if (i < JR_STEPS.length - 1) { i++; setJstep(i); setTurn(base + (i + 1) * 90); advance(); }
+        else { setJstep(JR_STEPS.length); setTurn(base + 360); baseRef.current = base + 360; setPlaying(false); }
+      }, JR_STEP_MS);
+    };
+    advance();
+  }, []);
+  // Sahifa ochilganda sayohat o'zi bir marta jonlanadi
+  useEffect(() => { const t = setTimeout(play, 750); return () => clearTimeout(t); }, [play]);
+
+  const activeKey = jstep >= 0 && jstep < DONE ? JR_STEPS[jstep].active : (jstep >= DONE ? 'you' : null);
+  const cur = jstep >= 0 && jstep < DONE ? JR_STEPS[jstep] : null;
+  const caption = jstep < 0
+    ? "▶ tugmasini bosing — so'rovning butun aylanma sayohatini ko'ramiz."
+    : jstep >= DONE
+      ? "✓ Tayyor! YouTube ekraningizda ochildi — har bir sayt va ilova xuddi shu yo'l bilan, atigi 1 soniyada keladi."
+      : JR_STEPS[jstep].cap;
+
   const StepsBlock = (
     <Col>
-      <p className="flow-label">5 qadam</p>
+      <p className="flow-label">Dars rejasi — 5 qadam</p>
       <ol className="roadmap">{STEPS.map((s, i) => (<li key={i} className="step-card fade-up" style={{ animationDelay: `${0.08 + i * 0.05}s` }}><span className="step-num">{String(i + 1).padStart(2, '0')}</span><span className="step-body"><span className="step-text">{s.text}</span>{s.tag && <span className="step-tag">{s.tag}</span>}</span></li>))}</ol>
     </Col>
   );
+
   return (
     <Stage eyebrow="Reja" screen={screen} audioState={audio} mentorStatic navContent={<><NavBack onPrev={onPrev} /><NavNext label="Boshlaymiz →" onClick={onNext} /></>}>
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Sayt sizgacha qanday yetib keladi?</span></h2></div>
-        <Mentor>Bugun bir savolga to'liq javob topamiz: <b style={{ color: T.ink }}>youtube.com</b> yozib Enter bosganingizda, sayt ekraningizga qanday yetib keladi? <b style={{ color: T.ink }}>5 qadamda</b> ortidagi sirni ochamiz.</Mentor>
-        {!isNarrow ? (<Split>{PreviewBlock}{StepsBlock}</Split>)
-          : !showSteps ? (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>{PreviewBlock}<button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>📋 5 qadamni ko'rish</button></div>)
-          : (<div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}><button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Yo'lni ko'rish</button>{StepsBlock}</div>)}
+        <Mentor>Bugun bitta savolga to'liq javob topamiz: <b style={{ color: T.ink }}>youtube.com</b> yozib Enter bosganingizda, sayt ekraningizga qanday yetib keladi? Quyidagi <b style={{ color: T.ink }}>aylanma sayohatni</b> kuzating — dars oxirida hammasini o'zingiz tushuntirib bera olasiz.</Mentor>
+        <Split>
+          <Zoomable>
+          <div className="jr fade-up delay-1">
+            <div className="jr-ring">
+              <div className="jr-ring-circle" />
+              <div className="jr-hub"><span className="jr-hub-ic">⏱️</span><span className="jr-hub-t">≈ 1 soniya</span></div>
+              {JR_STATIONS.map(s => {
+                const on = activeKey === s.k;
+                const delivered = jstep >= DONE && s.k === 'you';
+                return (
+                  <div key={s.k} className={`jr-st ${on ? 'on' : ''} ${delivered ? 'delivered' : ''}`} style={jrPos(s.a)}>
+                    {delivered && <span className="jr-badge">▶️ YouTube ✓</span>}
+                    <span className="jr-ic">{s.ic}</span>
+                    <span className="jr-l">{s.l}</span>
+                  </div>
+                );
+              })}
+              <div className="jr-orbit" style={{ transform: `rotate(${turn}deg)` }}>
+                <div className={`jr-packet ${cur ? cur.kind : ''} ${cur ? 'show' : ''}`} style={{ transform: `translate(-50%,-50%) rotate(${-turn}deg)` }}>{cur ? cur.pkt : ''}</div>
+              </div>
+            </div>
+            <div className={`jr-cap ${jstep >= DONE ? 'done' : ''}`} key={jstep}>{caption}</div>
+            <div className="jr-dots">{JR_STEPS.map((_, i) => <span key={i} className={`jr-dot ${(jstep > i || jstep >= DONE) ? 'fill' : ''} ${jstep === i ? 'cur' : ''}`} />)}</div>
+            <button className="btn" style={{ alignSelf: 'center' }} onClick={play} disabled={playing}>{playing ? 'Sayohat ketmoqda…' : (jstep >= DONE ? "↻ Yana ko'rish" : '▶ Sayohatni boshlash')}</button>
+          </div>
+          </Zoomable>
+          {StepsBlock}
+        </Split>
       </div>
     </Stage>
   );
@@ -426,12 +518,12 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Internet" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Ulanishlarni ko'rsating"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Internet aslida <span className="italic" style={{ color: T.accent }}>nima</span>?</h2></div>
-        <Mentor>Internet — sehrli bulut emas. Bu dunyo bo'ylab <b style={{ color: T.ink }}>millionlab kompyuterlar</b> bir-biriga ulangan ulkan <b style={{ color: T.ink }}>tarmoq</b>. Xuddi yo'llar to'ri kabi. Tugmani bosib, ulanishlarni ko'ring.</Mentor>
+        <Mentor>Internet — sehrli bulut emas. Bu butun dunyo bo'ylab <b style={{ color: T.ink }}>millionlab kompyuterlar</b> bir-biriga ulangan ulkan <b style={{ color: T.ink }}>tarmoq</b>. Xuddi shaharni bog'lab turgan yo'llar kabi — uyingizdagi telefon, TV va noutbuk ham shu tarmoqqa ulangan. Tugmani bosib, ulanishlarni ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
           <div className="col">
             <div className="web fade-up delay-2" style={{ height: 165 }}>
-              <svg className="web-svg" viewBox="0 0 260 154" preserveAspectRatio="none">{EDGES.map(([a, b], i) => (<line key={i} x1={PX[a][0]} y1={PX[a][1]} x2={PX[b][0]} y2={PX[b][1]} stroke={connected ? T.accent : T.ink3} strokeWidth={connected ? 1.8 : 1} strokeDasharray={connected ? '0' : '4 3'} opacity={connected ? 0.9 : 0.5} style={{ transition: 'all 0.5s' }} />))}</svg>
+              <svg className="web-svg" viewBox="0 0 260 154" preserveAspectRatio="none">{EDGES.map(([a, b], i) => (<line key={i} x1={PX[a][0]} y1={PX[a][1]} x2={PX[b][0]} y2={PX[b][1]} stroke={connected ? T.accent : T.ink3} strokeWidth={connected ? 1.8 : 1} strokeDasharray={connected ? '0' : '4 3'} opacity={connected ? 0.9 : 0.5} style={{ transition: 'all 0.5s' }} />))}{connected && EDGES.map(([a, b], i) => (<circle key={`pkt${i}`} r="2.6" fill={T.accent}><animate attributeName="cx" values={`${PX[a][0]};${PX[b][0]}`} dur="1.5s" begin={`${(i * 0.22).toFixed(2)}s`} repeatCount="indefinite" /><animate attributeName="cy" values={`${PX[a][1]};${PX[b][1]}`} dur="1.5s" begin={`${(i * 0.22).toFixed(2)}s`} repeatCount="indefinite" /></circle>))}</svg>
               {NODES.map(n => (<div key={n.k} className={`web-node ${connected ? 'on' : ''}`} style={{ left: `${n.pos[0] / 260 * 100}%`, top: `${n.pos[1] / 154 * 100}%`, display: 'flex', alignItems: 'center', gap: 5 }}><span>{n.ic}</span><span>{n.l}</span></div>))}
             </div>
             {!connected && <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setConnected(true)}>🔗 Ulanishlarni ko'rsatish</button>}
@@ -449,10 +541,41 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     </Stage>
   );
 };
+// Brauzer logotiplari — har biri o'z brendi rangida (farqi ko'zga tashlansin)
+const BrowserLogo = ({ k, size = 30 }) => {
+  const ring = { width: size, height: size, borderRadius: '50%', position: 'relative', flexShrink: 0, display: 'inline-block', boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.08), 0 2px 6px -2px rgba(0,0,0,0.28)' };
+  if (k === 'chrome') return (
+    <span style={{ ...ring, background: 'conic-gradient(from -90deg, #EA4335 0 120deg, #34A853 120deg 240deg, #FBBC05 240deg 360deg)' }}>
+      <span style={{ position: 'absolute', inset: '26%', borderRadius: '50%', background: '#fff' }} />
+      <span style={{ position: 'absolute', inset: '33%', borderRadius: '50%', background: '#1A73E8' }} />
+    </span>
+  );
+  if (k === 'firefox') return (
+    <span style={{ ...ring, background: 'radial-gradient(circle at 62% 30%, #FFE259 0 8%, #FF9D17 30%, #FF4406 62%, #B5170B 96%)' }}>
+      <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'conic-gradient(from 20deg, transparent 0 250deg, rgba(255,213,84,0.9) 322deg, transparent 360deg)' }} />
+    </span>
+  );
+  if (k === 'edge') return (
+    <span style={{ ...ring, background: 'conic-gradient(from 150deg, #36D6B7 0deg, #1B9DE2 130deg, #0C5B8F 250deg, #36D6B7 360deg)' }}>
+      <span style={{ position: 'absolute', inset: '26%', borderRadius: '50%', background: 'radial-gradient(circle at 38% 38%, rgba(234,250,246,0.95), rgba(234,250,246,0) 72%)' }} />
+    </span>
+  );
+  // safari — ko'k kompas, qizil-oq strelka
+  return (
+    <span style={{ ...ring, background: 'radial-gradient(circle, #fbfdff 0 12%, #4aa3ff 24%, #1574E0 82%)' }}>
+      <svg viewBox="0 0 48 48" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        <polygon points="24,24 36,12 27,27" fill="#FF4136" />
+        <polygon points="24,24 12,36 21,21" fill="#ffffff" />
+        <circle cx="24" cy="24" r="2.2" fill="#0b3c78" />
+      </svg>
+    </span>
+  );
+};
+
 // ===== SCREEN 3 — BRAUZER =====
 const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's3', text: `Internetga qanday kirasiz? Brauzer orqali — bu internetga ochilgan deraza. Chrome, Safari, Firefox — bularning hammasi brauzer. Siz manzilni yozasiz, brauzer internetdan saytni topib keltiradi va ekranga chiroyli qilib chizadi. Brauzerni tanlab ko'ring.`, trigger: 'on_mount', waits_for: null }]);
-  const BROWSERS = [{ k: 'chrome', l: 'Chrome', ic: '🟢' }, { k: 'safari', l: 'Safari', ic: '🧭' }, { k: 'firefox', l: 'Firefox', ic: '🦊' }, { k: 'edge', l: 'Edge', ic: '🌊' }];
+  const BROWSERS = [{ k: 'chrome', l: 'Chrome', color: '#1A73E8' }, { k: 'safari', l: 'Safari', color: '#1574E0' }, { k: 'firefox', l: 'Firefox', color: '#FF6611' }, { k: 'edge', l: 'Edge', color: '#1B9DE2' }];
   const [br, setBr] = useState(storedAnswer?.picked || null);
   const done = br !== null;
   const cur = BROWSERS.find(b => b.k === br);
@@ -460,18 +583,26 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Brauzer" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Brauzer tanlang"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Internetga qaysi <span className="italic" style={{ color: T.accent }}>deraza</span> orqali kirasiz?</h2></div>
-        <Mentor>Internetga <b style={{ color: T.ink }}>brauzer</b> orqali kirasiz — bu internetga ochilgan deraza. Chrome, Safari, Firefox — hammasi brauzer. Siz manzilni yozasiz, brauzer saytni <b style={{ color: T.ink }}>topib keltiradi</b> va ekranga chizadi. Birini tanlang.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Saytlarni qaysi <span className="italic" style={{ color: T.accent }}>dastur</span> ochib beradi?</h2></div>
+        <Mentor>Internetga <b style={{ color: T.ink }}>brauzer</b> orqali kirasiz — bu internetga ochilgan deraza. Telefondagi Chrome, Safari yoki kompyuterdagi Firefox — hammasi brauzer. Siz manzilni yozasiz, brauzer saytni <b style={{ color: T.ink }}>topib keltiradi</b> va ekranga chiroyli qilib chizadi. Birini tanlang.</Mentor>
         <div className="split">
           <div className="col">
             <p className="eyebrow fade-up delay-2" style={{ color: T.ink2, margin: 0 }}>Brauzeringizni tanlang</p>
-            <div className="fade-up delay-2" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{BROWSERS.map(b => (<button key={b.k} className={`chip ${br === b.k ? 'chip-on' : ''}`} onClick={() => pick(b.k)}>{b.ic} {b.l}</button>))}</div>
+            <div className="fade-up delay-2" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>{BROWSERS.map(b => {
+              const on = br === b.k;
+              return (
+                <button key={b.k} onClick={() => pick(b.k)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, padding: '12px 16px', minWidth: 86, cursor: 'pointer', background: T.paper, border: `2px solid ${on ? b.color : 'rgba(58,53,48,0.14)'}`, borderRadius: 14, boxShadow: on ? `0 9px 22px -8px ${b.color}88` : '0 2px 8px -4px rgba(58,53,48,0.16)', transform: on ? 'translateY(-2px)' : 'none', transition: 'transform .2s ease, box-shadow .2s ease, border-color .2s ease' }}>
+                  <BrowserLogo k={b.k} size={36} />
+                  <span style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: 13, color: on ? T.ink : T.ink2 }}>{b.l}</span>
+                </button>
+              );
+            })}</div>
             <div className="frame-soft fade-up delay-3"><p className="body" style={{ margin: 0, color: T.ink }}>Qaysi brauzer bo'lishidan qat'i nazar — vazifasi bir xil: <b>manzilni olib, saytni keltirib, ekranga chizish</b>.</p></div>
           </div>
-          <div className="col">            <div className="flow-label">{done ? `${cur.l} youtube.com'ni ochdi` : "Brauzer derazasi"}</div>
+          <div className="col">            <div className="flow-label" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{done ? <><BrowserLogo k={br} size={18} /><span>{cur.l} youtube.com'ni ochdi</span></> : "Brauzer derazasi"}</div>
             <Preview title={done ? `${cur.l} — youtube.com` : 'brauzer'} minH={150}>
               {done ? (
-                <div className="fade-step"><div style={{ height: 9, width: '42%', background: '#FF0000', borderRadius: 4, marginBottom: 10 }} /><div style={{ display: 'flex', gap: 8 }}>{[0, 1].map(i => (<div key={i} style={{ flex: 1 }}><div style={{ height: 42, background: '#dcd9d2', borderRadius: 7, marginBottom: 5 }} /><div style={{ height: 6, background: '#cbc8c1', borderRadius: 3, width: '85%' }} /></div>))}</div></div>
+                <SiteMock site={{ mock: 'youtube', ic: '▶️', name: 'YouTube', bar: '#FF0000' }} />
               ) : (<p style={{ fontFamily: 'Georgia, serif', color: T.ink3, fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Brauzer tanlang — sayt shu yerda ochiladi</p>)}
             </Preview>
           </div>
@@ -488,7 +619,7 @@ const Screen4 = (props) => (
     questionText="Internetdagi saytlarni ochib beradigan dastur qanday nomlanadi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Internetdagi saytlarni ochib, ekranga chiqaradigan dastur qanday nomlanadi?</h2></>}
     options={['Server', 'Brauzer', 'Domen', 'DNS']} correctIdx={1}
-    explainCorrect="To'g'ri! Brauzer (Chrome, Safari, Firefox, Edge) — internetga deraza. U saytni topib, ekranga chizadi."
+    explainCorrect="Zo'r! Brauzer (Chrome, Safari, Firefox, Edge) — internetga deraza. U saytni topib, ekranga chizib beradi."
     explainWrong={{ 0: 'Server — saytlar saqlanadigan kompyuter. Uni ochib ko’rsatadigan — brauzer.', 2: 'Domen — saytning manzili (youtube.com), dastur emas.', 3: 'DNS — manzilni IP raqamiga aylantiradi. Saytni ko’rsatadigan — brauzer.', default: 'Saytlarni ochib beradigan dastur — brauzer.' }} />
 );
 
@@ -508,7 +639,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Domen" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Domenni tanlang"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Saytning <span className="italic" style={{ color: T.accent }}>manzili</span> qanday bo'ladi?</h2></div>
-        <Mentor>Saytga borish uchun uning <b style={{ color: T.ink }}>manzilini</b> bilish kerak — bu <b style={{ color: T.ink }}>domen</b>: youtube.com, google.uz. Xuddi uyingiz manzili kabi — yozsangiz, aynan o'sha saytga borasiz. Domenni tanlang.</Mentor>
+        <Mentor>Saytga borish uchun uning <b style={{ color: T.ink }}>manzilini</b> bilishingiz kerak — bu <b style={{ color: T.ink }}>domen</b>: youtube.com, google.uz. Xuddi do'stingiznikiga borish uchun uy manzilini bilganingizdek — manzilni yozsangiz, aynan o'sha saytga borasiz. Domenni tanlang.</Mentor>
         <Zoomable>
         <div className="split">
           <div className="col">
@@ -540,35 +671,51 @@ const Screen5b = (props) => (
     questionText="youtube.com, google.uz — bunday sayt manzili nima deb ataladi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>Mustahkamlash</p><h2 className="title h-sub" style={{ marginTop: 8 }}><span className="italic" style={{ color: T.accent }}>youtube.com</span>, google.uz — bunday sayt manzili nima deb ataladi?</h2></>}
     options={['Brauzer', 'Parol', 'Domen', 'Server']} correctIdx={2}
-    explainCorrect="To'g'ri! Domen — saytning odam eslab qoladigan manzili (youtube.com)."
+    explainCorrect="Aniq topdingiz! Domen — saytning odam oson eslab qoladigan manzili (youtube.com)."
     explainWrong={{ 0: 'Brauzer — saytni ochadigan dastur, manzil emas.', 1: 'Parol — maxfiy so’z. Sayt manzili — domen.', 3: 'Server — sayt saqlanadigan kompyuter. Uning manzili (nomi) — domen.', default: 'Sayt manzili — domen deb ataladi.' }} />
 );
 // ===== SCREEN 6 — IP MANZIL =====
 const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's6', text: `Bir sir bor: kompyuterlar aslida nomni emas, raqamni tushunadi. Har bir serverning raqamli manzili bor — IP manzil, masalan 142.250.190.78. Xuddi telefon raqami kabi. Tugmani bosib, youtube.com ning haqiqiy IP manzilini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
-  const [revealed, setRevealed] = useState(!!storedAnswer);
-  const done = revealed;
+  const audio = useAudio([{ id: 's6', text: `Kompyuterlar saytning nomini emas, raqamini tushunadi — bu IP manzil. Tugmani bosing, youtube.com qanday raqamga aylanishini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
+  const [phase, setPhase] = useState(storedAnswer ? 'done' : 'idle'); // idle | run | done
+  const [scram, setScram] = useState('•••.•••.•••.•••');
+  const iv = useRef(null);
+  const done = phase === 'done';
+  useEffect(() => () => clearInterval(iv.current), []);
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
+  const reveal = () => {
+    if (phase !== 'idle') return;
+    setPhase('run');
+    const rnd = (m) => Math.floor(Math.random() * m);
+    let n = 0;
+    iv.current = setInterval(() => {
+      n++;
+      setScram(`${rnd(255)}.${rnd(255)}.${rnd(255)}.${rnd(255)}`);
+      if (n >= 12) { clearInterval(iv.current); setPhase('done'); }
+    }, 70);
+  };
   return (
     <Stage eyebrow="IP manzil" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "IP manzilni ko'ring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kompyuterlar manzilni qanday <span className="italic" style={{ color: T.accent }}>yozadi</span>?</h2></div>
-        <Mentor>Bir sir: kompyuterlar nomni emas, <b style={{ color: T.ink }}>raqamni</b> tushunadi. Har bir serverning raqamli manzili bor — <b style={{ color: T.ink }}>IP manzil</b>, masalan 142.250.190.78. Xuddi telefon raqami kabi. Tugmani bosing.</Mentor>
+        <Mentor>Kompyuterlar saytning <b style={{ color: T.ink }}>nomini emas, raqamini</b> ishlatadi — bu <b style={{ color: T.ink }}>IP manzil</b>. Tugmani bosing, <b style={{ color: T.ink }}>youtube.com</b> qanday raqamga aylanishini ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
           <div className="col">
-            <div className="frame frame-col fade-up delay-2">
-              <p className="eyebrow" style={{ color: T.accent, margin: 0 }}>Odamlar uchun (nom)</p>
+            <div className="frame frame-col fade-up delay-2" style={{ alignItems: 'center', gap: 12 }}>
               <span className="dompill"><span className="dpart dpart-name">youtube.com</span></span>
-              <p className={`mono small ip-conv ${revealed ? 'go' : ''}`} style={{ margin: 0, textAlign: 'center' }}>↓ kompyuter buni raqamga aylantiradi</p>
-              <p className="eyebrow" style={{ color: T.blue, margin: 0 }}>Kompyuterlar uchun (raqam)</p>
-              {revealed ? <span className="ipbox"><span className="ip-type">142.250.190.78</span></span> : <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setRevealed(true)}>🔢 IP manzilni ko'rsatish</button>}
+              <p className={`mono small ip-conv ${phase !== 'idle' ? 'go' : ''}`} style={{ margin: 0, textAlign: 'center' }}>↓ raqamga aylantiriladi</p>
+              {phase === 'idle'
+                ? <button className="btn" onClick={reveal}>🔢 IP manzilni ko'rsatish</button>
+                : <span className="ipbox" style={{ opacity: phase === 'run' ? 0.72 : 1 }}><span className="ip-type" key={phase === 'done' ? 'd' : 'r'}>{phase === 'done' ? '142.250.190.78' : scram}</span></span>}
+              {phase === 'run' && <p className="mono small" style={{ margin: 0, color: T.blue }}>aylantirilmoqda…</p>}
+              {phase === 'done' && <p className="mono small fade-step" style={{ margin: 0, color: T.success, fontWeight: 600 }}>✓ youtube.com = 142.250.190.78</p>}
             </div>
           </div>
-          <div className="col">
-            <div className="flow-label">Xuddi telefon kontaktlari kabi</div>
+          <div className="col" style={{ justifyContent: 'center' }}>
+            <div className="flow-label">Xuddi telefon kontaktidek</div>
             <div className="anabox fade-up delay-2"><span className="ana-name">📇 "Aziza"</span><span className="ana-arr">→</span><span className="ana-num">+998 90 123-45-67</span></div>
-            <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}>Siz <b>"Aziza"</b> ni eslaysiz, telefon esa <b>raqamni</b> ishlatadi. Internetda ham: siz <b>youtube.com</b>, kompyuter esa <b>IP</b> ni ishlatadi.</p></div>
+            <p className="small" style={{ margin: '6px 2px 0', color: T.ink2 }}>Siz <b style={{ color: T.ink }}>nom</b>ni eslaysiz, qurilma esa <b style={{ color: T.ink }}>raqam</b>ni ishlatadi.</p>
           </div>
         </div>
         </Zoomable>
@@ -579,35 +726,46 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 7 — DNS =====
 const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's7', text: `Lekin 142.250.190.78 ni kim yodda tutadi? Hech kim! Shuning uchun DNS bor — u domen nomini IP raqamiga aylantiradi. Xuddi telefoningizdagi kontaktlar: siz "Aziza" deysiz, telefon raqamini topadi. Domenni tanlab, DNS qanday IP topishini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's7', text: `Raqamlarni hech kim yodlamaydi! Shuning uchun DNS bor — internetning telefon kitobi: siz domen berasiz, u IP qaytaradi. Domenni tanlang.`, trigger: 'on_mount', waits_for: null }]);
   const MAP = { 'youtube.com': '142.250.190.78', 'google.uz': '173.194.220.94', 'wikipedia.org': '208.80.154.224' };
+  const PLACE = '•••.•••.•••.••';
   const [q, setQ] = useState(storedAnswer?.q || null);
-  const [phase, setPhase] = useState(storedAnswer ? 'found' : 'idle');
+  const [phase, setPhase] = useState(storedAnswer ? 'found' : 'idle'); // idle | looking | found
+  const [scram, setScram] = useState(PLACE);
   const timer = useRef(null);
+  const scramIv = useRef(null);
   const done = phase === 'found';
-  useEffect(() => () => clearTimeout(timer.current), []);
-  const lookup = (d) => { clearTimeout(timer.current); setQ(d); setPhase('looking'); timer.current = setTimeout(() => { setPhase('found'); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true, q: d }); }, 850); };
+  const rnd = (m) => Math.floor(Math.random() * m);
+  useEffect(() => () => { clearTimeout(timer.current); clearInterval(scramIv.current); }, []);
+  const lookup = (d) => {
+    if (phase === 'looking') return;
+    clearTimeout(timer.current); clearInterval(scramIv.current);
+    setQ(d); setPhase('looking');
+    scramIv.current = setInterval(() => setScram(`${rnd(255)}.${rnd(255)}.${rnd(255)}.${rnd(255)}`), 60);
+    timer.current = setTimeout(() => { clearInterval(scramIv.current); setPhase('found'); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true, q: d }); }, 950);
+  };
+  const rightIP = phase === 'found' ? MAP[q] : (phase === 'looking' ? scram : PLACE);
   return (
     <Stage eyebrow="DNS" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Domenni qidiring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Domen nomidan IP'ni kim <span className="italic" style={{ color: T.accent }}>topadi</span>?</h2></div>
-        <Mentor>142.250.190.78 ni kim yodda tutadi? Hech kim! Shuning uchun <b style={{ color: T.ink }}>DNS</b> bor — u <b style={{ color: T.ink }}>domen nomini IP raqamiga</b> aylantiradi. Xuddi telefon kontaktlari: "Aziza" deysiz, raqam topiladi. Domenni tanlang.</Mentor>
+        <Mentor>Raqamlarni hech kim yodlamaydi! Shuning uchun <b style={{ color: T.ink }}>DNS</b> bor — internetning <b style={{ color: T.ink }}>telefon kitobi</b>: siz domen berasiz, u IP qaytaradi. Domenni tanlang.</Mentor>
         <Zoomable>
         <div className="split">
           <div className="col">
             <p className="eyebrow fade-up delay-2" style={{ color: T.ink2, margin: 0 }}>Qaysi saytni qidiramiz?</p>
-            <div className="fade-up delay-2" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{Object.keys(MAP).map(d => (<button key={d} className={`chip ${q === d ? 'chip-on' : ''}`} onClick={() => lookup(d)}>{d}</button>))}</div>
+            <div className="fade-up delay-2" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{Object.keys(MAP).map(d => (<button key={d} className={`chip ${q === d ? 'chip-on' : ''}`} disabled={phase === 'looking'} onClick={() => lookup(d)}>{d}</button>))}</div>
             <div className="dns-card fade-up delay-3">
-              <div className="dns-head">📖 DNS — Internet telefon kitobi {phase === 'looking' && <span className="dns-status">qidirilmoqda…</span>}{phase === 'found' && <span className="dns-status ok">topildi ✓</span>}</div>
+              <div className="dns-head">📖 DNS — Internet telefon kitobi {phase === 'looking' && <span className="dns-status">🔎 qidirilmoqda…</span>}{phase === 'found' && <span className="dns-status ok">topildi ✓</span>}</div>
               <div className="dns-book">
                 {Object.entries(MAP).map(([dom, ip]) => {
                   const isMatch = q === dom;
-                  const cls = isMatch && phase === 'looking' ? 'scan' : isMatch && phase === 'found' ? 'hit' : q && phase === 'found' ? 'dim' : '';
+                  const cls = isMatch && phase === 'looking' ? 'scan' : isMatch && phase === 'found' ? 'hit' : q && phase !== 'idle' ? 'dim' : '';
                   return (
                     <div key={dom} className={`dns-entry ${cls}`}>
                       <span className="dns-dom">{dom}</span>
                       <span className="dns-dots" />
-                      <span className="dns-ip" key={cls}>{isMatch && phase === 'found' ? ip : '•••.•••.•••.••'}</span>
+                      <span className="dns-ip" key={cls}>{isMatch && phase === 'found' ? ip : (isMatch && phase === 'looking' ? scram : PLACE)}</span>
                     </div>
                   );
                 })}
@@ -615,9 +773,17 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               {!q && <p className="small" style={{ margin: 0, color: T.ink3, fontStyle: 'italic' }}>Yuqoridan domen tanlang — DNS uni kitobdan topadi</p>}
             </div>
           </div>
-          <div className="col">            <div className="flow-label">DNS nima qiladi</div>
-            <div className="anabox fade-up delay-2"><span className="ana-name">🌐 domen<br /><b>youtube.com</b></span><span className="ana-arr">DNS →</span><span className="ana-num">🔢 IP<br /><b>142.250.190.78</b></span></div>
-            <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}><b>DNS</b> — internetning ulkan telefon kitobi. Siz nom berasiz, u IP raqamni qaytaradi. Brauzer keyin shu IP'ga boradi.</p></div>
+          <div className="col">            <div className="flow-label">DNS qanday aylantiradi</div>
+            <div className="dnsconv fade-up delay-2">
+              <div className="dc-node"><span className="dc-ic">🌐</span><span className="dc-k">domen</span><span className="dc-v">{q || 'youtube.com'}</span></div>
+              <div className={`dc-mid ${phase === 'looking' ? 'busy' : ''} ${phase === 'found' ? 'ok' : ''}`}>
+                <span className="dc-arrow">↓</span>
+                <span className="dc-dns">📖 DNS</span>
+                <span className="dc-arrow">↓</span>
+              </div>
+              <div className={`dc-node dc-ip ${phase === 'found' ? 'hit' : ''}`}><span className="dc-ic">🔢</span><span className="dc-k">IP manzil</span><span className="dc-v" key={phase === 'found' ? 'f' : 'x'}>{rightIP}</span></div>
+            </div>
+            <p className="small" style={{ margin: '4px 2px 0', color: T.ink2 }}>Siz <b style={{ color: T.ink }}>nom</b> berasiz — DNS <b style={{ color: T.ink }}>raqam</b> qaytaradi. Brauzer keyin shu IP'ga boradi.</p>
           </div>
         </div>
         </Zoomable>
@@ -628,17 +794,23 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 8 — SERVER =====
 const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's8', text: `Sayt o'zi qayerda yashaydi? Serverda — bu doimo yoniq turadigan kuchli kompyuter. Siz so'rov yuborasiz, server saytni qaytaradi. Xuddi restoran oshxonasi kabi: buyurtma berasiz, taom tayyorlanib keladi. Tugmani bosib, serverga so'rov yuboring.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's8', text: `Har bir sayt serverda saqlanadi — bu doim yoniq turadigan kuchli kompyuter. Siz so'rov yuborasiz, server sahifani qaytaradi. Xuddi restoran kabi: buyurtma berasiz, taom tayyor bo'lib keladi. Tugmani bosing.`, trigger: 'on_mount', waits_for: null }]);
   const [step, setStep] = useState(storedAnswer ? 2 : 0);
   const timer = useRef(null);
   const done = step >= 2;
   useEffect(() => () => clearTimeout(timer.current), []);
-  const send = () => { clearTimeout(timer.current); setStep(1); timer.current = setTimeout(() => { setStep(2); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, 800); };
+  const send = () => {
+    clearTimeout(timer.current); setStep(0); // qaytadan yuborilganda animatsiya boshidan ko'rinadi
+    timer.current = setTimeout(() => {
+      setStep(1);
+      timer.current = setTimeout(() => { setStep(2); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, 1050);
+    }, 70);
+  };
   return (
     <Stage eyebrow="Server" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "So'rov yuboring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sayt o'zi <span className="italic" style={{ color: T.accent }}>qayerda</span> yashaydi?</h2></div>
-        <Mentor>Sayt <b style={{ color: T.ink }}>serverda</b> yashaydi — doimo yoniq turadigan kuchli kompyuter. Siz so'rov yuborasiz, server saytni qaytaradi. Xuddi <b style={{ color: T.ink }}>restoran oshxonasi</b>: buyurtma berasiz, taom keladi. Tugmani bosing.</Mentor>
+        <Mentor>Har bir sayt <b style={{ color: T.ink }}>serverda</b> saqlanadi — doim yoniq turadigan kuchli kompyuterda. Siz so'rov yuborasiz, server <b style={{ color: T.ink }}>sahifani qaytaradi</b>. Xuddi <b style={{ color: T.ink }}>restoran</b> kabi: buyurtma berasiz — taom tayyor bo'lib keladi. Tugmani bosib sinab ko'ring.</Mentor>
         <Zoomable>
         <div className="split">
           <div className="col">
@@ -652,7 +824,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               </div>
               <div className={`cs-node ${step >= 1 ? 'cs-active' : ''} ${step === 1 ? 'cs-proc' : ''}`}><span className="cs-ic">🖥️</span><span className="cs-l">Server<br />(sayt shu yerda)</span></div>
             </div>
-            {step < 2 && <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={step === 1} onClick={send}>{step === 1 ? 'Yuborilmoqda…' : '📨 Serverga so’rov yuborish'}</button>}
+            <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={step === 1} onClick={send}>{step === 1 ? 'Yuborilmoqda…' : (done ? '↻ Yana yuborish' : '📨 Serverga so’rov yuborish')}</button>
           </div>
           <div className="col">            {done ? (
               <div className="frame-success fade-step"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Server javob berdi</p><p className="body" style={{ margin: 0, color: T.ink }}>Siz so'rov yubordingiz, server sahifani qaytardi. Server <b>doim yoniq</b> turadi — shuning uchun sayt istalgan vaqtda ochiladi.</p></div>
@@ -672,7 +844,7 @@ const Screen9 = (props) => (
     questionText="Domen nomini IP raqamiga kim aylantiradi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Domen nomini (youtube.com) kompyuter tushunadigan <span className="italic" style={{ color: T.accent }}>IP raqamiga</span> kim aylantiradi?</h2></>}
     options={['Brauzer', 'Domen', 'Server', 'DNS']} correctIdx={3}
-    explainCorrect="To'g'ri! DNS — internetning telefon kitobi: domen nomini IP raqamiga aylantiradi."
+    explainCorrect="Barakalla! DNS — internetning telefon kitobi: domen nomini IP raqamiga aylantiradi."
     explainWrong={{ 0: 'Brauzer DNS’dan so’raydi, lekin aylantirishni DNS bajaradi.', 1: 'Domen — bu nomning o’zi. Uni IP’ga aylantiradigan — DNS.', 2: 'Server — sayt saqlanadigan kompyuter. Nomni IP’ga aylantiradigan — DNS.', default: 'Domen → IP aylantirishni DNS bajaradi.' }} />
 );
 
@@ -697,11 +869,18 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     const tick = (i) => { setStep(i); if (i < STEPS.length) timer.current = setTimeout(() => tick(i + 1), 760); else { setRunning(false); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); } };
     timer.current = setTimeout(() => tick(1), 340);
   };
+  const activeIdx = running ? step - 1 : -1;
+  const progPct = (Math.min(step, STEPS.length) / STEPS.length) * 100;
+  const cap = done
+    ? '✓ Tayyor! Bularning bari atigi 1 soniyada bajariladi.'
+    : running
+      ? (activeIdx >= 0 && activeIdx < STEPS.length ? `${activeIdx + 1}/${STEPS.length} — ${STEPS[activeIdx].l}` : 'Boshlanmoqda…')
+      : "▶ tugmani bosing — butun yo'lni jonli kuzating.";
   return (
     <Stage eyebrow="So'rov yo'li" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Yo'lni ishga tushiring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Enter'dan saytgacha — <span className="italic" style={{ color: T.accent }}>butun yo'l</span></h2></div>
-        <Mentor>Endi hammasini birlashtiramiz. <b style={{ color: T.ink }}>youtube.com</b> yozib Enter bosganingizda, so'rov 6 qadamdan o'tadi. Tugmani bosib, butun yo'lni kuzating.</Mentor>
+        <Mentor>Endi hamma narsani birlashtiramiz. <b style={{ color: T.ink }}>youtube.com</b> yozib Enter bosganingizda, so'rovingiz <b style={{ color: T.ink }}>6 ta qadamdan</b> o'tadi — va bularning bari ko'z ochib yumguncha bajariladi. Tugmani bosib, butun yo'lni kuzating.</Mentor>
         <Zoomable>
         <div className="frame frame-col fade-up delay-2">
           <div className="hz-flow">{STEPS.map((s, i) => (
@@ -711,10 +890,12 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 <span className="hz-ic">{s.ic}</span>
                 <span className="hz-lbl">{s.l}</span>
               </div>
-              {i < STEPS.length - 1 && <span className={`hz-arrow ${step > i + 1 ? 'on' : ''}`}>→</span>}
+              {i < STEPS.length - 1 && <span className={`hz-arrow ${step > i + 1 ? 'on' : ''} ${running && step - 1 === i ? 'flow' : ''}`}>→</span>}
             </React.Fragment>
           ))}</div>
-          <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'flex-start', marginTop: 6 }}>{running ? 'Yo’l boshlandi…' : (done ? '↻ Yana ko’rsatish' : '▶ Yo’lni boshlash')}</button>
+          <div className="hz-prog"><div className="hz-prog-fill" style={{ width: `${progPct}%` }} /></div>
+          <div className={`hz-cap ${done ? 'done' : ''}`} key={step}>{cap}</div>
+          <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'center', marginTop: 2 }}>{running ? 'Yo’l boshlandi…' : (done ? '↻ Yana ko’rsatish' : '▶ Yo’lni boshlash')}</button>
         </div>
         </Zoomable>
         {done && (<div className="frame-success fade-step"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Mana butun sayohat</p><p className="body" style={{ margin: 0, color: T.ink }}>Siz <b>manzil</b> yozasiz → <b>DNS</b> IP topadi → <b>server</b> sahifani beradi → <b>brauzer</b> chizadi. Va bularning hammasi — <b>bir soniyada</b>!</p></div>)}
@@ -725,31 +906,62 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 11 — SERVER -> HTML (ko'prik) =====
 const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's11', text: `Oxirgi savol: server brauzerga aniq nima qaytaradi? HTML kodini! Brauzer o'sha HTML'ni o'qib, chiroyli sahifaga aylantiradi. Va eng qizig'i — aynan shu HTML'ni keyingi darslarda o'zingiz yozasiz. Tugmani bosib, kod qanday sahifaga aylanishini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
-  const [rendered, setRendered] = useState(!!storedAnswer);
-  const done = rendered;
+  const audio = useAudio([{ id: 's11', text: `Server sizga tayyor rasm emas, HTML kod yuboradi — bu oddiy matn. Brauzer shu kodni satrma-satr o'qib, har bir qismni ekranga chizadi. Tugmani bosing — kod qanday jonli sahifaga aylanishini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
+  const HTML = [
+    { code: <><Tg>{'<h1>'}</Tg>Salom! 👋<Tg>{'</h1>'}</Tg></>, el: <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(20px,2.8vw,26px)', color: T.ink, margin: '0 0 6px' }}>Salom! 👋</h1>, tag: 'sarlavha' },
+    { code: <><Tg>{'<p>'}</Tg>Bu mening saytim.<Tg>{'</p>'}</Tg></>, el: <p style={{ fontFamily: 'Georgia, serif', color: T.ink2, margin: '0 0 10px', fontSize: 14 }}>Bu mening saytim.</p>, tag: 'matn' },
+    { code: <><Tg>{'<button>'}</Tg>Obuna<Tg>{'</button>'}</Tg></>, el: <span style={{ display: 'inline-block', background: T.accent, color: '#fff', borderRadius: 8, padding: '7px 16px', fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: 13 }}>Obuna</span>, tag: 'tugma' }
+  ];
+  const [phase, setPhase] = useState(storedAnswer ? 'done' : 'idle'); // idle | reading | done
+  const [active, setActive] = useState(-1); // hozir o'qilayotgan satr
+  const [rd, setRd] = useState(storedAnswer ? HTML.length : 0); // chizilgan elementlar soni
+  const timer = useRef(null);
+  const done = phase === 'done';
+  useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
+  const start = () => {
+    if (phase === 'reading') return;
+    clearTimeout(timer.current);
+    setPhase('reading'); setRd(0); setActive(0);
+    let i = 0;
+    const tick = () => {
+      setActive(i);
+      timer.current = setTimeout(() => {
+        setRd(i + 1); // satr o'qildi — element chizildi
+        i++;
+        if (i < HTML.length) { setActive(i); timer.current = setTimeout(tick, 120); }
+        else { setActive(-1); setPhase('done'); }
+      }, 620);
+    };
+    tick();
+  };
+  const reading = phase === 'reading';
   return (
     <Stage eyebrow="Server javobi" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Kodni sahifaga aylantiring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Server aniq <span className="italic" style={{ color: T.accent }}>nima</span> qaytaradi?</h2></div>
-        <Mentor>Server brauzerga <b style={{ color: T.ink }}>HTML kodini</b> qaytaradi! Brauzer uni o'qib, chiroyli sahifaga aylantiradi. Eng qizig'i — aynan shu HTML'ni <b style={{ color: T.ink }}>keyingi darslarda o'zingiz yozasiz</b>. Tugmani bosing.</Mentor>
+        <Mentor>Server sizga tayyor rasm emas — <b style={{ color: T.ink }}>HTML kod</b> (oddiy matn) yuboradi. Brauzer shu kodni <b style={{ color: T.ink }}>satrma-satr o'qib</b>, har bir qismni ekranga <b style={{ color: T.ink }}>chizadi</b>. Tugmani bosing — kod qanday jonli sahifaga aylanishini ko'ring.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
-            <div className="flow-label">Server qaytargan kod (HTML)</div>
-            <pre className="code-box fade-up delay-2"><Tg>{'<h1>'}</Tg>Salom! 👋<Tg>{'</h1>'}</Tg>{'\n'}<Tg>{'<p>'}</Tg>Bu mening saytim.<Tg>{'</p>'}</Tg>{'\n'}<Tg>{'<button>'}</Tg>Obuna<Tg>{'</button>'}</Tg></pre>
-            {!rendered && <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setRendered(true)}>🖥️ Brauzer bilan sahifaga aylantirish</button>}
+            <div className="flow-label">📥 Server qaytargan kod (HTML){reading && <span className="dns-status">o'qilmoqda…</span>}</div>
+            <pre className="code-box fade-up delay-2">{HTML.map((h, i) => {
+              const cls = i === active ? 'reading' : (i < rd ? 'read' : (phase === 'idle' ? '' : 'dim'));
+              return <div key={i} className={`htl-line ${cls}`}>{h.code}{i < rd && <span className="htl-tick"> ✓ chizildi</span>}</div>;
+            })}</pre>
           </div>
           <div className="col">
-            <div className="flow-label">Brauzer chizgan sahifa</div>
-            <Preview title="youtube.com" minH={150}>
-              {rendered ? (
-                <div className="fade-step" style={{ display: 'block' }}><h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(20px,2.8vw,26px)', color: T.ink, margin: '0 0 6px' }}>Salom! 👋</h1><p style={{ fontFamily: 'Georgia, serif', color: T.ink2, margin: '0 0 10px', fontSize: 14 }}>Bu mening saytim.</p><span style={{ display: 'inline-block', background: T.accent, color: '#fff', borderRadius: 8, padding: '7px 16px', fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: 13 }}>Obuna</span></div>
-              ) : (<p style={{ fontFamily: 'Georgia, serif', color: T.ink3, fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Tugmani bosing — kod sahifaga aylanadi</p>)}
+            <div className="flow-label">🖥️ Brauzer chizgan sahifa</div>
+            <Preview title="mening-saytim.uz" minH={150}>
+              {rd === 0
+                ? (<p style={{ fontFamily: 'Georgia, serif', color: T.ink3, fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Tugmani bosing — brauzer kodni o'qib, sahifani shu yerda chizadi</p>)
+                : (<div style={{ display: 'block' }}>{HTML.slice(0, rd).map((h, i) => <div key={i} className="htl-pop">{h.el}</div>)}</div>)}
             </Preview>
-            {rendered && <div className="frame-soft fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Bir xil narsa — chapda <b>kod</b>, o'ngda <b>sahifa</b>. Brauzer kodni shunday "chizadi". Keyingi modul — shu HTML haqida!</p></div>}
           </div>
         </div>
+        </Zoomable>
+        <button className="btn" style={{ alignSelf: 'center' }} onClick={start} disabled={reading}>{reading ? "Brauzer o'qiyapti…" : (done ? '↻ Qaytadan' : '🖥️ Brauzer bilan o\'qib chizish')}</button>
+        {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Chapdagi <b>kod</b> = o'ngdagi <b>sahifa</b>. Server faqat matn yuboradi, chiroyli sahifani esa <b>brauzer chizadi</b>. Aynan shu HTML'ni keyingi modulda <b>o'zingiz yozasiz</b>!</p></div>}
       </div>
     </Stage>
   );
@@ -761,50 +973,193 @@ const Screen12 = (props) => (
     questionText="Server brauzerga aniq nima qaytaradi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Server brauzerga aniq <span className="italic" style={{ color: T.accent }}>nima</span> qaytaradi?</h2></>}
     options={['Domen nomi', 'Sahifa kodi (HTML)', 'DNS manzili', 'Boshqa brauzer']} correctIdx={1}
-    explainCorrect="To'g'ri! Server sahifa kodini — HTML'ni qaytaradi. Brauzer uni o'qib, chiroyli sahifaga aylantiradi."
+    explainCorrect="To'ppa-to'g'ri! Server sahifa kodini — HTML'ni qaytaradi. Brauzer uni o'qib, chiroyli sahifaga aylantiradi."
     explainWrong={{ 0: 'Domen nomini siz yozasiz, server emas. Server HTML kodini qaytaradi.', 2: 'DNS manzilini DNS beradi. Server esa sahifa kodini (HTML) qaytaradi.', 3: 'Brauzer sizda allaqachon bor. Server HTML kodini jo’natadi.', default: 'Server HTML — sahifa kodini qaytaradi.' }} />
 );
 
-// ===== SCREEN 13 — SIMULATOR (o'zing so'rov yubor) =====
+// ===== SCREEN 13 — SIMULATOR (o'zing so'rov yubor — 2-page kabi aylanma sayohat) =====
+// Har bir sayt uchun o'z ma'lumoti: ikonka, nomi, IP va brend rangi.
+// Tanlangan saytga qarab aylanma sayohat jonlanadi (google bersa Google, youtube bersa YouTube).
+const SITE_CATALOG = {
+  'youtube.com':   { ic: '▶️', name: 'YouTube',   ip: '142.250.190.78',  bar: '#FF0000', mock: 'youtube' },
+  'google.com':    { ic: '🔍', name: 'Google',    ip: '142.250.185.78',  bar: '#4285F4', mock: 'google' },
+  'google.uz':     { ic: '🔍', name: 'Google',    ip: '142.250.185.3',   bar: '#4285F4', mock: 'google' },
+  'wikipedia.org': { ic: '📚', name: 'Wikipedia', ip: '208.80.154.224',  bar: '#202122', mock: 'wikipedia' },
+  'instagram.com': { ic: '📷', name: 'Instagram', ip: '157.240.221.174', bar: '#E1306C', mock: 'generic' },
+  'telegram.org':  { ic: '✈️', name: 'Telegram',  ip: '149.154.167.99',  bar: '#229ED9', mock: 'generic' }
+};
+const siteInfo = (raw) => {
+  const t = String(raw || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  if (!t) return null;
+  if (SITE_CATALOG[t]) return { domain: t, ...SITE_CATALOG[t] };
+  // Katalogda yo'q domen — nomini va IP'ni domendan hosil qilamiz
+  const label = t.split('.')[0] || t;
+  const name = label.charAt(0).toUpperCase() + label.slice(1);
+  let h = 0; for (let i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) % 100000;
+  const ip = `185.${h % 200 + 20}.${(h * 7) % 200 + 10}.${(h * 13) % 200 + 5}`;
+  return { domain: t, ic: '🌐', name, ip, bar: T.accent, mock: 'generic' };
+};
+
+// Natija oynasida — saytni tahminiy, real ko'rinishida chizadi (har sayt o'ziga xos)
+const SiteMock = ({ site }) => {
+  if (!site) return null;
+  if (site.mock === 'google') {
+    return (
+      <div className="fade-step" style={{ textAlign: 'center', padding: '18px 6px 14px' }}>
+        <div style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 700, fontSize: 30, letterSpacing: '-1px', marginBottom: 16 }}>
+          <span style={{ color: '#4285F4' }}>G</span><span style={{ color: '#EA4335' }}>o</span><span style={{ color: '#FBBC05' }}>o</span><span style={{ color: '#4285F4' }}>g</span><span style={{ color: '#34A853' }}>l</span><span style={{ color: '#EA4335' }}>e</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, maxWidth: 250, margin: '0 auto', border: '1px solid #dcdce0', borderRadius: 99, padding: '9px 15px', boxShadow: '0 1px 6px rgba(0,0,0,0.10)' }}>
+          <span style={{ color: '#9aa0a6', fontSize: 13 }}>🔍</span>
+          <div style={{ flex: 1, height: 6, background: '#e8eaed', borderRadius: 3 }} />
+          <span style={{ color: '#4285F4', fontSize: 13 }}>🎤</span>
+        </div>
+        <div style={{ display: 'flex', gap: 9, justifyContent: 'center', marginTop: 16 }}>
+          {['Google Qidiruv', 'Menga omad'].map(l => (<div key={l} style={{ background: '#f8f9fa', border: '1px solid #f1f1f1', borderRadius: 4, padding: '7px 12px', fontSize: 10, color: '#5f6368', fontFamily: 'Manrope, sans-serif' }}>{l}</div>))}
+        </div>
+      </div>
+    );
+  }
+  if (site.mock === 'youtube') {
+    return (
+      <div className="fade-step">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 11, borderBottom: '1px solid #eee', paddingBottom: 8 }}>
+          <span style={{ background: '#FF0000', color: '#fff', borderRadius: 4, fontSize: 10, padding: '2px 5px', lineHeight: 1 }}>▶</span>
+          <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: 14, letterSpacing: '-0.5px', color: '#0f0f0f' }}>YouTube</span>
+          <div style={{ marginLeft: 'auto', width: 64, height: 9, background: '#f0f0f0', borderRadius: 99 }} />
+        </div>
+        <div style={{ display: 'flex', gap: 9 }}>
+          {[0, 1].map(i => (
+            <div key={i} style={{ flex: 1 }}>
+              <div style={{ height: 48, background: 'linear-gradient(135deg,#e9e9e9,#d4d4d4)', borderRadius: 8, marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(0,0,0,0.55)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9 }}>▶</span>
+              </div>
+              <div style={{ height: 6, background: '#cfcfcf', borderRadius: 3, width: '92%', marginBottom: 4 }} />
+              <div style={{ height: 5, background: '#e2e2e2', borderRadius: 3, width: '58%' }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (site.mock === 'wikipedia') {
+    return (
+      <div className="fade-step">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, borderBottom: '1px solid #eaecf0', paddingBottom: 8, marginBottom: 9 }}>
+          <span style={{ fontFamily: 'Georgia, serif', fontWeight: 700, fontSize: 22, color: '#202122' }}>W</span>
+          <div><div style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: '#202122', lineHeight: 1.1 }}>WIKIPEDIA</div><div style={{ fontSize: 8, color: '#72777d' }}>Erkin ensiklopediya</div></div>
+        </div>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: 14, fontWeight: 700, color: '#000', marginBottom: 8 }}>Maqola</div>
+        {[100, 96, 90, 68].map((w, i) => (<div key={i} style={{ height: 5, background: '#dfe1e5', borderRadius: 2, width: `${w}%`, marginBottom: 6 }} />))}
+      </div>
+    );
+  }
+  // generic — boshqa saytlar uchun brend rangidagi sodda sahifa
+  return (
+    <div className="fade-step">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <span style={{ fontSize: 18 }}>{site.ic}</span>
+        <div style={{ height: 9, width: '42%', background: site.bar || T.accent, borderRadius: 4 }} />
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>{[0, 1].map(i => (<div key={i} style={{ flex: 1 }}><div style={{ height: 42, background: '#dcd9d2', borderRadius: 7, marginBottom: 5 }} /><div style={{ height: 6, background: '#cbc8c1', borderRadius: 3, width: '85%' }} /></div>))}</div>
+    </div>
+  );
+};
+const sim13Steps = (s) => [
+  { active: 'browser', kind: 'req',  pkt: `⌨️ ${s.domain}`,    cap: '1-qadam — Enter bosildi! Brauzer manzilni oldi.' },
+  { active: 'dns',     kind: 'req',  pkt: `${s.domain} = ?`,   cap: "2-qadam — Brauzer DNS'dan IP raqamini so'raydi." },
+  { active: 'server',  kind: 'ip',   pkt: s.ip,                cap: "3-qadam — DNS IP'ni topdi — so'rov to'g'ri serverga ketdi." },
+  { active: 'you',     kind: 'page', pkt: `${s.ic} ${s.name}`, cap: `4-qadam — Server ${s.name} sahifasini qaytardi — ekraningizda ochildi!` }
+];
+const SIM13_STEP_MS = 1500; // har bir bo'lak (Siz→Brauzer→DNS→Server→Siz) to'liq ko'rinishi uchun (CSS o'tishi 1.25s)
+
 const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's13', text: `Endi o'zingiz sinab ko'ring. Sayt manzilini yozing yoki tanlang, Yubor tugmasini bosing — so'rov butun yo'lni bosib o'tib, sayt ochiladi.`, trigger: 'on_mount', waits_for: null }]);
-  const SITES = ['youtube.com', 'google.uz', 'wikipedia.org'];
-  const MINI = [{ ic: '🌐', l: 'Brauzer' }, { ic: '🗂️', l: 'DNS' }, { ic: '🖥️', l: 'Server' }, { ic: '📄', l: 'Sahifa' }];
+  const audio = useAudio([{ id: 's13', text: `Endi o'zingiz sinab ko'ring. Sayt manzilini yozing yoki tanlang, Yubor tugmasini bosing — so'rov aylanma yo'lni bosib o'tib, sayt ochiladi.`, trigger: 'on_mount', waits_for: null }]);
+  const SITES = ['youtube.com', 'google.com', 'wikipedia.org'];
+  const DONE = sim13Steps({ domain: '', ic: '', name: '', ip: '' }).length;
   const [url, setUrl] = useState('');
-  const [step, setStep] = useState(0);
+  const [site, setSite] = useState(storedAnswer?.picked ? siteInfo(storedAnswer.picked) : null);
+  const [steps, setSteps] = useState(storedAnswer?.picked ? sim13Steps(siteInfo(storedAnswer.picked)) : []);
+  const [jstep, setJstep] = useState(storedAnswer?.picked ? DONE : -1); // -1 idle, 0..DONE-1 sayohat, DONE tugadi
+  const [turn, setTurn] = useState(storedAnswer?.picked ? 360 : 0);
   const [running, setRunning] = useState(false);
   const [loaded, setLoaded] = useState(storedAnswer?.picked || null);
   const timer = useRef(null);
-  const flowRef = useRef(null);
+  const baseRef = useRef(storedAnswer?.picked ? 360 : 0); // to'plangan burchak — doim oldinga (soat strelkasi bo'yicha) aylanadi
+  const isMobile = useIsMobile();
+  const animRef = useRef(null); // mobilda animatsiyaga avtoskroll uchun
+  const resultRef = useRef(null); // mobilda sayt ochilganda natijaga avtoskroll uchun
   const done = loaded !== null;
   useEffect(() => () => clearTimeout(timer.current), []);
-  const scrollTo = (i) => { requestAnimationFrame(() => { const els = flowRef.current && flowRef.current.querySelectorAll('.pz-step'); if (els && els[i]) els[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); }); };
   const send = (target) => {
-    const t = (target || url).trim(); if (!t || running) return;
-    clearTimeout(timer.current); setRunning(true); setLoaded(null); setStep(0); setUrl(t);
-    const tick = (i) => { setStep(i); scrollTo(Math.min(i, MINI.length - 1)); if (i < MINI.length) timer.current = setTimeout(() => tick(i + 1), 620); else { setRunning(false); setLoaded(t); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: t }); } };
-    timer.current = setTimeout(() => tick(1), 260);
+    const s = siteInfo(target || url); if (!s || running) return;
+    clearTimeout(timer.current);
+    const st = sim13Steps(s);
+    const base = baseRef.current; // qaytadan yuborilganda ham orqaga emas, oldinga aylanadi
+    setSite(s); setSteps(st); setUrl(s.domain); setLoaded(null);
+    setRunning(true); setJstep(0); setTurn(base + 90); // Siz → Brauzer (1-bo'lak)
+    if (isMobile && animRef.current) { const el = animRef.current; requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' })); } // mobil: sayt bosilganda animatsiyaga skroll
+    let i = 0;
+    const advance = () => {
+      timer.current = setTimeout(() => {
+        if (i < st.length - 1) { i++; setJstep(i); setTurn(base + (i + 1) * 90); advance(); }
+        else { setJstep(st.length); setTurn(base + 360); baseRef.current = base + 360; setRunning(false); setLoaded(s.domain); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: s.domain }); if (isMobile && resultRef.current) { const el = resultRef.current; requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' })); } }
+      }, SIM13_STEP_MS);
+    };
+    advance();
   };
+
+  const activeKey = jstep >= 0 && jstep < DONE ? steps[jstep]?.active : (jstep >= DONE ? 'you' : null);
+  const cur = jstep >= 0 && jstep < DONE ? steps[jstep] : null;
+  const caption = jstep < 0
+    ? "Manzil yuboring — so'rovning butun aylanma sayohatini ko'rasiz."
+    : jstep >= DONE
+      ? `✓ Tayyor! ${site?.name || 'Sayt'} ekraningizda ochildi — aynan shu yo'l bilan, 1 soniyada.`
+      : (steps[jstep]?.cap || '');
+
   return (
     <Stage eyebrow="Amaliyot · so'rov yuboring" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "So'rov yuboring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">O'zingiz <span className="italic" style={{ color: T.accent }}>so'rov</span> yuboring.</h2></div>
-        <Mentor>Sayt manzilini yozing yoki tanlang, <b style={{ color: T.ink }}>"Yubor"</b> bosing — so'rov butun yo'lni bosib o'tib, sayt ochiladi.</Mentor>
+        <Mentor>Endi navbat sizda! Sayt manzilini yozing yoki tayyorlaridan tanlang va <b style={{ color: T.ink }}>"Yubor"</b> tugmasini bosing — so'rovingiz <b style={{ color: T.ink }}>aylanma yo'lni</b> bosib o'tib, aynan o'sha sayt ochilishini ko'rasiz.</Mentor>
+        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="urlbar fade-up delay-2"><span className="urlbar-lock">🔒</span><input className="urlbar-input" value={url} placeholder="masalan: youtube.com" onChange={e => setUrl(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(); }} /><button className="urlbar-go" onClick={() => send()} disabled={running}>Yubor</button></div>
             <div className="fade-up delay-2" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{SITES.map(s => (<button key={s} className="chip" disabled={running} onClick={() => send(s)}>{s}</button>))}</div>
-            <div className="pz-flow" ref={flowRef} style={{ marginTop: 2 }}>{MINI.map((s, i) => (<React.Fragment key={i}><div className={`pz-step ${step > i ? 'on' : ''} ${running && step === i + 1 ? 'active' : ''}`}><span className="pz-ic">{step > i ? '✓' : s.ic}</span><span className="pz-lbl">{s.l}</span></div>{i < MINI.length - 1 && <span className={`pz-arrow ${step > i + 1 ? 'on' : ''}`}>→</span>}</React.Fragment>))}</div>
+            <div className="jr jr-sim fade-up delay-3" ref={animRef}>
+              <div className="jr-ring">
+                <div className="jr-ring-circle" />
+                <div className="jr-hub"><span className="jr-hub-ic">{site ? site.ic : '⏱️'}</span><span className="jr-hub-t">{site ? site.domain : '≈ 1 soniya'}</span></div>
+                {JR_STATIONS.map(s => {
+                  const on = activeKey === s.k;
+                  const delivered = jstep >= DONE && s.k === 'you';
+                  return (
+                    <div key={s.k} className={`jr-st ${on ? 'on' : ''} ${delivered ? 'delivered' : ''}`} style={jrPos(s.a)}>
+                      {delivered && <span className="jr-badge">{site ? `${site.ic} ${site.name} ✓` : '✓'}</span>}
+                      <span className="jr-ic">{s.ic}</span>
+                      <span className="jr-l">{s.l}</span>
+                    </div>
+                  );
+                })}
+                <div className="jr-orbit" style={{ transform: `rotate(${turn}deg)` }}>
+                  <div className={`jr-packet ${cur ? cur.kind : ''} ${cur ? 'show' : ''}`} style={{ transform: `translate(-50%,-50%) rotate(${-turn}deg)` }}>{cur ? cur.pkt : ''}</div>
+                </div>
+              </div>
+              <div className={`jr-cap ${jstep >= DONE ? 'done' : ''}`} key={jstep}>{caption}</div>
+              <div className="jr-dots">{steps.length ? steps.map((_, i) => <span key={i} className={`jr-dot ${(jstep > i || jstep >= DONE) ? 'fill' : ''} ${jstep === i ? 'cur' : ''}`} />) : Array.from({ length: DONE }).map((_, i) => <span key={i} className="jr-dot" />)}</div>
+            </div>
           </div>
-          <div className="col">
+          <div className="col" ref={resultRef}>
             <div className="flow-label">Natija</div>
             <Preview title={loaded || 'sayt'} minH={150}>
               {running ? (<p className="mono" style={{ color: T.ink2, textAlign: 'center', margin: 0 }}><span className="gen-line">Yuklanmoqda</span></p>)
-                : loaded ? (<div className="fade-step"><div style={{ height: 9, width: '42%', background: T.accent, borderRadius: 4, marginBottom: 10 }} /><div style={{ display: 'flex', gap: 8 }}>{[0, 1].map(i => (<div key={i} style={{ flex: 1 }}><div style={{ height: 42, background: '#dcd9d2', borderRadius: 7, marginBottom: 5 }} /><div style={{ height: 6, background: '#cbc8c1', borderRadius: 3, width: '85%' }} /></div>))}</div><p className="mono small" style={{ color: T.success, margin: '8px 0 0', textAlign: 'center' }}>✓ {loaded} ochildi</p></div>)
+                : loaded ? (<div className="fade-step"><SiteMock site={site} /><p className="mono small" style={{ color: T.success, margin: '10px 0 0', textAlign: 'center' }}>✓ {site?.name || loaded} ochildi</p></div>)
                   : (<p style={{ fontFamily: 'Georgia, serif', color: T.ink3, fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Manzil yuboring — sayt shu yerda ochiladi</p>)}
             </Preview>
           </div>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -817,23 +1172,25 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const done = stage === 'fixed';
   const fail = () => { if (stage !== 'idle') return; setStage('failed'); audio.triggerEvent('error_found'); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Mana muammo: DNS "youtub.com" ni topolmadi, chunki bunday domen yo'q. "e" harfi tushib qolgan.`); }, 300); };
   const fix = () => { setStage('fixed'); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Tuzatildi! Endi youtube.com to'g'ri — DNS IP'ni topdi va sayt ochildi.`); }, 300); };
-  const url = stage === 'fixed' ? 'youtube.com' : 'youtub.com';
   return (
     <Stage eyebrow="Debugging" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : (stage === 'failed' ? "Endi tuzating" : "Ochib ko'ring")} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sayt ochilmadi — <span className="italic" style={{ color: T.accent }}>nega</span>?</h2></div>
-        <Mentor>Ba'zan sayt ochilmaydi. Eng ko'p sabab — <b style={{ color: T.ink }}>domen xato yozilgan</b>, DNS uni topolmaydi. Mana: <span className="mono">youtub.com</span> — bir harf kam. Ochib ko'ring, keyin tuzating.</Mentor>
+        <Mentor>Ba'zan sayt ochilmaydi — qo'rqinchli emas. Eng ko'p sabab: <b style={{ color: T.ink }}>domen xato yozilgan</b>, shuning uchun DNS uni topolmaydi. Mana <span className="mono">youtub.com</span> — bitta harf yetishmayapti. Avval ochib ko'ring, keyin xatoni o'zingiz toping.</Mentor>
         <div className="split">
           <div className="col">
-            <div className={`urlbar fade-up delay-2 ${stage === 'failed' ? 'urlbar-err' : ''}`}><span className="urlbar-lock">{stage === 'fixed' ? '🔒' : '⚠️'}</span><span className="urlbar-text" style={{ color: stage === 'fixed' ? T.ink : T.accent }}>{url}</span></div>
+            <div className={`urlbar fade-up delay-2 ${stage === 'failed' ? 'urlbar-err' : ''}`}>
+              <span className="urlbar-lock">{stage === 'fixed' ? '🔒' : '⚠️'}</span>
+              <span className="urlbar-text mono" style={{ color: stage === 'fixed' ? T.success : (stage === 'failed' ? T.accent : T.ink2) }}>youtub{stage === 'fixed' ? <span className="miss-fill">e</span> : (stage === 'failed' ? <span className="miss-slot">?</span> : '')}.com</span>
+            </div>
             {stage === 'idle' && <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={fail}>↵ Saytni ochish</button>}
-            {stage === 'failed' && <button className="btn fade-step" style={{ alignSelf: 'flex-start' }} onClick={fix}>🔧 "e" harfini qo'shib tuzatish</button>}
-            {stage === 'fixed' && <p className="mono small" style={{ color: T.success, margin: 0, fontWeight: 600 }}>✓ youtube.com — to'g'ri!</p>}
+            {stage === 'failed' && <button className="btn fade-step" style={{ alignSelf: 'flex-start' }} onClick={fix}>🔧 Yetishmagan "e" harfini qo'shish</button>}
+            {stage === 'fixed' && <p className="mono small fade-step" style={{ color: T.success, margin: 0, fontWeight: 600 }}>✓ youtube.com — endi to'g'ri!</p>}
           </div>
           <div className="col">
-            {stage === 'idle' && (<div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Manzilga diqqat bilan qarang. "Saytni ochish" ni bosib, nima bo'lishini ko'ring.</p></div>)}
-            {stage === 'failed' && (<div className="frame-warn fade-step"><p className="note-h" style={{ color: T.accent }}>❌ DNS: domen topilmadi</p><p className="body" style={{ margin: 0, color: T.ink }}>DNS <span className="mono">youtub.com</span> ni topolmadi — bunday domen yo'q. <b>"e"</b> harfi tushib qolgan. Chap tomondagi tugma bilan tuzating →</p></div>)}
-            {stage === 'fixed' && (<><Preview title="youtube.com" minH={120}><div className="fade-step"><div style={{ height: 9, width: '42%', background: '#FF0000', borderRadius: 4, marginBottom: 10 }} /><div style={{ display: 'flex', gap: 8 }}>{[0, 1].map(i => (<div key={i} style={{ flex: 1 }}><div style={{ height: 38, background: '#dcd9d2', borderRadius: 7 }} /></div>))}</div></div></Preview><div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Xatoni topding va tuzatding!</p><p className="ta-sub">Domen to'g'ri bo'lsa — DNS topadi, sayt ochiladi</p></div></>)}
+            {stage === 'idle' && (<div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Manzilga diqqat bilan qarang. "Saytni ochish"ni bosib, nima bo'lishini ko'ring.</p></div>)}
+            {stage === 'failed' && (<div className="frame-warn fade-step"><p className="note-h" style={{ color: T.accent }}>❌ DNS: domen topilmadi</p><p className="body" style={{ margin: 0, color: T.ink }}>DNS <span className="mono">youtub.com</span> ni topolmadi — bunday domen yo'q. Oxirida <b>"e"</b> harfi yetishmayapti (qizil katak ⌶). Chap tugma bilan qo'shing →</p></div>)}
+            {stage === 'fixed' && (<><Preview title="youtube.com" minH={130}><SiteMock site={siteInfo('youtube.com')} /></Preview><div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">Xatoni topding va tuzatding!</p><p className="ta-sub">Domen to'g'ri bo'lsa — DNS topadi, sayt ochiladi</p></div></>)}
           </div>
         </div>
       </div>
@@ -847,7 +1204,7 @@ const Screen15 = (props) => (
     questionText="youtube.com yozganda so'rov qaysi tartibda boradi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>Butun yo'lni eslang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>youtube.com yozib Enter bossangiz, so'rov <span className="italic" style={{ color: T.accent }}>qaysi tartibda</span> boradi?</h2></>}
     options={['Server → DNS → Brauzer → Ekran', 'DNS → Brauzer → Server → Ekran', 'Brauzer → DNS → Server → Ekran', 'Brauzer → Server → DNS → Ekran']} correctIdx={2}
-    explainCorrect="To'g'ri! Brauzer avval DNS'dan IP oladi, keyin serverga so'rov yuboradi, server sahifani qaytaradi, brauzer ekranga chizadi."
+    explainCorrect="Ajoyib, butun yo'lni esladingiz! Brauzer avval DNS'dan IP oladi, keyin serverga so'rov yuboradi, server sahifani qaytaradi, brauzer esa ekranga chizadi."
     explainWrong={{ 0: "Server birinchi emas — avval brauzer so'rovni boshlaydi.", 1: "DNS birinchi emas — avval brauzer DNS'ga murojaat qiladi.", 3: "DNS server'dan oldin keladi — avval IP topiladi, keyin server'ga boriladi.", default: "To'g'ri yo'l: Brauzer → DNS → Server → Ekran." }} />
 );
 
@@ -861,9 +1218,11 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
   const total = SCORED_IDX.length;
   const PASSED = (total ? correct / total : 0) >= 0.6;
   const [open, setOpen] = useState(false);
+  const [showDone, setShowDone] = useState(false);
   return (
-    <Stage eyebrow="Tayyor" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><button className="btn-ghost" onClick={onReset} style={{ padding: 'clamp(11px,1.6vw,13px) clamp(16px,2.2vw,22px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Qaytadan</button><button className="btn-white-accent" onClick={onFinish} style={{ marginLeft: 'auto', padding: 'clamp(11px,1.6vw,13px) clamp(22px,2.6vw,30px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>HTML modulini boshlash →</button></>}>
+    <Stage eyebrow="Tayyor" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><button className="btn-ghost" onClick={onReset} style={{ padding: 'clamp(11px,1.6vw,13px) clamp(16px,2.2vw,22px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>Qaytadan</button><button className="btn-white-accent" onClick={() => setShowDone(true)} style={{ marginLeft: 'auto', padding: 'clamp(11px,1.6vw,13px) clamp(22px,2.6vw,30px)', fontSize: 'clamp(13px,1.5vw,15px)' }}>🎉 Darsni yakunlash</button></>}>
       <div className="screen">
+        {PASSED && <Confetti />}
         <div className="hero"><div className="hero-l"><span className="done-chip fade-up"><span className="tick">✓</span> Kirish darsi tugadi</span><h2 className="title h-title fade-up d1">Internet <span className="italic" style={{ color: T.accent }}>sirini</span> ochding.</h2><p className="body h-sub fade-up d2">{PASSED ? 'Tabriklaymiz! Endi sayt sizgacha qanday yetib kelishini bilasiz.' : 'Yaxshi harakat! Bir-ikki joyni mustahkamlash uchun darsni qayta ko’ring.'}</p></div><ScoreRing correct={correct} total={total} /></div>
         <div className="split">
           <div className="card fade-up d3"><div className="card-lbl" style={{ color: T.success }}><span className="tick" style={{ width: 16, height: 16, borderRadius: '50%', background: T.success, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>✓</span> Endi siz bilasiz</div><ul className="recap">{RECAP.map((r, i) => (<li key={i} style={{ animationDelay: `${0.3 + i * 0.07}s` }}><span className="ck">✓</span><span>{r}</span></li>))}</ul></div>
@@ -871,6 +1230,18 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
         </div>
         <div className="gloss fade-up d4"><div className="gloss-head" onClick={() => setOpen(o => !o)}><span className="lbl">💡 Kalit so'zlar (takrorlash)</span><span className="gloss-toggle">{open ? '−' : '+'}</span></div>{open && (<div className="gloss-body">{GLOSSARY.map((g, i) => (<span key={i}><b>{g.b}</b> {g.t}{i < GLOSSARY.length - 1 ? ' · ' : ''}</span>))}</div>)}</div>
       </div>
+      {showDone && (
+        <div className="fin-backdrop" onClick={() => setShowDone(false)}>
+          <Confetti />
+          <div className="fin-card" onClick={e => e.stopPropagation()}>
+            <button className="fin-x" onClick={() => setShowDone(false)} aria-label="Yopish">✕</button>
+            <div className="fin-emoji">🎉</div>
+            <h3 className="fin-h">Tabriklaymiz!</h3>
+            <p className="fin-sub">Internet darsini muvaffaqiyatli tugatding. Endi sayt sizgacha qanday yetib kelishini bilasiz.</p>
+            <button className="btn-white-accent" onClick={onFinish} style={{ padding: '12px 32px', fontSize: 15 }}>Tamom</button>
+          </div>
+        </div>
+      )}
     </Stage>
   );
 };
@@ -969,8 +1340,9 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #E5D2B0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.152717129); }        .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
+        .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }
 
@@ -989,6 +1361,18 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .prompt-input { font-family: 'Manrope'; }
 
         .code-box { background: ${CODE.bg}; color: ${CODE.text}; font-family: 'JetBrains Mono', monospace; font-size: clamp(12.5px,1.6vw,14.5px); line-height: 1.55; padding: clamp(12px,2.2vw,18px); border-radius: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; margin: 0; box-shadow: 0 8px 22px -6px rgba(${T.shadowBase},0.2); }
+        /* HTML satrma-satr o'qish (Screen11) */
+        .htl-line { display: block; padding: 3px 8px; margin: 0 -4px; border-radius: 6px; transition: background 0.3s ease, opacity 0.3s ease; }
+        .htl-line.dim { opacity: 0.35; }
+        .htl-line.reading { background: rgba(255,79,40,0.20); box-shadow: inset 3px 0 0 ${CODE.tag}; animation: htl-blink 0.6s ease-in-out infinite; }
+        .htl-line.read { background: rgba(125,209,129,0.12); }
+        .htl-tick { color: ${CODE.str}; font-size: 0.82em; opacity: 0.85; }
+        @keyframes htl-blink { 0%,100% { background: rgba(255,79,40,0.12); } 50% { background: rgba(255,79,40,0.26); } }
+        .htl-pop { animation: htl-pop 0.5s cubic-bezier(.34,1.4,.4,1); }
+        @keyframes htl-pop { from { opacity: 0; transform: translateY(10px) scale(0.96); } to { opacity: 1; transform: none; } }
+        /* Debugging (16-page): yetishmagan harf katagi va to'ldirilishi */
+        .miss-slot { display: inline-flex; align-items: center; justify-content: center; min-width: 13px; height: 17px; border-radius: 4px; background: rgba(255,79,40,0.18); color: ${T.accent}; box-shadow: inset 0 0 0 1.5px ${T.accent}; font-weight: 700; margin: 0 1px; vertical-align: middle; animation: htl-blink 0.7s ease-in-out infinite; }
+        .miss-fill { display: inline-block; color: ${T.success}; font-weight: 800; animation: htl-pop 0.5s cubic-bezier(.34,1.4,.4,1); }
         .code-box .tg, .t-tag { color: ${CODE.tag}; }
         .ck.active .t-tag { color: #fff; }
         .t-cm, .cm { color: ${CODE.comment}; font-style: italic; }
@@ -1265,6 +1649,12 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .hz-step.done .hz-lbl, .hz-step.active .hz-lbl { color: ${T.ink}; font-weight: 600; }
         .hz-arrow { align-self: center; margin-top: 19px; color: ${T.ink3}; font-size: 14px; flex: 0 0 auto; transition: color 0.3s; }
         .hz-arrow.on { color: ${T.success}; }
+        .hz-arrow.flow { color: ${T.accent}; animation: hz-aflow 0.7s ease-in-out infinite; }
+        @keyframes hz-aflow { 0%,100% { transform: translateX(-2px); opacity: 0.45; } 50% { transform: translateX(3px); opacity: 1; } }
+        .hz-prog { height: 6px; border-radius: 99px; background: rgba(${T.shadowBase},0.12); overflow: hidden; margin-top: 8px; }
+        .hz-prog-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, ${T.accent}, ${T.success}); box-shadow: 0 0 8px rgba(255,79,40,0.45); transition: width 0.65s cubic-bezier(.45,0,.3,1); }
+        .hz-cap { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: clamp(13px,1.7vw,15px); color: ${T.ink}; text-align: center; min-height: 22px; margin-top: 8px; animation: fade-step 0.4s ease-out; }
+        .hz-cap.done { color: ${T.success}; }
         @keyframes vz-pulse { 0%,100% { box-shadow: inset 0 0 0 2px ${T.accent}, 0 0 0 5px ${T.accentSoft}; } 50% { box-shadow: inset 0 0 0 2px ${T.accent}, 0 0 0 9px rgba(255,79,40,0.10); } }
         /* SCREEN 6 — Teg (qo'shtirnoq modeli) */
         .pv-plain { font-family: 'Georgia, serif'; font-size: 14px; color: ${T.ink3}; margin: 0; }
@@ -1357,15 +1747,33 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .dns-entry.hit .dns-ip { color: ${T.success}; font-weight: 700; animation: pop 0.4s cubic-bezier(.34,1.4,.4,1); }
         .dns-entry.dim { opacity: 0.4; }
         @keyframes dns-scan { 0%,100% { box-shadow: inset 0 0 0 1.5px rgba(255,79,40,0.25); } 50% { box-shadow: inset 0 0 0 1.5px ${T.accent}; } }
-        .cs { display: flex; align-items: center; gap: 8px; background: ${T.paper}; border-radius: 14px; padding: 16px 12px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); }
+        /* DNS aylantirgich — o'ng tomondagi jonli domen → DNS → IP */
+        .dnsconv { display: flex; flex-direction: column; align-items: center; gap: 5px; background: ${T.paper}; border-radius: 14px; padding: 16px 14px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); }
+        .dc-node { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 11px; border-radius: 11px; background: ${T.bg}; transition: background 0.4s ease, box-shadow 0.4s ease; }
+        .dc-ic { font-size: 22px; line-height: 1; }
+        .dc-k { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 9.5px; color: ${T.ink3}; text-transform: uppercase; letter-spacing: 0.07em; }
+        .dc-v { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px; color: ${T.ink}; }
+        .dc-node.dc-ip.hit { background: ${T.successSoft}; box-shadow: inset 0 0 0 1.5px rgba(31,122,77,0.4); }
+        .dc-node.dc-ip.hit .dc-v { color: ${T.success}; animation: pop 0.45s cubic-bezier(.34,1.4,.4,1); }
+        .dc-mid { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .dc-dns { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; padding: 4px 13px; border-radius: 99px; background: ${T.accentSoft}; transition: color 0.3s, background 0.3s; }
+        .dc-arrow { color: ${T.ink3}; font-size: 14px; line-height: 1; transition: color 0.3s; }
+        .dc-mid.busy .dc-dns { animation: dc-pulse 0.7s ease-in-out infinite; }
+        .dc-mid.busy .dc-arrow { animation: dc-flow 0.85s ease-in-out infinite; }
+        .dc-mid.busy .dc-arrow:last-child { animation-delay: 0.42s; }
+        .dc-mid.ok .dc-dns { color: ${T.success}; background: ${T.successSoft}; }
+        .dc-mid.ok .dc-arrow { color: ${T.success}; }
+        @keyframes dc-pulse { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,79,40,0); } 50% { transform: scale(1.07); box-shadow: 0 0 0 6px rgba(255,79,40,0.10); } }
+        @keyframes dc-flow { 0% { opacity: 0.25; transform: translateY(-3px); } 50% { opacity: 1; transform: translateY(3px); } 100% { opacity: 0.25; transform: translateY(-3px); } }
+        .cs { display: flex; align-items: center; gap: clamp(10px,2vw,18px); background: ${T.paper}; border-radius: 14px; padding: 16px 14px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); overflow: hidden; }
         .cs-node { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; padding: 8px; border-radius: 10px; transition: all 0.3s; min-width: 76px; }
         .cs-node.cs-active { background: ${T.accentSoft}; }
         .cs-ic { font-size: 30px; }
         .cs-l { font-family: 'Manrope'; font-size: 11px; font-weight: 600; color: ${T.ink2}; text-align: center; line-height: 1.2; }
-        .cs-wire { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; justify-content: center; }
+        .cs-wire { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 64px; justify-content: center; }
         .cs-track { position: relative; height: 40px; }
         .cs-track::before { content: ''; position: absolute; left: 4px; right: 4px; top: 50%; height: 2px; transform: translateY(-50%); background: repeating-linear-gradient(90deg, rgba(${T.shadowBase},0.22) 0 6px, transparent 6px 12px); border-radius: 2px; }
-        .cs-chip { position: absolute; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 5px; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 11px; padding: 6px 11px; border-radius: 20px; white-space: nowrap; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.25); transition: left 0.72s cubic-bezier(.5,0,.3,1), opacity 0.35s ease; }
+        .cs-chip { position: absolute; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 5px; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 11px; padding: 6px 11px; border-radius: 20px; white-space: nowrap; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.25); transition: left 0.95s cubic-bezier(.5,0,.3,1), opacity 0.35s ease; }
         .cs-chip-req { left: 0; background: ${T.accentSoft}; color: ${T.accent}; }
         .cs-chip-req.sent { left: calc(100% - 82px); }
         .cs-chip-req.gone { opacity: 0; }
@@ -1380,6 +1788,75 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .jmini-ic { font-size: 22px; }
         .jmini-l { font-family: 'Manrope'; font-size: 10px; font-weight: 600; color: ${T.ink2}; }
         .jmini-arr { color: ${T.accent}; font-weight: 700; }
+
+        /* === REJA — AYLANA JONLI SAYOHAT (Screen1) === */
+        .jr { display: flex; flex-direction: column; align-items: center; gap: clamp(12px,2vw,16px); background: ${T.paper}; border-radius: 16px; padding: clamp(16px,3vw,28px); box-shadow: 0 8px 22px -6px rgba(${T.shadowBase},0.14); }
+        .jr-ring { position: relative; width: min(300px, 100%); aspect-ratio: 1 / 1; margin: 2px auto; }
+        /* Sim (15-page): desktopda skrol bo'lmasligi uchun animatsiya ~10% kichikroq */
+        .jr-sim { gap: clamp(8px,1.6vw,12px); padding: clamp(12px,2.4vw,20px); }
+        .jr-sim .jr-ring { width: min(270px, 100%); }
+        .jr-ring-circle { position: absolute; left: 50%; top: 50%; width: 76%; height: 76%; transform: translate(-50%,-50%); border-radius: 50%; border: 2px dashed rgba(${T.shadowBase},0.25); }
+        .jr-hub { position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .jr-hub-ic { font-size: 20px; }
+        .jr-hub-t { font-family: 'Manrope'; font-weight: 700; font-size: 11px; color: ${T.ink2}; }
+        .jr-st { position: absolute; transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; gap: 6px; width: 78px; }
+        .jr-ic { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 25px; background: ${T.bg}; box-shadow: inset 0 0 0 2px rgba(${T.shadowBase},0.18); transition: all 0.35s cubic-bezier(.34,1.35,.4,1); }
+        .jr-st.on .jr-ic { box-shadow: inset 0 0 0 2px ${T.accent}, 0 0 0 6px ${T.accentSoft}; background: ${T.accentSoft}; transform: scale(1.12); animation: vz-pulse 1.1s ease-in-out infinite; }
+        .jr-st.delivered .jr-ic { box-shadow: inset 0 0 0 2px ${T.success}, 0 0 0 6px ${T.successSoft}; background: ${T.successSoft}; transform: scale(1.08); }
+        .jr-l { font-family: 'Manrope'; font-size: 12px; font-weight: 600; color: ${T.ink2}; transition: color 0.3s; }
+        .jr-st.on .jr-l, .jr-st.delivered .jr-l { color: ${T.ink}; }
+        .jr-badge { position: absolute; top: -15px; white-space: nowrap; font-family: 'Manrope'; font-weight: 700; font-size: 10.5px; color: ${T.success}; background: ${T.successSoft}; padding: 3px 9px; border-radius: 99px; box-shadow: 0 4px 12px -4px rgba(31,122,77,0.4); animation: pop 0.45s cubic-bezier(.34,1.4,.4,1); z-index: 5; }
+        .jr-orbit { position: absolute; inset: 0; transform-origin: 50% 50%; transition: transform 1.25s cubic-bezier(.45,0,.3,1); z-index: 4; pointer-events: none; }
+        .jr-packet { position: absolute; left: 50%; top: 12%; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(10.5px,1.5vw,13px); padding: 6px 11px; border-radius: 99px; opacity: 0; box-shadow: 0 7px 18px -4px rgba(${T.shadowBase},0.4); transition: transform 1.25s cubic-bezier(.45,0,.3,1), opacity 0.4s ease; }
+        .jr-packet.show { opacity: 1; }
+        .jr-packet.req { background: ${T.accent}; color: #fff; }
+        .jr-packet.ip { background: ${T.blue}; color: #fff; }
+        .jr-packet.page { background: ${T.success}; color: #fff; }
+        .jr-cap { font-family: 'Manrope'; font-weight: 600; font-size: clamp(14px,1.9vw,16.5px); color: ${T.ink}; text-align: center; min-height: 44px; display: flex; align-items: center; justify-content: center; padding: 0 6px; animation: fade-step 0.4s ease-out; }
+        .jr-cap.done { color: ${T.success}; }
+        .jr-dots { display: flex; justify-content: center; gap: 7px; }
+        .jr-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(${T.shadowBase},0.18); transition: all 0.3s; }
+        .jr-dot.fill { background: ${T.success}; }
+        .jr-dot.cur { background: ${T.accent}; transform: scale(1.4); }
+        /* Zoom (⛶) bosilganda animatsiya kattalashadi */
+        .zoom-on .jr-ring { width: min(560px, 76vmin); }
+        /* Sim (15-page) zoom: animatsiya + natija + saytlar ro'yxati birga sig'ishi uchun halqa kichikroq */
+        .zoom-on .jr-sim .jr-ring { width: min(340px, 40vmin); }
+        .zoom-on .jr-sim .jr-ic { width: 48px; height: 48px; font-size: 24px; }
+        .zoom-on .jr-sim .jr-l { font-size: 12px; }
+        .zoom-on .jr-sim .jr-cap { font-size: 15.5px; min-height: 44px; }
+        .zoom-on .jr-sim .jr-packet { font-size: 13px; padding: 7px 12px; }
+        .zoom-on .jr-ic { width: 64px; height: 64px; font-size: 32px; }
+        .zoom-on .jr-l { font-size: 14px; }
+        .zoom-on .jr-hub-ic { font-size: 26px; }
+        .zoom-on .jr-hub-t { font-size: 13px; }
+        .zoom-on .jr-packet { font-size: 15px; padding: 9px 16px; }
+        .zoom-on .jr-cap { font-size: 19px; min-height: 52px; }
+        @media (max-width: 560px) {
+          .jr-ic { width: 42px; height: 42px; font-size: 21px; }
+          .jr-st { width: 64px; }
+          .jr-packet { font-size: 10px; padding: 5px 9px; }
+        }
+        @media (prefers-reduced-motion: reduce) { .jr-orbit, .jr-packet { transition: opacity 0.3s ease; } }
+
+        /* === KONFETTI (yakun bayrami) === */
+        .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 1200; overflow: hidden; }
+        .confetti-bit { position: absolute; top: -24px; opacity: 0; will-change: transform, opacity; animation-name: confetti-fall; animation-timing-function: cubic-bezier(.25,.6,.45,1); animation-iteration-count: 1; animation-fill-mode: forwards; box-shadow: 0 2px 6px -2px rgba(${T.shadowBase},0.3); }
+        @keyframes confetti-fall {
+          0% { transform: translateY(-24px) rotate(0deg); opacity: 0; }
+          8% { opacity: 1; }
+          55% { transform: translateY(48vh) translateX(22px) rotate(320deg); }
+          100% { transform: translateY(104vh) translateX(-12px) rotate(680deg); opacity: 0; }
+        }
+        @media (prefers-reduced-motion: reduce) { .confetti { display: none; } }
+        /* Yakun popup (18-page) */
+        .fin-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.62); z-index: 1001; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fade-step 0.25s ease; }
+        .fin-card { position: relative; background: ${T.paper}; border-radius: 20px; padding: clamp(28px,5vw,46px); max-width: 440px; width: 100%; text-align: center; box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: fin-pop 0.4s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes fin-pop { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
+        .fin-x { position: absolute; top: 12px; right: 14px; background: transparent; border: none; font-size: 16px; color: ${T.ink3}; cursor: pointer; line-height: 1; }
+        .fin-emoji { font-size: clamp(46px,9vw,66px); line-height: 1; margin-bottom: 10px; animation: pop 0.5s cubic-bezier(.34,1.4,.4,1); }
+        .fin-h { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: clamp(22px,3.4vw,28px); color: ${T.ink}; margin: 0 0 8px; }
+        .fin-sub { font-family: 'Manrope', sans-serif; font-size: clamp(14px,1.8vw,15px); color: ${T.ink2}; margin: 0 0 22px; line-height: 1.5; }
 
       `}</style>
       <div className="lesson-root">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, createContext, useContext } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, createContext, useContext } from 'react';
 import mentorImg from '../../assets/common/mentor.png';
 import togImg from '../../assets/images/tog.png';
 import mushukImg from '../../assets/images/mushuk.png';
@@ -11,13 +11,920 @@ import raketaImg from '../../assets/images/raketa.png';
 // Eslatma: ekran-spetsifik widget bezaklari page-by-page bosqichida yakuniy sayqal oladi.
 // ============================================================
 
+// ============================================================
+//  KOD COMPILATOR (HtmlCompiler) — ILGARI ./HtmlCompiler.jsx EDI,
+//  endi LMS uchun shu faylga BIRLASHTIRILDI (bitta JSX). Nomlar
+//  to'qnashmasligi uchun ichki T->HC_T, CODE->HC_CODE deb o'zgartirildi.
+// ============================================================
+
+// ============================================================
+//  KOD COMPILATOR — mustaqil, qayta ishlatiladigan praktika ekrani
+//  index.html + style.css + script.js — uchta fayl, tab bilan.
+//  Chap yarmida kod editor (tablar), o'ng yarmida jonli natija (iframe).
+//  Tepada shart + tekshiruvlar. Hammasi bajarilsa "Davom etish" yonadi.
+//
+//  TEKSHIRUV — HAQIQIY TAHLIL (regex emas):
+//    • HTML  → DOMParser bilan real DOM: teg bor + ichi bo'sh emas + nesting
+//    • CSS   → stylesheet parse: qaysi selektorga qaysi xossa/qiymat yozilgan
+//    • JS    → manba (source) namunalari
+//  Har shart muvaffaqiyatsiz bo'lsa — aniq MASLAHAT ko'rsatadi.
+//
+//  LMSga tayyor kontrakt (o'zgarmaydi):
+//    <HtmlCompiler task={...} starterCode="..." onContinue={fn} onBack={fn} />
+//  Kelajakda CSS/JS darslarida ham shu komponent ishlatiladi — task.files
+//  orqali qaysi fayllar ko'rinishini va shartlarni belgilaysiz.
+// ============================================================
+
+const HC_T = {
+  bg: '#F6F4EF', ink: '#0E0E10', ink2: '#5A5A60', ink3: '#A7A6A2',
+  paper: '#FFFFFF', accent: '#FF4D26', accent2: '#FF8A3D', accentSoft: '#FFEDE5',
+  success: '#0FA968', successSoft: '#E4F7EE', warn: '#9A5400', shadowBase: '58, 53, 48', line: '#E9E6DF',
+};
+const HC_CODE = { bg: '#0E1525', text: '#E7EAF2', gutter: '#1C2740' };
+
+// ============================================================
+//  TEKSHIRUV YORDAMCHILARI (builders)
+//  Har biri ctx (kontekst) qabul qiladigan funksiya qaytaradi.
+//  Funksiya:  true  → shart bajarildi
+//             "..."  → bajarilmadi, qaytgan matn = o'quvchiga maslahat
+//
+//  ctx ichida nimalar bor:
+//    ctx.html / ctx.css / ctx.js  — xom (raw) manba matnlar
+//    ctx.doc                       — o'quvchi HTML'idan qurilgan real DOM
+//    ctx.$  / ctx.$$               — doc bo'yicha querySelector / All
+//    ctx.cssRules                  — [{selector, props:{...}}] — parslangan CSS
+// ============================================================
+const norm = (s) => (s || '').trim();
+
+// JS izohlarini olib tashlaymiz — izoh ichidagi matn `js` shartini ALDAB
+// o'tmasligi uchun (masalan starterdagi "// console.log ..." izohi).
+// Oddiy yondashuv (blok + satr izohi) — o'quv praktikalari uchun yetarli.
+const stripJsComments = (src) =>
+  (src || '')
+    .replace(/\/\*[\s\S]*?\*\//g, ' ') // /* ... */
+    .replace(/\/\/[^\n]*/g, ' ');      // // ...
+
+const checks = {
+  // Teg/selektor mavjudmi?
+  has: (sel, hint) => (x) =>
+    x.$(sel) ? true : (hint ?? `\`${sel}\` topilmadi`),
+
+  // Mavjud VA ichida bo'sh bo'lmagan matn bormi?
+  text: (sel, hint) => (x) => {
+    const el = x.$(sel);
+    if (!el) return hint ?? `\`${sel}\` topilmadi`;
+    return norm(el.textContent) ? true : (hint ?? `\`${sel}\` bor, lekin ichi bo'sh — matn yozing`);
+  },
+
+  // Atribut bormi va bo'sh emasmi? (yoki equals bilan aniq qiymat)
+  attr: (sel, attr, hint, equals) => (x) => {
+    const el = x.$(sel);
+    if (!el) return hint ?? `\`${sel}\` topilmadi`;
+    const v = el.getAttribute(attr);
+    if (v == null || !norm(v)) return hint ?? `\`${sel}\` da \`${attr}="..."\` to'ldiring`;
+    if (equals != null && norm(v) !== norm(equals)) return hint ?? `\`${sel}\` da \`${attr}\` qiymati \`${equals}\` bo'lsin`;
+    return true;
+  },
+
+  // Bir nechta atribut — hammasi bo'sh bo'lmasligi kerak
+  attrs: (sel, attrList, hint) => (x) => {
+    const el = x.$(sel);
+    if (!el) return hint ?? `\`${sel}\` topilmadi`;
+    const miss = attrList.filter((a) => !norm(el.getAttribute(a) || ''));
+    return miss.length ? (hint ?? `\`${sel}\` da \`${miss.join('` va `')}\` to'ldiring`) : true;
+  },
+
+  // child element parent ichidami?
+  nested: (parent, child, hint) => (x) =>
+    x.$(`${parent} ${child}`) ? true : (hint ?? `\`${child}\` ni \`${parent}\` ichiga joylang`),
+
+  // Kamida n ta bormi?
+  count: (sel, n, hint) => (x) =>
+    x.$$(sel).length >= n ? true : (hint ?? `Kamida ${n} ta \`${sel}\` kerak`),
+
+  // CSS: selektorga shu xossa yozilganmi?
+  cssProp: (selector, prop, hint) => (x) => {
+    const hit = x.cssRules.some(
+      (r) => r.selector.split(',').map(norm).includes(norm(selector)) && norm(r.props[prop])
+    );
+    return hit ? true : (hint ?? `\`${selector}\` uchun \`${prop}\` xossasini yozing`);
+  },
+
+  // CSS: selektorga shu xossa AYNAN shu qiymat bilan yozilganmi?
+  cssValue: (selector, prop, val, hint) => (x) => {
+    const hit = x.cssRules.some(
+      (r) => r.selector.split(',').map(norm).includes(norm(selector)) && norm(r.props[prop]) === norm(val)
+    );
+    return hit ? true : (hint ?? `\`${selector}\` da \`${prop}: ${val}\` yozing`);
+  },
+
+  // JS: manbada namuna (regex) bormi? (izohlar hisobga olinmaydi)
+  js: (re, hint) => (x) =>
+    re.test(stripJsComments(x.js)) ? true : (hint ?? `Skriptda kerakli qism topilmadi`),
+
+  // To'liq erkin tekshiruv: (ctx) => true | "maslahat"
+  custom: (fn) => fn,
+
+  // ── RUNTIME tekshiruvlar (kod iframe'da ishlatiladi) ──
+  // Bular funksiya emas, "probe" obyekti qaytaradi — komponent ularni
+  // iframe ichida ishlatib, natijani postMessage orqali oladi.
+
+  // console.log chiqishida shu qiymat bormi?
+  logs: (value, hint) => ({ __runtime: 'log_includes', value: String(value), hint }),
+
+  // JS ifoda (masalan global o'zgaruvchi yoki typeof) shu qiymatga tengmi?
+  evalEquals: (expr, expected, hint) => ({ __runtime: 'eval_equals', expr, expected: String(expected), hint }),
+
+  // clickSel bosilgach, readSel matni expected'ni o'z ichiga oladimi?
+  domAfterClick: (clickSel, readSel, expected, hint) =>
+    ({ __runtime: 'click_text', clickSel, readSel, expected: String(expected), hint }),
+
+  // ALMASHISH (toggle): clickSel ni ikki marta bosamiz.
+  //   boshida readSel matni = textA, 1-bosishdan keyin = textB,
+  //   2-bosishdan keyin yana = textA. Hammasi to'g'ri bo'lsa — haqiqiy toggle.
+  toggle: (clickSel, readSel, textA, textB, hint) =>
+    ({ __runtime: 'toggle', clickSel, readSel, textA: String(textA), textB: String(textB), hint }),
+};
+
+// ============================================================
+//  DEKLARATIV SHARTLAR — oddiy data → check (tarjimon)
+//  Dars yaratuvchi `C.has('form')` kabi kod yozmasdan, faqat data
+//  bilan shart bera oladi: { tag: 'form', attrs: ['action'] }.
+//  Istalgan teg/atribut ishlaydi — backend kerak emas, hammasi darsda.
+//  Qo'llab-quvvatlanadigan kalitlar:
+//    HTML:  { tag, text }                       → teg bor + ichi bo'sh emas
+//           { tag, attr, equals? }              → atribut bor (yoki aniq qiymat)
+//           { tag, attrs: ['src','alt'] }       → bir nechta atribut
+//           { tag, child: 'input' }             → child teg ichidami (nested)
+//           { tag, count: 3 }                   → kamida n ta
+//    CSS:   { css: { sel, prop, value? } }      → xossa (yoki aniq qiymat)
+//    JS:    { js: /addEventListener/ }          → manbada namuna
+//    Runtime: { logs: 5 }                       → console.log chiqishi
+//             { eval: 'typeof f', equals: 'function' }
+//             { click: '#btn', read: '#out', expect: 'Salom' }
+//  Har bir kalitga ixtiyoriy `hint` (maslahat matni) qo'shsa bo'ladi.
+// ============================================================
+function specToCheck(s) {
+  const hint = s.hint;
+  if (s.css) {
+    const { sel, prop, value } = s.css;
+    return value != null ? checks.cssValue(sel, prop, value, hint) : checks.cssProp(sel, prop, hint);
+  }
+  if (s.js) return checks.js(s.js instanceof RegExp ? s.js : new RegExp(s.js), hint);
+  if (s.logs !== undefined) return checks.logs(s.logs, hint);
+  if (s.eval !== undefined) return checks.evalEquals(s.eval, s.equals, hint);
+  if (s.toggle) return checks.toggle(s.toggle, s.read || s.toggle, s.a, s.b, hint);
+  if (s.click) return checks.domAfterClick(s.click, s.read, s.expect, hint);
+  const sel = s.tag || s.sel;
+  if (sel) {
+    if (s.child || s.nested) return checks.nested(sel, s.child || s.nested, hint);
+    if (s.count != null) return checks.count(sel, s.count, hint);
+    if (Array.isArray(s.attrs)) return checks.attrs(sel, s.attrs, hint);
+    if (s.attr) return checks.attr(sel, s.attr, hint, s.equals);
+    if (s.text) return checks.text(sel, hint);
+    return checks.has(sel, hint);
+  }
+  // Tanib bo'lmadi — yiqilmaydi, shunchaki bajarilmagan bo'lib qoladi
+  return () => (hint ?? 'shart aniqlanmadi');
+}
+
+// Deklarativ shartdan o'qiladigan label avtomatik yasaymiz (label berilmasa)
+function buildLabel(s) {
+  if (s.css) return `CSS: ${s.css.sel} { ${s.css.prop}${s.css.value != null ? `: ${s.css.value}` : ''} }`;
+  if (s.logs !== undefined) return `konsolda «${s.logs}»`;
+  if (s.toggle) return `${s.a} ⇄ ${s.b}`;
+  if (s.click) return `bosilsa «${s.expect}»`;
+  if (s.eval !== undefined) return `${s.eval} = ${s.equals}`;
+  if (s.js) return 'JS namunasi';
+  const sel = s.tag || s.sel;
+  if (sel) {
+    if (s.child || s.nested) return `<${sel}> ichida <${s.child || s.nested}>`;
+    if (Array.isArray(s.attrs)) return `<${sel}> — ${s.attrs.join(', ')}`;
+    if (s.attr) return `<${sel}> — ${s.attr}`;
+    if (s.count != null) return `kamida ${s.count} ta <${sel}>`;
+    if (s.text) return `<${sel}> (matn bilan)`;
+    return `<${sel}>`;
+  }
+  return 'shart';
+}
+
+// Shartni to'liq { id, label, check } shakliga keltiramiz.
+// Eski uslub (check: C.has(...) / runtime obyekt / re:/.../) — tegmaymiz,
+// faqat yetishmasa id/label to'ldiramiz. Deklarativ data bo'lsa — tarjima qilamiz.
+function normalizeReq(req, i = 0) {
+  const ready = typeof req.check === 'function' || (req.check && req.check.__runtime) || req.re;
+  if (ready) return { id: req.id ?? `r${i}`, label: req.label ?? '', ...req };
+  const check = specToCheck(req);
+  const id = req.id ?? `${req.tag || req.sel || 'r'}${i}`;
+  return { ...req, id, label: req.label ?? buildLabel(req), check };
+}
+
+// ============================================================
+//  STANDART SHART (komponent yakka ishga tushganda)
+// ============================================================
+const DEFAULT_FILES = [
+  { name: 'index.html', lang: 'html', starter: `<!-- Kodingizni shu yerga yozing -->
+<h1>Mening sahifam</h1>
+<p>Bu yerga o'zingiz haqingizda yozing.</p>
+<img src="https://placehold.co/300x180" alt="rasm tavsifi">
+` },
+];
+
+const DEFAULT_TASK = {
+  eyebrow: 'Praktika',
+  title: "O'z sahifangizni quring",
+  brief:
+    "Quyidagi shartlarni bajaring. Har biri bajarilganda yashil ✓ yonadi. Hammasi yashil bo'lsa — “Davom etish” ochiladi.",
+  requirements: [
+    { id: 'h1', label: '<h1> sarlavha (matn bilan)', check: checks.text('h1', "`<h1>` ichiga sarlavha matnini yozing") },
+    { id: 'p', label: '<p> xatboshi (matn bilan)', check: checks.text('p', "`<p>` ichiga bir-ikki gap yozing") },
+    { id: 'img', label: '<img> — src va alt bilan', check: checks.attrs('img', ['src', 'alt'], "`<img>` da `src` va `alt` ikkalasini to'ldiring") },
+  ],
+};
+
+// ============================================================
+//  CSS'ni xavfsiz parslash — vaqtinchalik <style> orqali,
+//  qiymatlarni oddiy obyektga ko'chirib olamiz (DOM'dan ajratamiz).
+// ============================================================
+function parseCss(css) {
+  if (!css || !css.trim() || typeof document === 'undefined') return [];
+  const el = document.createElement('style');
+  el.textContent = css;
+  document.head.appendChild(el);
+  let rules = [];
+  try {
+    rules = [...(el.sheet?.cssRules || [])]
+      .filter((r) => r.style) // faqat style qoidalari (media/keyframes emas)
+      .map((r) => {
+        const props = {};
+        for (let i = 0; i < r.style.length; i++) {
+          const p = r.style[i];
+          props[p] = r.style.getPropertyValue(p);
+        }
+        return { selector: r.selectorText || '', props };
+      });
+  } catch { /* parse xatosi — bo'sh qaytadi */ }
+  el.remove();
+  return rules;
+}
+
+// ============================================================
+//  HTML LINTER — sintaksis tekshiruvi (DOMParser kechirimchi,
+//  bu esa qattiqqo'l). Yopilmagan teg, yopish typo'si, yopilmagan
+//  tirnoq/izoh, noto'g'ri ichma-ichlikni ushlaydi.
+//  Qaytaradi: [{ line, msg }]
+// ============================================================
+const VOID_TAGS = new Set([
+  'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input',
+  'link', 'meta', 'param', 'source', 'track', 'wbr',
+]);
+
+// Yopish tegi IXTIYORIY bo'lgan elementlar (HTML brauzer o'zi yopadi).
+// Bularni "yopilmagan" deb xato chiqarmaymiz — aks holda <li>, ketma-ket
+// <p> kabi to'g'ri kod noto'g'ri qizil bo'lardi.
+const OPTIONAL_CLOSE = new Set(['li', 'p', 'td', 'th', 'tr', 'dt', 'dd', 'option', 'thead', 'tbody', 'tfoot']);
+const BLOCK_TAGS = new Set([
+  'address', 'article', 'aside', 'blockquote', 'details', 'div', 'dl', 'fieldset',
+  'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'header', 'hr', 'main', 'menu', 'nav', 'ol', 'p', 'pre', 'section', 'table', 'ul',
+]);
+// Yangi ochuvchi teg (open) stack tepasidagi (top) ixtiyoriy tegni yopadimi?
+function closesOnOpen(open, top) {
+  if (top === 'li') return open === 'li';
+  if (top === 'p') return open === 'p' || BLOCK_TAGS.has(open);
+  if (top === 'option') return open === 'option';
+  if (top === 'td' || top === 'th') return open === 'td' || open === 'th' || open === 'tr';
+  if (top === 'tr') return open === 'tr';
+  if (top === 'dt' || top === 'dd') return open === 'dt' || open === 'dd';
+  if (top === 'thead' || top === 'tbody' || top === 'tfoot') return open === 'tbody' || open === 'tfoot' || open === 'thead';
+  return false;
+}
+
+function lintHtml(src) {
+  const errors = [];
+  if (!src) return errors;
+  const stack = []; // { name, line }
+  const n = src.length;
+  let i = 0, line = 1, col = 1;
+  const here = () => ({ line, col });
+  const step = () => { if (src[i] === '\n') { line++; col = 1; } else { col++; } i++; };
+  const skipTo = (idx) => { while (i < idx && i < n) step(); };
+
+  while (i < n) {
+    if (src[i] !== '<') { step(); continue; }
+    const next = src[i + 1];
+
+    // Izoh
+    if (src.startsWith('<!--', i)) {
+      const end = src.indexOf('-->', i + 4);
+      if (end === -1) { errors.push({ ...here(), msg: 'Izoh yopilmagan (`-->` yetishmayapti)' }); break; }
+      skipTo(end + 3); continue;
+    }
+    // <!doctype ...> yoki deklaratsiya
+    if (next === '!') {
+      const end = src.indexOf('>', i);
+      if (end === -1) { errors.push({ ...here(), msg: '`<! ... >` yopilmagan' }); break; }
+      skipTo(end + 1); continue;
+    }
+    // Yopuvchi teg </...>
+    if (next === '/') {
+      const start = here();
+      let j = i + 2, name = '';
+      while (j < n && /[a-zA-Z0-9-]/.test(src[j])) { name += src[j]; j++; }
+      while (j < n && src[j] !== '>') j++;
+      if (j >= n) { errors.push({ line: start.line, msg: `Yopuvchi teg \`</${name}>\` to'liq emas (\`>\` yetishmayapti)` }); break; }
+      const lname = name.toLowerCase();
+      // Ixtiyoriy yopiladigan teglarni jimgina yopamiz (masalan </ul> ochiq <li>'ni yopadi)
+      while (
+        stack.length &&
+        OPTIONAL_CLOSE.has(stack[stack.length - 1].name) &&
+        stack[stack.length - 1].name !== lname &&
+        stack.some((s, idx) => s.name === lname && idx < stack.length - 1)
+      ) {
+        stack.pop();
+      }
+      if (stack.length === 0) {
+        errors.push({ line: start.line, msg: `Ortiqcha yopuvchi teg \`</${name}>\` — mos ochuvchi yo'q` });
+      } else {
+        const top = stack[stack.length - 1];
+        if (top.name === lname) {
+          stack.pop();
+        } else {
+          const idx = stack.map((s) => s.name).lastIndexOf(lname);
+          if (idx === -1) {
+            errors.push({ line: start.line, msg: `\`</${name}>\` mos ochuvchi tegga ega emas (xato yoki typo)` });
+          } else {
+            errors.push({ line: top.line, msg: `\`<${top.name}>\` yopilmagan — \`</${top.name}>\` kutilgan, \`</${name}>\` keldi` });
+            stack.length = idx;
+          }
+        }
+      }
+      skipTo(j + 1); continue;
+    }
+    // Ochuvchi teg <...>
+    if (/[a-zA-Z]/.test(next || '')) {
+      const start = here();
+      let j = i + 1, name = '';
+      while (j < n && /[a-zA-Z0-9-]/.test(src[j])) { name += src[j]; j++; }
+      let selfClose = false, closed = false, quote = null, strayLt = false;
+      while (j < n) {
+        const c = src[j];
+        if (quote) { if (c === quote) quote = null; j++; continue; }
+        if (c === '"' || c === "'") { quote = c; j++; continue; }
+        if (c === '<') { strayLt = true; break; }
+        if (c === '/' && src[j + 1] === '>') { selfClose = true; closed = true; j += 2; break; }
+        if (c === '>') { closed = true; j++; break; }
+        j++;
+      }
+      if (quote && j >= n) { errors.push({ line: start.line, msg: `\`<${name}>\` ichida tirnoq (${quote}) yopilmagan` }); break; }
+      if (strayLt) {
+        errors.push({ line: start.line, msg: `\`<${name}\` tegi \`>\` bilan yopilmagan` });
+        skipTo(j); continue; // '<' dan qayta boshlaymiz
+      }
+      if (!closed && j >= n) { errors.push({ line: start.line, msg: `\`<${name}\` tegi \`>\` bilan yopilmagan` }); break; }
+      const lname = name.toLowerCase();
+      // Ochuvchi teg stack tepasidagi ixtiyoriy tegni yopsa — jimgina yopamiz
+      while (stack.length && closesOnOpen(lname, stack[stack.length - 1].name)) stack.pop();
+      if (!selfClose && !VOID_TAGS.has(lname)) stack.push({ name: lname, line: start.line });
+      skipTo(j); continue;
+    }
+    // '<' dan keyin harf/`/`/`!` emas → matn deb qaraladi (brauzer ham shunday)
+    step();
+  }
+  // Oxirida ochiq qolgan teglar (ixtiyoriy yopiladiganlardan tashqari)
+  for (const t of stack) {
+    if (OPTIONAL_CLOSE.has(t.name)) continue;
+    errors.push({ line: t.line, msg: `\`<${t.name}>\` ochiq qoldi — \`</${t.name}>\` bilan yoping` });
+  }
+  return errors;
+}
+
+// Bitta shartni ishga tushiramiz → { ok, hint }
+function runOne(req, ctx) {
+  try {
+    // Runtime probe — bu yerda emas, iframe'da tekshiriladi (placeholder)
+    if (req.check && req.check.__runtime) {
+      return { ok: false, hint: 'ishga tushirilmoqda…', runtime: true };
+    }
+    if (typeof req.check === 'function') {
+      const r = req.check(ctx);
+      if (r === true) return { ok: true, hint: null };
+      return { ok: false, hint: typeof r === 'string' ? r : (req.hint || null) };
+    }
+    // Eski uslub: regex (orqaga moslik). Izohlarni olib tashlab tekshiramiz.
+    if (req.re) {
+      const ok = req.re.test((ctx.html || '').replace(/<!--[\s\S]*?-->/g, ''));
+      return { ok, hint: ok ? null : (req.hint || null) };
+    }
+    return { ok: false, hint: null };
+  } catch {
+    return { ok: false, hint: 'tekshirishda xatolik' };
+  }
+}
+
+// ============================================================
+//  RUNTIME HARNESS — iframe ichida ishlaydigan kod.
+//  console.log'ni ushlaydi, probe'larni bajaradi, natijani
+//  postMessage bilan ota-oynaga (parent) yuboradi. Xavfsiz:
+//  sandbox buzilmaydi, faqat bool natijalar uzatiladi.
+// ============================================================
+const CONSOLE_CAPTURE = `<script>
+window.__logs=[];
+(function(){var _l=console.log;console.log=function(){
+  for(var i=0;i<arguments.length;i++){var a=arguments[i];
+    try{window.__logs.push(typeof a==='object'?JSON.stringify(a):String(a));}catch(e){window.__logs.push(String(a));}}
+  try{_l.apply(console,arguments);}catch(e){}
+};})();
+<\/script>`;
+
+// KO'RINADIGAN konsol uchun: console.log/info/warn/error va xatolarni
+// ota-oynaga (parent) postMessage bilan uzatadi → UI'da chiqaramiz.
+// nonce — eski va yangi natijalar aralashmasligi uchun.
+const CONSOLE_FORWARD = (nonce) => `<script>
+(function(){
+  var N=${JSON.stringify(nonce)};
+  function fmt(a){try{return typeof a==='object'?JSON.stringify(a):String(a);}catch(e){return String(a);}}
+  function send(level,args){
+    var parts=[];for(var i=0;i<args.length;i++)parts.push(fmt(args[i]));
+    try{parent.postMessage({__hcConsole:true,nonce:N,level:level,text:parts.join(' ')},'*');}catch(e){}
+  }
+  ['log','info','warn','error'].forEach(function(m){
+    var _o=console[m]?console[m].bind(console):function(){};
+    console[m]=function(){send(m,arguments);try{_o.apply(null,arguments);}catch(e){}};
+  });
+  window.addEventListener('error',function(e){send('error',[e.message]);});
+})();
+<\/script>`;
+
+const buildHarness = (probes, nonce) => `<script>
+(function(){
+  function runProbes(){
+    var P=${JSON.stringify(probes)};
+    var logs=window.__logs||[];
+    var joined=logs.join(' ');
+    var out={};
+    for(var k=0;k<P.length;k++){
+      var p=P[k],ok=false;
+      try{
+        if(p.type==='log_includes'){
+          var v=String(p.value).trim();
+          ok=joined.indexOf(v)!==-1||logs.some(function(l){return String(l).trim().indexOf(v)!==-1;});
+        }else if(p.type==='eval_equals'){
+          var r; try{r=eval(p.expr);}catch(e){r=undefined;}
+          ok=String(r)===String(p.expected);
+        }else if(p.type==='click_text'){
+          var exp=String(p.expected);
+          var t0=document.querySelector(p.readSel);
+          var before=t0?t0.textContent:'';
+          var b=document.querySelector(p.clickSel);
+          if(b){try{b.click();}catch(e){}}
+          var t1=document.querySelector(p.readSel);
+          var after=t1?t1.textContent:'';
+          // Matn bosishdan KEYIN paydo bo'lishi kerak (oldin bo'lmagan) — JS'siz o'tmaydi
+          ok=after.indexOf(exp)!==-1 && before.indexOf(exp)===-1;
+        }else if(p.type==='toggle'){
+          var A=String(p.textA).toLowerCase().trim();
+          var B=String(p.textB).toLowerCase().trim();
+          var rd=function(){var e=document.querySelector(p.readSel);return (e?e.textContent:'').toLowerCase();};
+          var b2=document.querySelector(p.clickSel);
+          var s0=rd();
+          var startOk=s0.indexOf(A)!==-1 && s0.indexOf(B)===-1; // boshida A
+          if(b2){try{b2.click();}catch(e){}}
+          var s1=rd();
+          var firstOk=s1.indexOf(B)!==-1 && s1.indexOf(A)===-1; // 1-bosish -> B
+          if(b2){try{b2.click();}catch(e){}}
+          var s2=rd();
+          var secondOk=s2.indexOf(A)!==-1 && s2.indexOf(B)===-1; // 2-bosish -> A
+          ok=startOk && firstOk && secondOk;
+        }
+      }catch(e){ok=false;}
+      out[p.id]=ok;
+    }
+    try{parent.postMessage({__hcReport:true,nonce:${JSON.stringify(nonce)},results:out},'*');}catch(e){}
+  }
+  // 'load' hodisasidan keyin ishga tushiramiz — o'quvchi handler'ni
+  // window.onload / addEventListener('load') ichida ulagan bo'lsa ham ulgursin.
+  function start(){ setTimeout(runProbes, 50); }
+  if(document.readyState==='complete') start();
+  else window.addEventListener('load', start);
+})();
+<\/script>`;
+
+// Foydalanuvchi 3 faylini bitta jonli HTML hujjatga birlashtiramiz
+const baseStyle = `
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;margin:0;padding:24px;color:#13141A;line-height:1.6;background:#fff}
+  h1{font-family:Georgia,serif;margin:0 0 12px;letter-spacing:-.01em}
+  img{max-width:100%;border-radius:12px;display:block;margin:10px 0}
+  p{margin:0 0 12px}`;
+
+const wrapDoc = (html, css, js, opts = {}) => `<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>${baseStyle}
+${css || ''}</style>
+${opts.capture ? CONSOLE_CAPTURE : ''}
+${opts.consoleNonce != null ? CONSOLE_FORWARD(opts.consoleNonce) : ''}
+</head>
+<body>
+${html || ''}
+<script>${js || ''}<\/script>
+${opts.harness || ''}
+</body>
+</html>`;
+
+function HtmlCompiler({
+  task = DEFAULT_TASK,
+  starterCode,            // eski kontrakt: bitta HTML fayl uchun starter
+  onContinue,
+  onBack,
+}) {
+  // Shartlarni bir marta normalizatsiya: deklarativ data ham, eski C.has(...)
+  // uslubi ham bir xil { id, label, check } shaklga keladi. Quyidagi butun
+  // kod (runtimeProbes, results, merged, render) o'zgarmaydi.
+  const reqs = useMemo(
+    () => (task.requirements || []).map((r, i) => normalizeReq(r, i)),
+    [task.requirements]
+  );
+
+  // Fayllar: task.files bo'lsa o'shani, bo'lmasa eski yakka HTML faylni ishlatamiz
+  const files = useMemo(() => {
+    if (task.files && task.files.length) return task.files;
+    const single = { ...DEFAULT_FILES[0] };
+    if (starterCode != null) single.starter = starterCode;
+    return [single];
+  }, [task.files, starterCode]);
+
+  const [codes, setCodes] = useState(() =>
+    Object.fromEntries(files.map((f) => [f.name, f.starter ?? '']))
+  );
+  const [active, setActive] = useState(files[0].name);
+  const taRef = useRef(null);
+
+  // Til bo'yicha matnni olish (birlashtirilgan preview uchun)
+  const byLang = (lang) => {
+    const f = files.find((ff) => ff.lang === lang);
+    return f ? (codes[f.name] ?? '') : '';
+  };
+  const html = byLang('html'), css = byLang('css'), js = byLang('js');
+
+  // Runtime shartlar (iframe'da ishlatib tekshiriladi)
+  const runtimeProbes = useMemo(
+    () => reqs.filter((r) => r.check && r.check.__runtime)
+      .map((r) => ({ id: r.id, type: r.check.__runtime, ...r.check })),
+    [reqs]
+  );
+  const hasRuntime = runtimeProbes.length > 0;
+  const nonceRef = useRef(0);
+  const [runtimeResults, setRuntimeResults] = useState({});
+
+  // ── KO'RINADIGAN KONSOL — JS fayli bo'lsa ko'rsatamiz (console.log natijasi) ──
+  const showConsole = useMemo(() => files.some((f) => f.lang === 'js'), [files]);
+  const consoleNonceRef = useRef(0);
+  const [consoleLines, setConsoleLines] = useState([]);
+
+  // Ko'rinadigan preview — HECH QACHON tekshiruv tomonidan o'zgartirilmaydi
+  const [doc, setDoc] = useState(() => wrapDoc(html, css, js));
+  // Tekshiruv hujjati — alohida YASHIRIN iframe'da ishlaydi (tugmani bosadi,
+  // DOMni o'zgartiradi — lekin foydalanuvchi buni ko'rmaydi)
+  const [checkDoc, setCheckDoc] = useState('');
+  // Jonli natijani debounce bilan yangilaymiz (har bosishda emas)
+  useEffect(() => {
+    const id = setTimeout(() => {
+      const cn = showConsole ? ++consoleNonceRef.current : null;
+      if (showConsole) setConsoleLines([]); // yangi ishga tushishda konsol tozalanadi
+      setDoc(wrapDoc(html, css, js, cn != null ? { consoleNonce: cn } : {}));
+      if (hasRuntime) {
+        const nonce = ++nonceRef.current;
+        setRuntimeResults({}); // kutish holatiga qaytaramiz
+        setCheckDoc(wrapDoc(html, css, js, { capture: true, harness: buildHarness(runtimeProbes, nonce) }));
+      }
+    }, 300);
+    return () => clearTimeout(id);
+  }, [html, css, js, hasRuntime, runtimeProbes, showConsole]);
+
+  // iframe'dan kelgan runtime natijalarni qabul qilamiz (faqat oxirgi nonce)
+  useEffect(() => {
+    if (!hasRuntime) return;
+    const onMsg = (e) => {
+      const d = e.data;
+      if (d && d.__hcReport && d.nonce === nonceRef.current) {
+        setRuntimeResults(d.results || {});
+      }
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [hasRuntime]);
+
+  // Preview iframe'dan kelgan console.log xabarlarini yig'amiz (faqat oxirgi nonce)
+  useEffect(() => {
+    if (!showConsole) return;
+    const onMsg = (e) => {
+      const d = e.data;
+      if (d && d.__hcConsole && d.nonce === consoleNonceRef.current) {
+        setConsoleLines((prev) => (prev.length >= 200 ? prev : [...prev, { level: d.level, text: d.text }]));
+      }
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [showConsole]);
+
+  // ── TEKSHIRUV: real tahlil, sinxron, xavfsiz (iframe'ga tegmaydi) ──
+  const results = useMemo(() => {
+    const parsed = new DOMParser().parseFromString(html || '', 'text/html');
+    const ctx = {
+      html, css, js,
+      doc: parsed,
+      $: (s) => { try { return parsed.querySelector(s); } catch { return null; } },
+      $$: (s) => { try { return [...parsed.querySelectorAll(s)]; } catch { return []; } },
+      cssRules: parseCss(css),
+    };
+    return reqs.map((r) => runOne(r, ctx));
+  }, [html, css, js, reqs]);
+
+  // ── SINTAKSIS: HTML linter (DOMParser ushlamaydigan xatolarni tutadi) ──
+  const htmlErrors = useMemo(() => lintHtml(html), [html]);
+  const hasSyntaxError = htmlErrors.length > 0;
+
+  // Sinxron + runtime natijalarni birlashtiramiz
+  const merged = reqs.map((r, i) => {
+    if (r.check && r.check.__runtime) {
+      const got = runtimeResults[r.id];
+      if (got === undefined) return { ok: false, hint: 'ishga tushirilmoqda…' };
+      return { ok: !!got, hint: got ? null : (r.check.hint || 'natija kutilgancha emas') };
+    }
+    return results[i];
+  });
+
+  const passedCount = merged.filter((r) => r.ok).length;
+  const allPassed = reqs.length > 0 && passedCount === reqs.length && !hasSyntaxError;
+  const firstHint = merged.find((r) => !r.ok && r.hint)?.hint;
+
+  const setActiveCode = (val) => setCodes((prev) => ({ ...prev, [active]: val }));
+
+  // Tab tugmasi 2 bo'sh joy qo'shsin
+  const onKeyDown = (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const el = e.target;
+      const s = el.selectionStart, en = el.selectionEnd;
+      const cur = codes[active] ?? '';
+      const next = cur.slice(0, s) + '  ' + cur.slice(en);
+      setActiveCode(next);
+      requestAnimationFrame(() => { el.selectionStart = el.selectionEnd = s + 2; });
+    }
+  };
+
+  const runNow = () => {
+    const cn = showConsole ? ++consoleNonceRef.current : null;
+    if (showConsole) setConsoleLines([]);
+    setDoc(wrapDoc(html, css, js, cn != null ? { consoleNonce: cn } : {}));
+  };
+  const reset = () => setCodes(Object.fromEntries(files.map((f) => [f.name, f.starter ?? ''])));
+
+  return (
+    <div className="hc-root">
+      <StyleTag />
+
+      {/* ── Tepa: shart (markazda) ── */}
+      <header className="hc-top">
+        {task.eyebrow && <span className="hc-eyebrow">{task.eyebrow}</span>}
+        <h1 className="hc-title">{task.title}</h1>
+        {task.brief && <p className="hc-brief">{task.brief}</p>}
+        <div className="hc-checklist">
+          <span className="hc-count">{passedCount}/{reqs.length}</span>
+          {reqs.map((r, i) => (
+            <span key={r.id} className={`hc-chip ${merged[i]?.ok ? 'ok' : ''}`} title={merged[i]?.hint || ''}>
+              <span className="hc-dot">{merged[i]?.ok ? '✓' : i + 1}</span>
+              {r.label}
+            </span>
+          ))}
+        </div>
+        {hasSyntaxError ? (
+          <div className="hc-errors">
+            {htmlErrors.slice(0, 3).map((e, k) => (
+              <span key={k} className="hc-err">⚠ Sintaksis · qator {e.line}: {e.msg}</span>
+            ))}
+            {htmlErrors.length > 3 && <span className="hc-err">… va yana {htmlErrors.length - 3} ta xato</span>}
+          </div>
+        ) : (!allPassed && firstHint && (
+          <p className="hc-hint">💡 {firstHint}</p>
+        ))}
+      </header>
+
+      {/* ── O'rta: editor | natija ── */}
+      <main className="hc-split">
+        <section className="hc-pane hc-editor-pane">
+          <div className="hc-pane-bar hc-tabs-bar">
+            <span className="hc-dots"><i /><i /><i /></span>
+            <div className="hc-tabs">
+              {files.map((f) => (
+                <button
+                  key={f.name}
+                  className={`hc-tab ${active === f.name ? 'active' : ''}`}
+                  onClick={() => setActive(f.name)}
+                >
+                  {f.name}
+                </button>
+              ))}
+            </div>
+            <button className="hc-mini" onClick={runNow} title="Ishga tushirish">▶ Ishga tushirish</button>
+          </div>
+          <textarea
+            ref={taRef}
+            className="hc-code"
+            value={codes[active] ?? ''}
+            onChange={(e) => setActiveCode(e.target.value)}
+            onKeyDown={onKeyDown}
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
+            placeholder="Kodingizni shu yerga yozing…"
+          />
+        </section>
+
+        <section className="hc-pane hc-preview-pane">
+          <div className="hc-pane-bar">
+            <span className="hc-pane-name">📺 Natija</span>
+            <span className="hc-live">jonli</span>
+          </div>
+          <iframe
+            className="hc-frame"
+            title="natija"
+            sandbox="allow-scripts"
+            srcDoc={doc}
+          />
+          {showConsole && (
+            <div className="hc-console">
+              <div className="hc-console-bar">
+                <span className="hc-console-title">🖥️ Console</span>
+                {consoleLines.length > 0 && (
+                  <button className="hc-console-clear" onClick={() => setConsoleLines([])}>tozalash</button>
+                )}
+              </div>
+              <div className="hc-console-body">
+                {consoleLines.length === 0 ? (
+                  <div className="hc-console-empty">console.log(...) natijasi shu yerda chiqadi</div>
+                ) : (
+                  consoleLines.map((l, i) => (
+                    <div key={i} className={`hc-console-line lvl-${l.level}`}>
+                      <span className="hc-console-caret">›</span>
+                      <span className="hc-console-text">{l.text}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </section>
+      </main>
+
+      {/* Yashirin tekshiruv iframe'i — probe'lar shu yerda ishlaydi (tugmani
+          bosadi, DOMni o'zgartiradi), foydalanuvchi ko'radigan preview esa toza qoladi */}
+      {hasRuntime && (
+        <iframe
+          aria-hidden="true"
+          tabIndex={-1}
+          title="tekshiruv"
+          sandbox="allow-scripts"
+          srcDoc={checkDoc}
+          style={{ position: 'fixed', left: '-9999px', top: 0, width: 1, height: 1, opacity: 0, pointerEvents: 'none', border: 'none' }}
+        />
+      )}
+
+      {/* ── Past: harakatlar ── */}
+      <footer className="hc-bottom">
+        {onBack && <button className="hc-ghost" onClick={onBack}>← Orqaga</button>}
+        <button className="hc-ghost" onClick={reset}>Qaytadan</button>
+        <div className="hc-status">
+          {allPassed
+            ? <span className="hc-ok-msg">✓ Barcha shartlar bajarildi!</span>
+            : <span className="hc-wait-msg">Shartlarni bajaring — natija o'ngda ko'rinadi</span>}
+        </div>
+        <button
+          className="hc-next"
+          disabled={!allPassed}
+          onClick={() => allPassed && onContinue && onContinue({ codes, code: html })}
+        >
+          Davom etish →
+        </button>
+      </footer>
+    </div>
+  );
+}
+
+function StyleTag() {
+  return (
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+      .hc-root,.hc-root *{box-sizing:border-box}
+      .hc-root{font-family:'Manrope',system-ui,sans-serif;color:${HC_T.ink};background:
+        radial-gradient(120% 80% at 50% -10%, ${HC_T.accentSoft} 0%, rgba(255,237,229,0) 46%),
+        ${HC_T.bg};
+        height:100dvh;display:flex;flex-direction:column;justify-content:center;gap:clamp(12px,1.8vw,18px);padding:clamp(16px,2.4vw,30px);overflow:hidden;-webkit-font-smoothing:antialiased;width:100%;max-width:1160px;margin:0 auto}
+
+      .hc-top{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px}
+      .hc-eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:${HC_T.accent};display:inline-flex;align-items:center;gap:7px}
+      .hc-eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:${HC_T.accent}}
+      .hc-title{font-family:Georgia,serif;font-size:clamp(22px,3vw,32px);margin:0;color:${HC_T.ink};font-weight:600;letter-spacing:-.015em;line-height:1.12}
+      .hc-brief{margin:0;color:${HC_T.ink2};font-size:clamp(13px,1.5vw,15px);line-height:1.55;max-width:60ch}
+
+      .hc-checklist{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:6px}
+      .hc-count{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:#fff;background:linear-gradient(135deg,${HC_T.accent},${HC_T.accent2});padding:6px 11px;border-radius:99px;box-shadow:0 6px 16px -6px rgba(255,77,38,.5)}
+      .hc-chip{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500;color:${HC_T.ink2};background:${HC_T.paper};padding:6px 14px 6px 7px;border-radius:99px;border:1px solid ${HC_T.line};box-shadow:0 1px 2px rgba(${HC_T.shadowBase},.04);transition:all .22s ease;cursor:default}
+      .hc-chip.ok{color:${HC_T.ink};font-weight:600;border-color:${HC_T.success}40;background:${HC_T.successSoft}}
+      .hc-dot{flex-shrink:0;width:21px;height:21px;border-radius:50%;background:${HC_T.bg};color:${HC_T.ink3};display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .25s}
+      .hc-chip.ok .hc-dot{background:${HC_T.success};color:#fff;box-shadow:0 3px 8px -2px ${HC_T.success}88}
+      .hc-hint{margin:3px 0 0;font-size:13px;color:${HC_T.warn};background:#FFF6EA;border:1px solid #F4DFBC;padding:8px 15px;border-radius:11px;max-width:60ch;line-height:1.5}
+      .hc-errors{display:flex;flex-direction:column;gap:5px;align-items:center;margin:3px 0 0}
+      .hc-err{font-size:12.5px;color:#C01024;background:#FDECEC;border:1px solid #F6CFCF;padding:7px 14px;border-radius:10px;font-family:'JetBrains Mono',monospace;max-width:74ch;line-height:1.5}
+
+      .hc-split{flex:none;height:62vh;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.6vw,18px)}
+      .hc-pane{display:flex;flex-direction:column;min-height:0;border-radius:18px;overflow:hidden;background:${HC_T.paper};box-shadow:0 1px 0 ${HC_T.line},0 18px 40px -22px rgba(${HC_T.shadowBase},.35)}
+      .hc-pane-bar{display:flex;align-items:center;gap:10px;padding:10px 15px;font-size:12px;font-weight:600;color:${HC_T.ink2}}
+      .hc-editor-pane .hc-pane-bar{background:${HC_CODE.bg};color:#A7B6D6;border-bottom:1px solid rgba(255,255,255,.06)}
+      .hc-preview-pane .hc-pane-bar{background:${HC_T.paper};border-bottom:1px solid ${HC_T.line}}
+      .hc-dots{display:inline-flex;gap:6px;flex-shrink:0}
+      .hc-dots i{width:11px;height:11px;border-radius:50%;background:#3A4760;display:block}
+      .hc-dots i:nth-child(1){background:#ff5f56}.hc-dots i:nth-child(2){background:#ffbd2e}.hc-dots i:nth-child(3){background:#27c93f}
+      .hc-pane-name{font-family:'JetBrains Mono',monospace;font-weight:700}
+      .hc-live{margin-left:auto;font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:${HC_T.success};background:${HC_T.successSoft};padding:4px 9px;border-radius:99px;font-weight:800;display:inline-flex;align-items:center;gap:6px}
+      .hc-live::before{content:"";width:6px;height:6px;border-radius:50%;background:${HC_T.success};animation:hc-pulse 1.8s infinite}
+      @keyframes hc-pulse{0%{box-shadow:0 0 0 0 ${HC_T.success}66}70%{box-shadow:0 0 0 6px ${HC_T.success}00}100%{box-shadow:0 0 0 0 ${HC_T.success}00}}
+
+      .hc-tabs{display:flex;gap:4px;overflow:hidden}
+      .hc-tab{background:transparent;border:none;color:#7E92B4;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;padding:6px 13px;border-radius:9px;cursor:pointer;transition:all .15s;white-space:nowrap}
+      .hc-tab:hover{color:#cfe0ff;background:rgba(255,255,255,.06)}
+      .hc-tab.active{color:#fff;background:rgba(255,255,255,.14);box-shadow:inset 0 -2px 0 ${HC_T.accent}}
+      .hc-mini{margin-left:auto;background:linear-gradient(135deg,${HC_T.accent},${HC_T.accent2});color:#fff;border:none;border-radius:9px;padding:6px 13px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'Manrope',sans-serif;transition:all .18s;flex-shrink:0;box-shadow:0 6px 14px -6px rgba(255,77,38,.6)}
+      .hc-mini:hover{transform:translateY(-1px);box-shadow:0 9px 18px -6px rgba(255,77,38,.7)}
+      .hc-mini:active{transform:translateY(0)}
+
+      .hc-code{flex:1;min-height:0;resize:none;border:none;outline:none;background:${HC_CODE.bg};color:${HC_CODE.text};font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.7;padding:18px 20px;tab-size:2;white-space:pre;overflow:auto;caret-color:${HC_T.accent2}}
+      .hc-code::placeholder{color:#5B6B86}
+      .hc-code::selection{background:${HC_T.accent}55}
+
+      .hc-frame{flex:1;min-height:0;width:100%;border:none;background:#fff}
+
+      .hc-console{flex-shrink:0;height:34%;min-height:96px;display:flex;flex-direction:column;background:${HC_CODE.bg};border-top:1px solid rgba(255,255,255,.07)}
+      .hc-console-bar{display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7E92B4;border-bottom:1px solid rgba(255,255,255,.06)}
+      .hc-console-title{font-family:'JetBrains Mono',monospace}
+      .hc-console-clear{margin-left:auto;background:rgba(255,255,255,.08);color:#cfe0ff;border:none;border-radius:7px;padding:4px 10px;font-size:10.5px;font-weight:600;cursor:pointer;text-transform:none;letter-spacing:0;font-family:'Manrope',sans-serif;transition:all .15s}
+      .hc-console-clear:hover{background:${HC_T.accent};color:#fff}
+      .hc-console-body{flex:1;min-height:0;overflow:auto;padding:6px 0;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6}
+      .hc-console-empty{color:#5B6B86;padding:4px 15px;font-style:italic}
+      .hc-console-line{display:flex;gap:8px;padding:2px 15px;color:#E7EAF2;border-bottom:1px solid rgba(255,255,255,.03);white-space:pre-wrap;word-break:break-word}
+      .hc-console-caret{color:#27c93f;flex-shrink:0;font-weight:700}
+      .hc-console-line.lvl-warn{color:#FFD380;background:rgba(255,189,46,.08)}
+      .hc-console-line.lvl-error{color:#ff8a7a;background:rgba(255,95,86,.1)}
+      .hc-console-line.lvl-error .hc-console-caret{color:#ff5f56}
+
+      .hc-bottom{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+      .hc-ghost{background:transparent;border:1px solid transparent;color:${HC_T.ink2};font-family:'Manrope',sans-serif;font-weight:600;font-size:14px;cursor:pointer;padding:11px 17px;border-radius:12px;transition:all .15s}
+      .hc-ghost:hover{background:${HC_T.paper};color:${HC_T.ink};border-color:${HC_T.line};box-shadow:0 6px 16px -10px rgba(${HC_T.shadowBase},.3)}
+      .hc-status{margin-left:auto}
+      .hc-ok-msg{color:${HC_T.success};font-weight:700;font-size:14px}
+      .hc-wait-msg{color:${HC_T.ink3};font-size:13px}
+      .hc-next{background:linear-gradient(135deg,${HC_T.accent},${HC_T.accent2});color:#fff;border:none;border-radius:13px;font-family:'Manrope',sans-serif;font-weight:800;font-size:15px;cursor:pointer;padding:13px 30px;box-shadow:0 10px 24px -8px rgba(255,77,38,.6);transition:all .2s}
+      .hc-next:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 16px 32px -8px rgba(255,77,38,.7)}
+      .hc-next:active:not(:disabled){transform:translateY(0)}
+      .hc-next:disabled{background:#D7D8DE;color:#fff;cursor:not-allowed;box-shadow:none}
+
+      @media (max-width:820px){
+        .hc-split{grid-template-columns:1fr;grid-template-rows:1fr 1fr}
+        .hc-checklist{width:100%}
+      }
+    `}</style>
+  );
+}
+
+// Dars shartlarida ishlatiladigan qisqa alias (ilgari `checks as C`)
+const C = checks;
+
 const T = {
   bg: '#F6F4EF', ink: '#0E0E10', ink2: '#5A5A60', ink3: '#A7A6A2',
-  paper: '#FFFFFF', accent: '#FF4F28', accentSoft: '#FFE8E1', accentVivid: '#FF4F28',
-  success: '#1F7A4D', successSoft: '#E3F0E8', blue: '#019ACB', link: '#1a56db',
+  paper: '#FFFFFF', accent: '#FF4D26', accent2: '#FF8A3D', accentSoft: '#FFEDE5', accentVivid: '#FF4D26',
+  success: '#0FA968', successSoft: '#E4F7EE', blue: '#019ACB', link: '#1a56db', line: '#E9E6DF',
   shadowBase: '58, 53, 48'
 };
-const CODE = { bg: '#1A2436', text: '#E8E5DD', tag: '#FF7755', attr: '#FFD380', str: '#7DD181', comment: '#6B7585', punct: '#9FB4D8' };
+const CODE = { bg: '#0E1525', text: '#E7EAF2', tag: '#FF7755', attr: '#FFD380', str: '#7DD181', comment: '#6B7585', punct: '#9FB4D8' };
+
+// ===== RASMLAR — LMS'ga darslik bilan yonma-yon yuklanadi =====
+// LMS rasmlarni qaysi papkada bersa, shu yerga yoz (masalan '/uploads' yoki '').
+// Dev'da bo'sh ('') — Vite public/ papkasini '/' dan beradi → '/15.png'.
+const ASSET_BASE = '';
+// Bundlangan rasmlar (Vite import) — lokalda/buildda haqiqatan ko'rinadi.
+// Bu yerda bo'lmagan nom (masalan 'profil.png') LMS root'idan yuklanadi.
+// Mentor avatari shu faylda '15.png' deb chaqiriladi → mentor.png ga bog'laymiz.
+const BUNDLED = {
+  '15.png': mentorImg,
+  'tog.png': togImg,
+  'mushuk.png': mushukImg,
+  'raketa.png': raketaImg,
+};
+const asset = (name) => BUNDLED[name] || `${ASSET_BASE}/${name}`;
 
 const LangContext = createContext('uz');
 const MentorCtx = createContext(null); // mobil: yig'iladigan Mentor
@@ -173,6 +1080,34 @@ const Preview = ({ children, title = 'preview.html', minH }) => (
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
+// ===== ZOOM FRAME — vizualni to'liq ekranga ochish (maximize/minimize) =====
+const ZoomIcon = ({ open }) => open ? (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 9H4" /><path d="M9 9V4" /><path d="M9 9 4 4" /><path d="M15 15h5" /><path d="M15 15v5" /><path d="m15 15 5 5" /></svg>
+) : (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6" /><path d="M9 21H3v-6" /><path d="M21 3l-7 7" /><path d="M3 21l7-7" /></svg>
+);
+const ZoomFrame = ({ children, label }) => {
+  const [zoomed, setZoomed] = useState(false);
+  useEffect(() => {
+    if (!zoomed) return;
+    const onKey = (e) => { if (e.key === 'Escape') setZoomed(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [zoomed]);
+  return (
+    <>
+      {zoomed && <div className="zoom-backdrop" onClick={() => setZoomed(false)} />}
+      <div className={`zoomframe ${zoomed ? 'is-zoomed' : ''}`}>
+        {zoomed && label && <span className="zoom-label">{label}</span>}
+        <div className="zoom-body">{children}</div>
+        <button className="zoom-btn" onClick={() => setZoomed(z => !z)} title={zoomed ? 'Kichraytirish' : 'Kattalashtirish'} aria-label={zoomed ? 'Kichraytirish' : 'Kattalashtirish'}>
+          <ZoomIcon open={zoomed} />
+        </button>
+      </div>
+    </>
+  );
+};
+
 const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, audioState, narrow, mentorStatic }) => {
   const isMobile = useIsMobile();
   const isNarrow = useIsMobile(768); // mobil: Mentor yig'ilish rejimi
@@ -295,7 +1230,7 @@ const Mentor = ({ children }) => {
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
-        <img src={mentorImg} alt="" />
+        <img src={asset('15.png')} alt="Mentor" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
       </div>
       <div className="mentor-col">
         <span className="mentor-name">Mentor{collapsed && <span className="mentor-cue"> · ko'rsatmani ochish ▾</span>}</span>
@@ -305,41 +1240,29 @@ const Mentor = ({ children }) => {
   );
 };
 
-// Animatsiyani katta ekranda ko'rish uchun o'rovchi — ⛶ tugma, holat saqlanadi
-const Zoomable = ({ children }) => {
-  const [big, setBig] = useState(false);
-  useEffect(() => {
-    if (!big) return;
-    const onKey = (e) => { if (e.key === 'Escape') setBig(false); };
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey); };
-  }, [big]);
-  return (
-    <>
-      {big && <div className="zoom-backdrop" onClick={() => setBig(false)} />}
-      <div className={`zoomable ${big ? 'zoom-on' : ''}`}>
-        <button type="button" className="zoom-btn" onClick={() => setBig(b => !b)} aria-label={big ? 'Kichraytirish' : 'Kattalashtirish'} title={big ? 'Kichraytirish' : 'Kattalashtirish'}>{big ? '✕' : '⛶'}</button>
-        {children}
-      </div>
-    </>
-  );
+// ===== RASM HELPER (rasmlar uchun joy egasi — haqiqiy fayl shart emas) =====
+// Har turga real rasm (public/ ichida) biriktiriladi. Rasm bo'lmasa yoki
+// yuklanmasa — avtomatik emojiga qaytadi (shu uchun rasm topguncha buzilmaydi).
+const PHOTO_SET = {
+  tog:    { bg: 'linear-gradient(160deg,#a9def0,#eaf6ee)', emoji: '🏔️', img: 'tog.png' },
+  mushuk: { bg: 'transparent', emoji: '🐱', img: 'mushuk.png', fit: 'contain', bare: true },
+  raketa: { bg: 'linear-gradient(160deg,#d9d4ff,#f0eeff)', emoji: '🚀', img: 'raketa.png' },
+  profil: { bg: 'linear-gradient(160deg,#ffd9cf,#ffeee9)', emoji: '🧑‍🚀', img: 'profil.png' }
 };
-
-// ===== RASM HELPER (tog/mushuk/raketa — haqiqiy rasm; profil — emoji) =====
-const PHOTO_IMG = { tog: togImg, mushuk: mushukImg, raketa: raketaImg };
 const Photo = ({ kind = 'tog', w = 180, h = 120, broken = false, alt = '' }) => {
-  const SET = {
-    tog:    { bg: 'linear-gradient(160deg,#a9def0,#eaf6ee)', emoji: '🏔️' },
-    mushuk: { bg: 'linear-gradient(160deg,#ffe1c4,#fff3e6)', emoji: '🐱' },
-    raketa: { bg: 'linear-gradient(160deg,#d9d4ff,#f0eeff)', emoji: '🚀' },
-    profil: { bg: 'linear-gradient(160deg,#ffd9cf,#ffeee9)', emoji: '🧑‍🚀' }
-  };
-  if (broken) return (<span className="img-broken" style={{ width: w, height: h }}><span className="ib-ic">🖼️</span><span>{alt || 'rasm yuklanmadi'}</span></span>);
-  const src = PHOTO_IMG[kind];
-  if (src) return (<img src={src} alt={alt} style={{ width: w, height: h, objectFit: 'cover', borderRadius: 10, boxShadow: '0 2px 8px rgba(0,0,0,0.08)', display: 'block' }} />);
-  const sc = SET[kind] || SET.tog;
-  return (<span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: w, height: h, borderRadius: 10, background: sc.bg, fontSize: Math.round(h * 0.36), boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>{sc.emoji}</span>);
+  const sc = PHOTO_SET[kind] || PHOTO_SET.tog;
+  const [failed, setFailed] = useState(false);
+  if (broken) return (<span className="img-broken photo-box" style={{ width: w, height: h }}><span className="ib-ic">🖼️</span><span>{alt || 'rasm yuklanmadi'}</span></span>);
+  const box = { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: w, height: h, borderRadius: sc.bare ? 0 : 10, background: sc.bg, fontSize: Math.round(h * 0.36), boxShadow: sc.bare ? 'none' : '0 2px 8px rgba(0,0,0,0.08)', overflow: 'hidden' };
+  // Rasm bor va yuklandi → rasm; aks holda → emoji (zaxira)
+  if (sc.img && !failed) {
+    return (
+      <span className="photo-box" style={box}>
+        <img src={asset(sc.img)} alt={alt || kind} onError={() => setFailed(true)} style={{ width: '100%', height: '100%', objectFit: sc.fit || 'cover', display: 'block' }} />
+      </span>
+    );
+  }
+  return (<span className="photo-box" style={box}>{sc.emoji}</span>);
 };
 
 // ===== SCREEN 0 — HOOK =====
@@ -417,7 +1340,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   const [showSteps, setShowSteps] = useState(false);
   const PreviewBlock = (
     <Col>
-      <p className="flow-label">Natija — dars oxirida shunday bo'ladi</p>
+      <p className="flow-label">Manzil — dars oxirida shunday bo'ladi</p>
       <Preview title="mening-saytim.html" minH={250}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
           <Photo kind="profil" w={50} h={50} />
@@ -476,7 +1399,6 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Saytga rasmni qanday <span className="italic" style={{ color: T.accent }}>qo'yamiz</span>?</h2></div>
         <Mentor>Saytga rasm qo'yish — devorga <b style={{ color: T.ink }}>surat</b> ilganga o'xshaydi. <span className="mono">img</span> — bu ramka, <span className="mono">src</span> esa qaysi rasmni qo'yishni aytadi. Eng qizig'i: <span className="mono">img</span> <b style={{ color: T.ink }}>yopuvchi tegsiz</b>. Tugmalarni bosib, rasmni almashtiring.</Mentor>
-        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="fade-up delay-2" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{CHOICES.map(c => (<button key={c.key} className={`chip ${kind === c.key ? 'chip-on' : ''}`} onClick={() => pick(c.key)}>{c.label}</button>))}</div>
@@ -485,10 +1407,9 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </div>
           {(!isNarrow || done) && (<div className="col">
             <div className="flow-label">Sahifada shunday ko'rinadi</div>
-            <Preview title="rasm.html" minH={150}><div style={{ display: 'flex', justifyContent: 'center' }} key={kind}><span className="el-in"><Photo kind={kind} w={200} h={130} /></span></div></Preview>
+            <ZoomFrame label="Rasm sahifada"><Preview title="rasm.html" minH={150}><div style={{ display: 'flex', justifyContent: 'center' }} key={kind}><span className="el-in"><Photo kind={kind} w={200} h={130} /></span></div></Preview></ZoomFrame>
           </div>)}
         </div>
-        </Zoomable>
       </div>
     </Stage>
   );
@@ -503,23 +1424,21 @@ const Screen3 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const toggle = () => { setBroken(b => !b); setTouched(true); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="alt atributi" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Rasmni o'chirib ko'ring"} onClick={onNext} /></>}>
+    <Stage eyebrow="alt atributi" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Praktika →" : "Rasmni o'chirib ko'ring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Rasm <span className="italic" style={{ color: T.accent }}>yuklanmasa</span> nima bo'ladi?</h2></div>
         <Mentor>Internet sekin bo'lsa yoki rasm yo'qolsa-chi? Mana shu yerda <span className="mono">alt</span> yordam beradi — u rasmni <b style={{ color: T.ink }}>so'z bilan</b> tasvirlaydi. Ko'zi ojiz odamlar va Google ham shu matnni o'qiydi. Rasmni "o'chirib" ko'ring.</Mentor>
-        <Zoomable>
         <div className="split">
           <div className="col">
             <pre className="code-box fade-up delay-2"><Tg>{'<img '}</Tg><At>src</At>=<Sr>"mushuk.jpg"</Sr> <At>alt</At>=<Sr>"Oq mushuk"</Sr><Tg>{'>'}</Tg></pre>
             <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={toggle}>{broken ? '🌐 Rasmni yoqish' : "📵 Rasmni o'chirish"}</button>
-            <div className={broken ? 'frame-success fade-step' : 'hint'}><p className="body" style={{ margin: 0, color: T.ink }}>{broken ? <>Rasm yo'q — lekin <b>alt</b> matni ("Oq mushuk") ko'rinib turibdi. Foydalanuvchi baribir nima rasm ekanini biladi.</> : <>Hozir rasm ko'rinyapti. <b style={{ color: T.ink }}>alt</b> esa yashirin turadi — u faqat rasm yo'qolganda yoki ekranni ovoz bilan o'qib beruvchi dasturlar uchun chiqadi.</>}</p></div>
+            <div className={broken ? 'frame-success fade-step' : 'hint'}><p className="body" style={{ margin: 0, color: T.ink }}>{broken ? <>Rasm yo'q — lekin <b>alt</b> matni ("Oq mushuk") ko'rinib turibdi. Foydalanuvchi baribir nima rasm ekanini biladi.</> : <>Hozir rasm ko'rinyapti. <b style={{ color: T.ink }}>alt</b> esa yashirin turadi — u faqat rasm yo'qolganda yoki ekran o'qigichlar uchun chiqadi.</>}</p></div>
           </div>
           <div className="col">
             <div className="flow-label">natija</div>
-            <Preview title="mushuk.html" minH={150}><div style={{ display: 'flex', justifyContent: 'center' }} key={broken}><span className="el-in"><Photo kind="mushuk" w={200} h={130} broken={broken} alt="Oq mushuk" /></span></div></Preview>
+            <ZoomFrame label="natija"><Preview title="mushuk.html" minH={150}><div style={{ display: 'flex', justifyContent: 'center' }} key={broken}><span className="el-in"><Photo kind="mushuk" w={200} h={130} broken={broken} alt="Oq mushuk" /></span></div></Preview></ZoomFrame>
           </div>
         </div>
-        </Zoomable>
       </div>
     </Stage>
   );
@@ -532,7 +1451,7 @@ const Screen4 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri atributni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Rasm faylining manzilini qaysi atribut ko'rsatadi?</h2></>}
     options={['alt', 'src', 'href', 'file']} correctIdx={1}
     explainCorrect="To'g'ri! src (source) — rasm faylining manzilini ko'rsatadi. Masalan: img src bilan 'mushuk.jpg' ni yuklaydi."
-    explainWrong={{ 0: 'alt — rasm yuklanmaganda chiqadigan matn. Manzilni esa src ko’rsatadi.', 2: 'href — bu havola (a teg) manzili. Rasm uchun src ishlatiladi.', 3: 'file — bunday atribut yo’q. To’g’risi — src.', default: 'Rasm manzili src atributida yoziladi.' }} />
+    explainWrong={{ 1: 'alt — rasm yuklanmaganda chiqadigan matn. Manzilni esa src ko’rsatadi.', 2: 'href — bu havola (a teg) manzili. Rasm uchun src ishlatiladi.', 3: 'file — bunday atribut yo’q. To’g’risi — src.', default: 'Rasm manzili src atributida yoziladi.' }} />
 );
 
 // ===== SCREEN 5 — STRUKTURA (header/main/footer) =====
@@ -555,16 +1474,12 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sahifa qanday <span className="italic" style={{ color: T.accent }}>bo'limlarga</span> bo'linadi?</h2></div>
         <Mentor>Gazetani eslang: tepada nomi, o'rtada maqolalar, pastda aloqa. Sahifa ham shunaqa: <b style={{ color: T.ink }}>header</b> — tepa, <b style={{ color: T.ink }}>main</b> — asosiy qism, <b style={{ color: T.ink }}>footer</b> — pastki qism. Har bir bo'limni bosing.</Mentor>
-        <Zoomable>
         <div className="split">
           <div className="col">
-            <div className="struktwin fade-up delay-2">
-              <div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">aziza.uz — bitta sahifa, uch bo'lak</span></div>
-              <div className="strukt">
+            <div className="strukt fade-up delay-2">
               <div className={zc('header')} onClick={() => tap('header')}><p className="szone-h">🏷️ Logo · Menyu</p><p className="szone-d">sayt nomi va navigatsiya</p><span className="szone-tag">&lt;header&gt;</span></div>
               <div className={zc('main') + ' szone-main'} onClick={() => tap('main')}><p className="szone-h">📄 Asosiy kontent</p><p className="szone-d">matn, rasmlar, eng muhim narsa</p><span className="szone-tag">&lt;main&gt;</span></div>
               <div className={zc('footer')} onClick={() => tap('footer')}><p className="szone-h">📮 Aloqa · © 2026</p><p className="szone-d">pastki ma'lumotlar</p><span className="szone-tag">&lt;footer&gt;</span></div>
-              </div>
             </div>
           </div>
           <div className="col" style={{ gap: 8 }}>
@@ -586,7 +1501,6 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </div>
         </div>
-        </Zoomable>
       </div>
     </Stage>
   );
@@ -600,7 +1514,7 @@ const Screen5b = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>Mustahkamlash</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Sahifaning tepasidagi <span className="italic" style={{ color: T.accent }}>logotip va menyu</span> qaysi bo'limga joylanadi?</h2></>}
     options={['<footer>', '<main>', '<header>', '<img>']} correctIdx={2}
     explainCorrect="To'g'ri! header — sahifaning tepasi: logotip, sayt nomi va menyu shu yerda turadi."
-    explainWrong={{ 0: 'footer — bu pastki qism (aloqa, ©). Tepadagi menyu header’da.', 1: 'main — bu asosiy kontent qismi. Logotip va menyu header’da.', 3: '<img> — bu rasm tegi, bo’lim emas. To’g’risi — header.', default: 'Tepadagi logotip va menyu header bo’limiga joylanadi.' }} />
+    explainWrong={{ 1: 'footer — bu pastki qism (aloqa, ©). Tepadagi menyu header’da.', 2: 'main — bu asosiy kontent qismi. Logotip va menyu header’da.', 3: '<img> — bu rasm tegi, bo’lim emas. To’g’risi — header.', default: 'Tepadagi logotip va menyu header bo’limiga joylanadi.' }} />
 );
 
 // ===== SCREEN 6 — DIV (guruhlash) =====
@@ -612,11 +1526,10 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const toggle = () => { setBoxed(b => !b); setTouched(true); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="div — guruhlash" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Qutiga solib ko'ring"} onClick={onNext} /></>}>
+    <Stage eyebrow="div — guruhlash" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Praktika →" : "Qutiga solib ko'ring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bir nechta elementni qanday <span className="italic" style={{ color: T.accent }}>guruhlaymiz</span>?</h2></div>
         <Mentor>Stolda qalam, daftar, o'chirg'ich tarqoq yotsa — ularni bitta <b style={{ color: T.ink }}>qutiga</b> solsangiz tartibli bo'ladi. <span className="mono">div</span> ham shunaqa: bir nechta elementni bitta qutiga guruhlaydi. Tugmani bosing.</Mentor>
-        <Zoomable>
         <div className="split">
           <div className="col">
             <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={toggle}>{boxed ? '↻ Qaytadan' : '📦 Qutiga (div) solish'}</button>
@@ -624,7 +1537,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </div>
           <div className="col">
             <div className="flow-label">Sahifada</div>
-            <Preview title="karta.html" minH={170}>
+            <ZoomFrame label="Sahifada"><Preview title="karta.html" minH={170}>
               {boxed ? (
                 <div className="el-in" style={{ display: 'flex', alignItems: 'center', gap: 12, background: T.bg, borderRadius: 12, padding: 14, boxShadow: `inset 0 0 0 2px ${T.accent}` }}>
                   <Photo kind="profil" w={56} h={56} />
@@ -637,11 +1550,10 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                   <p style={{ fontFamily: 'Georgia, serif', margin: 0, color: T.ink2, fontSize: 13 }}>Web-dasturchi</p>
                 </div>
               )}
-            </Preview>
+            </Preview></ZoomFrame>
             <div className={boxed ? 'frame-ok fade-step' : 'hint'}><p className="body" style={{ margin: 0, color: T.ink }}>{boxed ? <>✓ Endi rasm, sarlavha va matn — bitta <b>karta</b> (div) ichida birga turadi.</> : <>Hozir elementlar tarqoq. <span className="mono">div</span> ularni bitta guruhga jamlaydi.</>}</p></div>
           </div>
         </div>
-        </Zoomable>
       </div>
     </Stage>
   );
@@ -659,7 +1571,6 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Foydalanuvchidan ma'lumotni qanday <span className="italic" style={{ color: T.accent }}>olamiz</span>?</h2></div>
         <Mentor>Saytda ro'yxatdan o'tish yoki xabar yozish — hammasi <b style={{ color: T.ink }}>forma</b> orqali. Forma qog'oz anketa kabi: <span className="mono">label</span> — savol nomi, <span className="mono">input</span> — javob joyi, <span className="mono">button</span> — yuborish tugmasi. Ismingizni yozib, Yuborishni bosing.</Mentor>
-        <Zoomable>
         <div className="split">
           <div className="col">
             <form className="miniform fade-up delay-2" onSubmit={submit}>
@@ -675,7 +1586,6 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}><b>label</b> — savol nomi · <b>input</b> — javob joyi · <b>button</b> — yuborish tugmasi.</p></div>
           </div>
         </div>
-        </Zoomable>
       </div>
     </Stage>
   );
@@ -698,7 +1608,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const pick = (k) => { setType(k); setVal(''); setTouched(true); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
-    <Stage eyebrow="input turlari" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Turini almashtiring"} onClick={onNext} /></>}>
+    <Stage eyebrow="input turlari" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Praktika →" : "Turini almashtiring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Parol, email, raqam — hammasi <span className="italic" style={{ color: T.accent }}>bir xilmi</span>?</h2></div>
         <Mentor>Hamma <span className="mono">input</span> bir xil emas. Parol uchun nuqta bilan yashiriladigan, email uchun maxsus, raqam uchun faqat son kiritiladigan input bor. <span className="mono">type</span> atributi turini belgilaydi. Almashtirib ko'ring.</Mentor>
@@ -730,7 +1640,7 @@ const Screen9 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri tegni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Foydalanuvchi matn yozadigan maydonni qaysi teg yasaydi?</h2></>}
     options={['<label>', '<form>', '<button>', '<input>']} correctIdx={3}
     explainCorrect="To'g'ri! input — foydalanuvchi matn (yoki parol, email, raqam) yozadigan maydon."
-    explainWrong={{ 0: 'label — bu maydon nomi (yozuv), yozish joyi emas. To’g’risi — input.', 1: 'form — bu butun formani o’rab turuvchi teg. Yozish joyi — input.', 2: 'button — bu yuborish tugmasi. Matn yoziladigan joy — input.', default: 'Matn yoziladigan maydon — input.' }} />
+    explainWrong={{ 1: 'label — bu maydon nomi (yozuv), yozish joyi emas. To’g’risi — input.', 2: 'form — bu butun formani o’rab turuvchi teg. Yozish joyi — input.', 3: 'button — bu yuborish tugmasi. Matn yoziladigan joy — input.', default: 'Matn yoziladigan maydon — input.' }} />
 );
 // ===== SCREEN 10 — DEVTOOLS (inspect) =====
 const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
@@ -746,14 +1656,13 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Saytning <span className="italic" style={{ color: T.accent }}>ichini</span> qanday ko'ramiz?</h2></div>
         <Mentor>Har bir saytning ichida HTML kodi bor — uni ko'rish mumkin! Brauzerda <b style={{ color: T.ink }}>F12</b> (yoki o'ng tugma → <b style={{ color: T.ink }}>Inspect</b>) bossangiz, <b style={{ color: T.ink }}>DevTools</b> ochiladi va sahifa kodini ko'rsatadi. Tugmani bosing.</Mentor>
-        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="bp-window fade-up delay-2"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">aziza.uz</span></div>
               <div className="bp-body" style={{ display: 'block' }}>
-                <div className={hl('header')} onMouseEnter={() => opened && setHov('header')} onMouseLeave={() => setHov(h => h === 'header' ? null : h)} onClick={() => opened && setHov('header')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, padding: 4, borderRadius: 4, cursor: opened ? 'pointer' : 'default' }}><b style={{ fontFamily: "'Manrope', sans-serif", color: T.ink }}>Aziza</b><span style={{ fontFamily: "'Manrope', sans-serif", fontSize: 12, color: T.ink2 }}>Asosiy · Aloqa</span></div>
-                <h1 className={hl('h1')} onMouseEnter={() => opened && setHov('h1')} onMouseLeave={() => setHov(h => h === 'h1' ? null : h)} onClick={() => opened && setHov('h1')} style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(18px,2.6vw,24px)', color: T.ink, margin: '0 0 6px', padding: 4, borderRadius: 4, cursor: opened ? 'pointer' : 'default' }}>Salom! 👋</h1>
-                <p className={hl('p')} onMouseEnter={() => opened && setHov('p')} onMouseLeave={() => setHov(h => h === 'p' ? null : h)} onClick={() => opened && setHov('p')} style={{ fontFamily: 'Georgia, serif', color: T.ink2, margin: 0, padding: 4, borderRadius: 4, fontSize: 14, cursor: opened ? 'pointer' : 'default' }}>Bu mening saytim.</p>
+                <div className={hl('header')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, padding: 4, borderRadius: 4 }}><b style={{ fontFamily: "'Manrope', sans-serif", color: T.ink }}>Aziza</b><span style={{ fontFamily: "'Manrope', sans-serif", fontSize: 12, color: T.ink2 }}>Asosiy · Aloqa</span></div>
+                <h1 className={hl('h1')} style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(18px,2.6vw,24px)', color: T.ink, margin: '0 0 6px', padding: 4, borderRadius: 4 }}>Salom! 👋</h1>
+                <p className={hl('p')} style={{ fontFamily: 'Georgia, serif', color: T.ink2, margin: 0, padding: 4, borderRadius: 4, fontSize: 14 }}>Bu mening saytim.</p>
               </div>
             </div>
             {!opened && <button className="btn" style={{ alignSelf: 'flex-start' }} onClick={() => setOpened(true)}>🔍 Inspect (F12) — kodni ochish</button>}
@@ -769,7 +1678,7 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                     <div className={`dt-node ${hov === 'h1' ? 'hl' : ''}`} onClick={() => setHov('h1')} onMouseEnter={() => setHov('h1')} onMouseLeave={() => setHov(h => h === 'h1' ? null : h)}><span className="tg">&lt;h1&gt;</span>Salom! 👋<span className="tg">&lt;/h1&gt;</span></div>
                     <div className={`dt-node ${hov === 'p' ? 'hl' : ''}`} onClick={() => setHov('p')} onMouseEnter={() => setHov('p')} onMouseLeave={() => setHov(h => h === 'p' ? null : h)}><span className="tg">&lt;p&gt;</span>Bu mening saytim.<span className="tg">&lt;/p&gt;</span></div>
                   </div>
-                  <p className="dt-hint">{isNarrow ? '👆 Kod qatori yoki sahifa qismiga tegin — ikkalasi birga yonadi.' : '↕ Kod qatori yoki chapdagi sahifa qismiga kursor oling — ikkalasi birga yonadi.'}</p>
+                  <p className="dt-hint">{isNarrow ? '👆 Qatorni bosing — sahifada qaysi qismi ekani yonadi.' : '↑ Qatorlar ustiga kursorni olib boring — sahifada qaysi qismi ekani yonadi.'}</p>
                 </div>
               </div>
             ) : (
@@ -777,7 +1686,6 @@ const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             )}
           </div>
         </div>
-        </Zoomable>
       </div>
     </Stage>
   );
@@ -797,7 +1705,6 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">DevTools'da kodni <span className="italic" style={{ color: T.accent }}>o'zgartirib</span> ko'ring</h2></div>
         <Mentor>DevTools'da kodni shunchaki ko'rib qolmay, <b style={{ color: T.ink }}>o'zgartirib</b> ham ko'rish mumkin. <span className="mono">h1</span> ichidagi matnni o'zgartiring — sahifa darhol yangilanadi. Esda tuting: bu <b style={{ color: T.ink }}>vaqtincha</b>, faqat sizning ekraningizda.</Mentor>
-        <Zoomable>
         <div className="split">
           <div className="col">
             <div className="flow-label">DevTools — Elements</div>
@@ -810,12 +1717,11 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
           </div>
           <div className="col">
-            <div className="flow-label">Sahifa <span className="live-dot">● jonli</span></div>
-            <Preview title="aziza.uz" minH={120}><div style={{ display: 'block' }}><h1 key={text} className="hl-sync" style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(20px,3vw,28px)', color: T.ink, margin: '0 0 6px' }}>{text || '...'}</h1><p style={{ fontFamily: 'Georgia, serif', color: T.ink2, margin: 0, fontSize: 14 }}>Bu mening saytim.</p></div></Preview>
+            <div className="flow-label">Sahifa</div>
+            <ZoomFrame label="Sahifa"><Preview title="aziza.uz" minH={120}><div style={{ display: 'block' }}><h1 key={text} className="fade-step" style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(20px,3vw,28px)', color: T.ink, margin: '0 0 6px' }}>{text || '...'}</h1><p style={{ fontFamily: 'Georgia, serif', color: T.ink2, margin: 0, fontSize: 14 }}>Bu mening saytim.</p></div></Preview></ZoomFrame>
             {done && <div className="frame-warn fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>⚠️ Bu o'zgarish <b>vaqtincha</b> — faqat sizning ekraningizda. Sahifani yangilasangiz, asl matn (<b>{ORIG}</b>) qaytadi. Shuning uchun bemalol tajriba qiling!</p></div>}
           </div>
         </div>
-        </Zoomable>
       </div>
     </Stage>
   );
@@ -829,7 +1735,7 @@ const Screen12 = (props) => (
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>DevTools orqali sahifadagi matnni o'zgartirsangiz, bu o'zgarish...</h2></>}
     options={["Butun internetda, hamma uchun o'zgaradi", "Saytni butunlay o'chirib yuboradi", "Faqat sizning ekraningizda, vaqtincha bo'ladi", "Hech qachon ko'rinmaydi"]} correctIdx={2}
     explainCorrect="To'g'ri! DevTools'dagi o'zgarish faqat sizning brauzeringizda va vaqtincha. Sahifani yangilasangiz, asl holiga qaytadi — shuning uchun bemalol tajriba qilsa bo'ladi."
-    explainWrong={{ 0: "Yo'q — o'zgarish faqat sizda. Boshqalar asl saytni ko'radi.", 1: "Yo'q — sayt o'chmaydi, faqat sizning ekraningizda vaqtincha ko'rinadi.", 3: "O'zgarish ko'rinadi — lekin faqat sizda va vaqtincha.", default: "DevTools o'zgarishi faqat sizda va vaqtincha bo'ladi." }} />
+    explainWrong={{ 1: "Yo'q — o'zgarish faqat sizda. Boshqalar asl saytni ko'radi.", 2: "Yo'q — sayt o'chmaydi, faqat sizning ekraningizda vaqtincha ko'rinadi.", 3: "O'zgarish ko'rinadi — lekin faqat sizda va vaqtincha.", default: "DevTools o'zgarishi faqat sizda va vaqtincha bo'ladi." }} />
 );
 // ===== SCREEN 13 — BUILDER (amaliyot) =====
 const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
@@ -866,7 +1772,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <div className="flow-label">Kod</div>
             <pre className="code-box"><Tg>{'<body>'}</Tg>{'\n'}{items.length === 0 && !pending && <><span className="cm">{'  <!-- buyruq bering -->'}</span>{'\n'}</>}{items.map((it, i) => (<React.Fragment key={i}>{'  '}{elCode(it)}{'\n'}</React.Fragment>))}{pending && <><span className="gen-line">{'  yaratilmoqda'}</span>{'\n'}</>}<Tg>{'</body>'}</Tg></pre>
             <div className="flow-label">Sahifa</div>
-            <div className="bp-window"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">mening-sahifam.html</span></div><div className="bp-body">{items.length === 0 && !pending ? <p style={{ color: T.ink3, fontStyle: 'italic', margin: 0, fontFamily: 'Georgia, serif' }}>Bo'sh sahifa — buyruq bering...</p> : items.map((it, i) => <span key={i} className="el-in" style={{ display: 'block' }}>{elView(it, i)}</span>)}</div></div>
+            <ZoomFrame label="Sahifa"><div className="bp-window"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">mening-sahifam.html</span></div><div className="bp-body">{items.length === 0 && !pending ? <p style={{ color: T.ink3, fontStyle: 'italic', margin: 0, fontFamily: 'Georgia, serif' }}>Bo'sh sahifa — buyruq bering...</p> : items.map((it, i) => <span key={i} className="el-in" style={{ display: 'block' }}>{elView(it, i)}</span>)}</div></div></ZoomFrame>
           </div>
         </div>
       </div>
@@ -903,7 +1809,7 @@ const Screen14 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </div>
           <div className="col">
             <div className="flow-label">Sahifa</div>
-            <div className="bp-window fade-up delay-2"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">aziza.html</span></div><div className="bp-body" style={{ display: 'block', textAlign: 'center' }}><span key={fixed ? 'f' : 'b'}><Photo kind="profil" w={160} h={104} broken={!fixed} alt="Aziza" /></span><h1 style={{ fontFamily: 'Georgia, serif', fontSize: 20, color: T.ink, margin: '8px 0 0' }}>Aziza</h1></div></div>
+            <ZoomFrame label="Sahifa"><div className="bp-window fade-up delay-2"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">aziza.html</span></div><div className="bp-body" style={{ display: 'block', textAlign: 'center' }}><span key={fixed ? 'f' : 'b'}><Photo kind="profil" w={160} h={104} broken={!fixed} alt="Aziza" /></span><h1 style={{ fontFamily: 'Georgia, serif', fontSize: 20, color: T.ink, margin: '8px 0 0' }}>Aziza</h1></div></div></ZoomFrame>
             {!found && (<div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>DevTools'da <span className="mono">img</span> qatorini bossangiz, <span className="mono">src</span> ning bo'm-bo'sh ekanini ko'rasiz.</p></div>)}
             {found && !fixed && (<div className="frame-warn fade-step"><p className="note-h" style={{ color: T.accent }}>✓ Topdingiz!</p><p className="body" style={{ margin: 0, color: T.ink }}><span className="mono">src=""</span> bo'm-bo'sh — brauzer qaysi rasmni ko'rsatishni bilmaydi. Chap tomondagi tugma bilan tuzating →</p></div>)}
             {fixed && (<div className="takeaway fade-step"><div className="ta-bulb">🛠️</div><p className="ta-h">DevTools bilan xatoni topding!</p><p className="ta-sub">Kodni ko'rib, sababni topib, tuzatding — bu debugging</p></div>)}
@@ -933,7 +1839,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     }
   }, [valid]);
   return (
-    <Stage eyebrow="Yakuniy · amaliy" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? "Davom etish" : "Img tegini yozing"} onClick={onNext} /></>}>
+    <Stage eyebrow="Yakuniy · amaliy" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? "Praktika →" : "Img tegini yozing"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Oxirgi qadam: rasm tegini <span className="italic" style={{ color: T.accent }}>o'zingiz</span> yozing.</h2></div>
         <Mentor>To'liq <span className="mono">img</span> tegini yozing: <b style={{ color: T.ink }}>src</b> bilan fayl nomi, <b style={{ color: T.ink }}>alt</b> bilan tavsif. Namuna pastda turibdi.</Mentor>
@@ -947,7 +1853,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             </div>
             {passed
               ? (<div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Zo'r! <span className="mono">img</span>, <span className="mono">src</span> va <span className="mono">alt</span> — to'liq rasm tegi.</p></div>)
-              : (<p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Bu — baholanadigan topshiriqlardan biri; yakka o'zi bahoni hal qilmaydi.</p>)}
+              : (<p className="body" style={{ margin: 0, color: T.ink3, fontSize: 13 }}>Bu — 5 ta tekshiruvdan biri, yakka o'zi o'tishni hal qilmaydi.</p>)}
           </div>
           <div className="col">
             <div className="flow-label">natija</div>
@@ -961,6 +1867,94 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
       </div>
     </Stage>
   );
+};
+
+// ===== PRAKTIKALAR — HTML compilator (qo'lda kod yozish + jonli natija) =====
+// Shartlar real DOM tahlili bilan tekshiriladi (checks builderlari).
+// Izohlar va bo'sh teglar avtomatik hisobga olinmaydi — DOMParser real
+// elementlarni ko'radi, izoh-tugmalar element bo'lmaydi.
+
+// — P1: rasm (Screen3 — alt — dan keyin) —
+const TASK_IMG = {
+  eyebrow: 'Praktika · rasm',
+  title: "Birinchi rasmingizni joylang",
+  brief: "img tegini o'zingiz yozing: src bilan rasm manzili, alt bilan tavsif. To'g'ri bo'lsa o'ngda rasm chiqadi va “Davom etish” yonadi.",
+  requirements: [
+    { id: 'src', label: 'src — rasm manzili', check: C.attr('img', 'src', "`<img>` da `src=\"...\"` yozing — rasm manzili") },
+    { id: 'alt', label: 'alt — rasm tavsifi', check: C.attr('img', 'alt', "`<img>` da `alt=\"...\"` yozing — rasm tavsifi") },
+  ],
+};
+const STARTER_IMG = `<h1>Mening sahifam</h1>
+
+<!-- Bu yerga <img> yozing: src="..." va alt="..." bilan -->
+`;
+
+// — P2: struktura (Screen6 — div guruhlash — dan keyin) —
+const TASK_STRUCT = {
+  eyebrow: 'Praktika · struktura',
+  title: "Sahifani bo'limlarga ajrating",
+  brief: "Har bir sahifa bo'limlardan tashkil topadi. Uchta asosiy blokni yozing: header (yuqori), main (asosiy), footer (past).",
+  requirements: [
+    { id: 'header', label: '<header> — yuqori bo\'lim', check: C.text('header', "`<header>` ichiga matn yozing (masalan logo yoki sarlavha)") },
+    { id: 'main', label: '<main> — asosiy bo\'lim', check: C.text('main', "`<main>` ichiga asosiy kontent yozing") },
+    { id: 'footer', label: '<footer> — past bo\'lim', check: C.text('footer', "`<footer>` ichiga matn yozing (masalan © yoki aloqa)") },
+  ],
+};
+const STARTER_STRUCT = `<!-- Sahifani 3 ta bo'limga ajrating: header, main, footer -->
+
+`;
+
+// — P3: forma (Screen8 — input turlari — dan keyin, testdan oldin) —
+const TASK_FORM = {
+  eyebrow: 'Praktika · forma',
+  title: "Aloqa formasini yasang",
+  brief: "Forma — foydalanuvchidan ma'lumot oladi. form ichida bitta input maydoni va bitta button tugmasi bo'lsin.",
+  requirements: [
+    { id: 'form', label: '<form> — forma qobig\'i', check: C.has('form', "`<form>` tegini qo'shing") },
+    { id: 'input', label: '<input> — form ichida', check: C.nested('form', 'input', "`<input>` ni `<form>` ichiga joylang") },
+    { id: 'button', label: '<button> — form ichida, matn bilan', check: C.text('form button', "`<form>` ichiga `<button>` qo'shing va matn yozing") },
+  ],
+};
+const STARTER_FORM = `<h2>Biz bilan bog'laning</h2>
+
+<!-- Bu yerga <form> yozing: ichida <input> va <button> -->
+`;
+
+// — P4: umumiy yakuniy (Screen15 — qo'lda img — dan keyin) —
+const TASK_FINAL = {
+  eyebrow: 'Praktika · yakuniy',
+  title: "Hammasini birga: o'z sahifangiz",
+  brief: "Bugun o'rgangan hamma narsa: struktura + rasm + forma. Yetishmayotgan bloklarni o'zingiz to'ldiring.",
+  requirements: [
+    { id: 'header', label: "<header> bo'limi (matn bilan)", check: C.text('header', "`<header>` ichiga sarlavha/logo matnini yozing") },
+    { id: 'img', label: '<img> rasm — src va alt bilan', check: C.attrs('img', ['src', 'alt'], "`<img>` da `src` va `alt` ikkalasini to'ldiring") },
+    { id: 'form', label: '<form> ichida <input> maydoni', check: C.nested('form', 'input', "`<form>` qo'shing va ichiga `<input>` joylang") },
+  ],
+};
+const STARTER_FINAL = `<header>
+  <h1>Mening dunyom</h1>
+</header>
+
+<main>
+  <!-- 1) Bu yerga <img> rasm qo'shing (src va alt bilan) -->
+
+  <p>Dunyongiz haqida bir gap yozing.</p>
+
+  <!-- 2) Bu yerga <form> qo'shing, ichiga <input> maydoni -->
+
+</main>
+`;
+
+// Praktika handoff xaritasi: shu ekran indeksidan KEYIN qaysi praktika chaqiriladi.
+// Dars sahifa qo'shmaydi — tugma onPractice(task)'ni chaqiradi, compilator alohida
+// qatlam (lokalda overlay, productionda LMS compilatori) bo'lib chiqadi.
+// Indekslar — screens[] massividagi o'rin:
+//   3 = Screen3 (alt) · 7 = Screen6 (div) · 9 = Screen8 (input) · 16 = Screen15 (qo'lda img)
+const PRACTICE_AFTER = {
+  3:  { task: TASK_IMG,    starter: STARTER_IMG },
+  7:  { task: TASK_STRUCT, starter: STARTER_STRUCT },
+  9:  { task: TASK_FORM,   starter: STARTER_FORM },
+  16: { task: TASK_FINAL,  starter: STARTER_FINAL },
 };
 
 // ===== SCREEN 16 — YAKUN =====
@@ -987,16 +1981,39 @@ const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
   );
 };
 
-// ============================================================ LESSON ROOT — ({ lang, onFinished })
-export default function HtmlLesson({ lang: langProp, onFinished }) {
+// ============================================================ LESSON ROOT — ({ lang, onFinished, onPractice })
+// onPractice(task): Promise — agar berilsa, praktika real LMS compilatoriga uzatiladi
+// (productionda). Berilmasa — lokal overlay compilatori ishlatiladi (test rejimi).
+
+export default function HtmlLesson({ lang: langProp, onFinished, onPractice }) {
   const lang = langProp || 'uz';
   const [screen, setScreen] = useState(0);
   const [answers, setAnswers] = useState({});
+  const [practice, setPractice] = useState(null);   // lokal overlay: { task, starter, done } yoki null
   const startTimeRef = useRef(Date.now());
-  const next = () => setScreen(s => Math.min(s + 1, TOTAL_SCREENS - 1));
+
+  const advance = () => setScreen(s => Math.min(s + 1, TOTAL_SCREENS - 1));
+
+  // Praktikani ishga tushiradi: production'da onPractice (LMS), lokalda overlay.
+  const runPractice = (entry) => {
+    const done = () => { setPractice(null); advance(); };
+    if (typeof onPractice === 'function') {
+      Promise.resolve(onPractice(entry.task)).then(done); // production: LMS compilatori
+    } else {
+      setPractice({ ...entry, done }); // lokal: overlay compilatori
+    }
+  };
+
+  // "Praktika →" bosilganda: agar shu ekrandan keyin praktika bo'lsa — har safar
+  // compilatorni ochadi (orqaga qaytib qayta bossa ham), bajarilgach keyingi ekranga o'tadi.
+  const next = () => {
+    const entry = PRACTICE_AFTER[screen];
+    if (entry) runPractice(entry);
+    else advance();
+  };
   const prev = () => setScreen(s => Math.max(s - 1, 0));
   const recordAnswer = (idx, data) => setAnswers(a => ({ ...a, [idx]: data }));
-  const reset = () => { setAnswers({}); setScreen(0); startTimeRef.current = Date.now(); };
+  const reset = () => { setAnswers({}); setScreen(0); setPractice(null); startTimeRef.current = Date.now(); };
 
   const finishLesson = () => {
     const scoredMeta = SCREEN_META.filter(s => s.scored);
@@ -1042,13 +2059,6 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .delay-1 { animation-delay: 0.12s; } .delay-2 { animation-delay: 0.24s; } .delay-3 { animation-delay: 0.36s; } .delay-4 { animation-delay: 0.48s; }
         @keyframes fade-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         .fade-step { animation: fade-step 0.3s ease-out; }
-        /* Kattalashtirish (zoom) — animatsiyani katta ekranda ko'rish */
-        .zoomable { position: relative; }
-        .zoom-btn { position: absolute; top: 6px; right: 6px; z-index: 5; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,0.82); color: ${T.ink2}; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.22); transition: all 0.2s; }
-        .zoom-btn:hover { background: ${T.paper}; color: ${T.accent}; transform: scale(1.08); }
-        .zoom-backdrop { position: fixed; inset: 0; background: rgba(14,14,16,0.55); z-index: 1000; animation: fade-step 0.25s ease; }
-        .zoom-on { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: min(880px,94vw); max-height: 90vh; overflow: auto; z-index: 1001; background: ${T.paper}; border-radius: 18px; padding: clamp(20px,4vw,42px); box-shadow: 0 30px 80px -20px rgba(${T.shadowBase},0.5); animation: zoom-pop 0.3s cubic-bezier(.34,1.3,.4,1); }
-        @keyframes zoom-pop { from { opacity: 0; transform: translate(-50%,-50%) scale(0.93); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .d1 { animation-delay: 0.12s; } .d2 { animation-delay: 0.24s; } .d3 { animation-delay: 0.36s; } .d4 { animation-delay: 0.48s; }
 
         .feedback-block { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s ease-out, opacity 0.3s ease-out 0.1s, margin-top 0.4s ease-out; margin-top: 0; }
@@ -1081,8 +2091,8 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
 
         /* === MENTOR === */
         .mentor { display: flex; gap: 12px; align-items: flex-start; }
-        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: ${T.accentSoft}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
-        .mentor-ava img { display: block; width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); }
+        .mentor-ava { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.28); }
+        .mentor-ava svg { display: block; }
         .mentor-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
         .mentor-name { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.accent}; letter-spacing: 0.01em; }
         .mentor-msg { background: ${T.paper}; border-radius: 4px 14px 14px 14px; padding: 13px 16px; color: ${T.ink}; box-shadow: 0 6px 18px -6px rgba(${T.shadowBase},0.16); }
@@ -1409,16 +2419,13 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
 
         /* ============ LESSON 2 QO'SHIMCHA CSS ============ */
         .strukt { display: flex; flex-direction: column; gap: 6px; }
-        .struktwin { border-radius: 13px; overflow: hidden; background: #fff; box-shadow: 0 10px 26px -6px rgba(${T.shadowBase},0.16); }
-        .struktwin .strukt { padding: 8px; gap: 7px; }
-        .struktwin .szone { box-shadow: 0 3px 10px -5px rgba(${T.shadowBase},0.16); }
         .szone { position: relative; cursor: pointer; border-radius: 12px; padding: 14px 14px 22px; background: ${T.paper}; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.14); transition: all 0.18s; border: 2px solid transparent; }
         .szone:hover { box-shadow: 0 9px 20px -6px rgba(${T.shadowBase},0.22); }
         .szone.active { border-color: ${T.accent}; background: ${T.accentSoft}; }
         .szone-main { min-height: 64px; }
         .szone-h { font-family: 'Manrope'; font-weight: 700; font-size: 13.5px; color: ${T.ink}; margin: 0 0 3px; }
         .szone-d { font-size: 12px; color: ${T.ink2}; margin: 0; font-family: 'Manrope'; }
-        .szone-tag { position: absolute; bottom: 7px; right: 9px; font-family: 'JetBrains Mono'; font-size: 11px; font-weight: 600; color: ${T.accent}; background: ${T.accentSoft}; padding: 2px 7px; border-radius: 6px; }
+        .szone-tag { position: absolute; bottom: 6px; right: 10px; font-family: 'JetBrains Mono'; font-size: 10px; color: ${T.ink3}; }
         .miniform { background: ${T.paper}; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); }
         .mf-label { font-family: 'Manrope'; font-weight: 600; font-size: 13px; color: ${T.ink2}; }
         .mf-input { font-family: 'Manrope', sans-serif; font-size: 15px; padding: 11px 13px; border: none; border-radius: 10px; background: ${T.bg}; color: ${T.ink}; outline: none; box-shadow: inset 0 0 0 1.5px ${T.ink3}40; transition: box-shadow 0.18s; width: 100%; }
@@ -1435,17 +2442,54 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .dt-edit { font-family: 'JetBrains Mono'; font-size: 12.5px; background: #0f1626; color: ${CODE.str}; border: none; border-radius: 4px; padding: 2px 6px; outline: none; box-shadow: inset 0 0 0 1px ${T.accent}; width: 130px; }
         .dt-hint { font-family: 'JetBrains Mono'; font-size: 11px; color: ${CODE.comment}; padding: 2px 12px 10px; margin: 0; }
         .hl-on { box-shadow: inset 0 0 0 2px ${T.accent}; background: ${T.accentSoft}; }
-        .hl-sync { border-radius: 4px; padding: 0 3px; animation: hl-sync 0.6s ease; }
-        @keyframes hl-sync { 0% { background: ${T.accent}; color: #fff; } 55% { background: ${T.accentSoft}; color: ${T.accent}; } 100% { background: transparent; color: ${T.ink}; } }
-        .live-dot { font-family: 'Manrope'; font-size: 10px; font-weight: 700; color: ${T.success}; margin-left: 7px; letter-spacing: 0.04em; animation: live-pulse 1.4s ease-in-out infinite; }
-        @keyframes live-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
         .img-broken { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 10px; border: 1.5px dashed ${T.ink3}; background: ${T.bg}; color: ${T.ink2}; font-size: 12px; text-align: center; padding: 8px; }
         .img-broken .ib-ic { font-size: 24px; filter: grayscale(1); opacity: 0.55; }
+
+        /* === ZOOM FRAME (kattalashtirish / to'liq ekran) === */
+        .zoomframe { position: relative; }
+        .zoom-body { display: flex; flex-direction: column; gap: clamp(12px,2vw,16px); }
+        .zoom-btn { position: absolute; bottom: 9px; right: 9px; z-index: 3; width: 34px; height: 34px; border-radius: 9px; border: none; cursor: pointer; background: ${T.ink}; color: ${T.bg}; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px -5px rgba(${T.shadowBase},0.4); transition: all 0.2s; opacity: 0.82; }
+        .zoom-btn:hover { background: ${T.accent}; color: #fff; opacity: 1; transform: translateY(-1px); }
+        .zoom-backdrop { position: fixed; inset: 0; z-index: 1400; background: rgba(14,14,16,0.6); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); animation: fade-step 0.25s ease-out; }
+        /* zoom holati: ekranning ~80% ini egallaydi (atrofida ~10% joy) */
+        .zoomframe.is-zoomed { position: fixed; inset: max(20px,10vh) max(20px,10vw); z-index: 1401; background: ${T.paper}; border-radius: 18px; box-shadow: 0 30px 90px -20px rgba(0,0,0,0.55); padding: clamp(40px,5vw,56px) clamp(20px,4vw,48px) clamp(20px,4vw,48px); display: flex; flex-direction: column; animation: zoom-pop 0.32s cubic-bezier(.34,1.18,.4,1); }
+        .zoomframe.is-zoomed .zoom-body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: clamp(16px,3vw,24px); }
+        .zoomframe.is-zoomed .zoom-btn { bottom: 16px; right: 16px; width: 40px; height: 40px; opacity: 1; }
+        .zoom-label { position: absolute; top: clamp(14px,2.5vw,20px); left: clamp(18px,3vw,26px); z-index: 2; font-family: 'Manrope'; font-weight: 700; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: ${T.ink3}; }
+        @keyframes zoom-pop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+        /* zoomda vizual kattalashadi (inline minHeight'ni bosib o'tadi) */
+        .zoomframe.is-zoomed .bp-window { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        .zoomframe.is-zoomed .bp-body { flex: 1; min-height: min(54vh,440px) !important; display: flex; flex-direction: column; justify-content: center; }
+        .zoomframe.is-zoomed .strukt { gap: clamp(10px,2vw,18px); }
+        .zoomframe.is-zoomed .szone { padding: clamp(16px,3vw,30px); }
+        .zoomframe.is-zoomed .miniform { padding: clamp(20px,4vw,36px); gap: clamp(12px,2vw,18px); }
+        .zoomframe.is-zoomed .miniform .mf-input { font-size: clamp(15px,2vw,20px); padding: clamp(12px,2vw,16px); }
+        .zoomframe.is-zoomed .cssdev, .zoomframe.is-zoomed .devtools, .zoomframe.is-zoomed .dt-tree { font-size: clamp(13px,1.8vw,17px); }
+        .zoomframe.is-zoomed .code-box { font-size: clamp(15px,2.2vw,22px); padding: clamp(18px,3vw,30px); }
+        /* zoomda rasm ham frame bilan birga kattalashadi (inline w/h ni bosib o'tadi) */
+        .zoomframe.is-zoomed .photo-box { width: clamp(280px,42vw,520px) !important; height: clamp(190px,28vw,360px) !important; }
+        .zoomframe.is-zoomed .photo-box.img-broken { font-size: clamp(15px,2vw,20px); }
+        .zoomframe.is-zoomed .photo-box.img-broken .ib-ic { font-size: clamp(34px,5vw,56px); }
+        @media (max-width: 760px) {
+          .zoomframe.is-zoomed { inset: 12px; padding: clamp(30px,6vw,40px) 16px 16px; }
+        }
 
       `}</style>
       <div className="lesson-root">
         <Current screen={screen} storedAnswer={answers[screen]} answers={answers} onAnswer={recordAnswer} onNext={next} onPrev={prev} onReset={reset} onFinish={finishLesson} />
       </div>
+      {/* Lokal praktika overlay (LMS compilatorining o'rnini bosadi — test rejimi).
+          Production'da onPractice berilsa, bu overlay umuman ochilmaydi. */}
+      {practice && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 2000, background: T.bg }}>
+          <HtmlCompiler
+            task={practice.task}
+            starterCode={practice.starter}
+            onContinue={practice.done}
+            onBack={() => setPractice(null)}
+          />
+        </div>
+      )}
     </LangContext.Provider>
   );
 }

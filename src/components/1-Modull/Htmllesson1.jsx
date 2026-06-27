@@ -176,8 +176,9 @@ const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navCon
   const collapseOn = isNarrow && !mentorStatic; // ba'zi sahifalarda Mentor yig'ilmaydi
   const padH = isMobile ? 12 : 100;
   const [mCollapsed, setMCollapsed] = useState(false);
+  const [mForced, setMForced] = useState(false); // ekran majburan yopishi mumkin (desktopda ham)
   const contentRef = useRef(null);
-  useEffect(() => { setMCollapsed(false); }, [screen]); // har ekranda Mentor ochiq holatdan boshlanadi
+  useEffect(() => { setMCollapsed(false); setMForced(false); }, [screen]); // har ekranda Mentor ochiq holatdan boshlanadi
   const setCollapsed = useCallback((v) => {
     setMCollapsed(v);
     if (v === false && contentRef.current) { const el = contentRef.current; requestAnimationFrame(() => { if (el) el.scrollTo({ top: 0, behavior: 'auto' }); }); }
@@ -193,7 +194,7 @@ const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navCon
     if (el && el.scrollTop > 6) setMCollapsed(true);
   };
   return (
-    <MentorCtx.Provider value={{ enabled: collapseOn, collapsed: mCollapsed, setCollapsed }}>
+    <MentorCtx.Provider value={{ enabled: collapseOn, collapsed: mCollapsed, setCollapsed, forced: mForced, setForced: setMForced }}>
       <div className="stage">
         <div className="stage-header" style={{ paddingLeft: padH, paddingRight: padH }}>
           <div className="progress-track"><div className="progress-bar" style={{ width: `${((screen + 1) / totalScreens) * 100}%` }} /></div>
@@ -284,11 +285,21 @@ function ScoreRing({ correct, total }) {
 }
 
 // ===== MENTOR (nomsiz ustoz ovozi — intro/izoh shu orqali; audio matni = shu matn) =====
+// Stage (Provider) ichida turib, `when` true bo'lganda Mentorni majburan yopadi
+// (desktopda ham). `when` false bo'lsa — ochiq holatga qaytaradi.
+const MentorAutoClose = ({ when }) => {
+  const ctx = useContext(MentorCtx) || {};
+  const setForced = ctx.setForced;
+  useEffect(() => { if (setForced) setForced(!!when); }, [when, setForced]);
+  return null;
+};
+
 const Mentor = ({ children }) => {
   const ctx = useContext(MentorCtx) || {};
-  const enabled = !!ctx.enabled;
-  const collapsed = enabled && ctx.collapsed;
-  const expand = (e) => { e.stopPropagation(); if (ctx.setCollapsed) ctx.setCollapsed(false); };
+  // forced = ekran (masalan Xulosa) majburan yopgan — desktopda ham ishlaydi
+  const enabled = !!ctx.enabled || !!ctx.forced;
+  const collapsed = (!!ctx.enabled && ctx.collapsed) || !!ctx.forced;
+  const expand = (e) => { e.stopPropagation(); if (ctx.forced && ctx.setForced) ctx.setForced(false); if (ctx.setCollapsed) ctx.setCollapsed(false); };
   return (
     <div className={`mentor fade-up ${enabled ? 'mentor-mob' : ''} ${collapsed ? 'is-collapsed' : ''}`} onClick={collapsed ? expand : undefined} role={collapsed ? 'button' : undefined}>
       <div className="mentor-ava" aria-hidden="true">
@@ -358,7 +369,7 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
                 </Preview>
               ) : (
                 <>
-                  <CodeBox><Tg>{'<header>'}</Tg>Maktab · Asosiy · Darslar · Kirish<Tg>{'</header>'}</Tg>{'\n'}<Tg>{'<h1>'}</Tg>Xush kelibsiz! 👋<Tg>{'</h1>'}</Tg>{'\n'}<Tg>{'<p>'}</Tg>Bilim — bir bosishda.<Tg>{'</p>'}</Tg>{'\n'}<Tg>{'<button>'}</Tg>Boshlash<Tg>{'</button>'}</Tg></CodeBox>
+                  <CodeBox><Tg>{'<header>'}</Tg>{'\n  '}Maktab · Asosiy · Darslar · Kirish{'\n'}<Tg>{'</header>'}</Tg>{'\n'}<Tg>{'<h1>'}</Tg>Xush kelibsiz! 👋<Tg>{'</h1>'}</Tg>{'\n'}<Tg>{'<p>'}</Tg>Bilim — bir bosishda.<Tg>{'</p>'}</Tg>{'\n'}<Tg>{'<button>'}</Tg>Boshlash<Tg>{'</button>'}</Tg></CodeBox>
                   <p className="mono small" style={{ color: T.ink3, marginTop: 6, textAlign: 'center' }}>↑ shu saytning kodi — boshqa hech narsa emas!</p>
                 </>
               )}
@@ -388,10 +399,13 @@ const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
 const Screen1 = ({ screen, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's1', text: `Va'da beraman: dars oxirida o'zingizning saytingiz tayyor bo'ladi — xuddi mana shunaqa. Unga 7 ta qadamda yetib boramiz.`, trigger: 'on_mount', waits_for: null }]);
   const STEPS = [
-    { text: 'Kod nima? — tushunamiz', tag: '' }, { text: 'HTML bilan tanishamiz', tag: '' },
-    { text: 'Sahifa skeletini quramiz', tag: '' }, { text: "Sarlavha qo'shamiz", tag: 'h1–h6' },
-    { text: 'Matn bezaymiz', tag: 'p, strong, em' }, { text: "Ro'yxat yasaymiz", tag: 'ul, ol, li' },
-    { text: 'Havola ulaymiz', tag: 'a href' }
+    { text: 'Kod nima? — tushunamiz',   tag: '' },
+    { text: 'HTML bilan tanishamiz',    tag: '' },
+    { text: 'Sahifa skeletini quramiz', tag: '' },
+    { text: "Sarlavha qo'shamiz",       tag: 'h1–h6' },
+    { text: 'Matn bezaymiz',            tag: 'p, strong, em' },
+    { text: "Ro'yxat yasaymiz",         tag: 'ul, ol, li' },
+    { text: 'Havola ulaymiz',           tag: 'a href' },
   ];
   const G = "Georgia, serif";
   const isNarrow = useIsMobile(768);
@@ -412,7 +426,19 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
     <Col>
       <p className="flow-label">7 qadam</p>
       <ol className="roadmap">
-        {STEPS.map((s, i) => (<li key={i} className="step-card fade-up" style={{ animationDelay: `${0.08 + i * 0.05}s` }}><span className="step-num">{String(i + 1).padStart(2, '0')}</span><span className="step-body"><span className="step-text">{s.text}</span>{s.tag && <span className="step-tag">{s.tag}</span>}</span></li>))}
+        {STEPS.map((s, i) => (
+          <li
+            key={i}
+            className="step-card fade-up"
+            style={{ animationDelay: `${0.08 + i * 0.05}s` }}
+          >
+            <span className="step-num">{String(i + 1).padStart(2, '0')}</span>
+            <span className="step-body">
+              <span className="step-text">{s.text}</span>
+              {s.tag && <span className="step-tag">{s.tag}</span>}
+            </span>
+          </li>
+        ))}
       </ol>
     </Col>
   );
@@ -442,55 +468,197 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
 };
 
 
-// ===== SCREEN 2 — HAYOTDAN MISOL (2-bosqichli, v16) =====
+// ===== SCREEN 2 — HAYOTDAN MISOL (dinozavrni dasturlash o'yini) =====
+// Och dinozavrni 🍖 gacha olib borish kerak. Yo'lda 🌵 kaktuslar bor — har
+// biridan «Sakra» bilan oshib o'tish kerak. Bola buyruqlar ketma-ketligini
+// (DASTUR) tuzadi → dinozavr AYNAN, shu tartibda bajaradi. Xato bo'lsa ham
+// o'zi tuzatmaydi. Xulosa: kompyuter ham shunday — nazorat BIZdan.
+const RG_GOAL = 6;                 // manzil katagi
+const RG_CACTI = [2, 4];           // kaktuslar shu kataklarda
+const RG_START = 0, RG_MAX = 8;
+const RG_N = RG_GOAL + 1;          // jami kataklar (0..6)
+const RG_CMDS = {
+  yur:   { icon: '🐾', label: 'Yur',   note: 'bir qadam',  step: 1 },
+  sakra: { icon: '⤴️', label: 'Sakra', note: 'sakrash',    step: 2 },
+};
+// Kataklarni 8%..92% oralig'iga teng taqsimlaymiz
+const rgCellLeft = (i) => `${8 + i * (84 / (RG_N - 1))}%`;
+// G'alaba konfettisi — sahna bo'ylab tarqalgan (bitta joyda emas)
+const RG_CONFETTI = [
+  { left: '14%', color: '#FF4D26', d: '0s' },   { left: '26%', color: '#0FA968', d: '.12s' },
+  { left: '38%', color: '#019ACB', d: '.05s' },  { left: '50%', color: '#FF8A3D', d: '.18s' },
+  { left: '62%', color: '#FF4D26', d: '.09s' },  { left: '74%', color: '#0FA968', d: '.22s' },
+  { left: '86%', color: '#FFD380', d: '.15s' },  { left: '20%', color: '#019ACB', d: '.28s' },
+];
+
 const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's2', text: `Kompyuter juda tez ishlaydi, lekin sirni bilasizmi? U o'zicha hech narsa qila olmaydi — unga har bir ishni o'zimiz buyurishimiz kerak. Qanday qilib? Avval o'zingiz o'ylab ko'ring, keyin "Yechimni ko'rsat" tugmasini bosing.`, trigger: 'on_mount', waits_for: { type: 'solution_revealed' } }]);
-  const RECIPE = ['Xamirni yoying', 'Sous suring', 'Pishloq seping', "Qo'shimcha qo'shing", 'Pechda pishiring'];
   const [revealed, setRevealed] = useState(!!storedAnswer);
-  const [step, setStep] = useState(storedAnswer ? RECIPE.length : 0);
-  const [running, setRunning] = useState(false);
-  const timer = useRef(null);
   const answerRef = useRef(null);
-  const done = revealed;
-  useEffect(() => () => clearTimeout(timer.current), []);
-  const runStepper = () => {
-    clearTimeout(timer.current); setStep(0); setRunning(true);
-    const tick = (i) => { setStep(i); if (i < RECIPE.length) timer.current = setTimeout(() => tick(i + 1), 480); else setRunning(false); };
-    timer.current = setTimeout(() => tick(1), 350);
+  const xulosaRef = useRef(null);
+  // solved — dinozavr 🍖 ga yetib, Xulosa ko'rilgan. "Davom etish" shundan keyin yonadi.
+  const [solved, setSolved] = useState(!!storedAnswer);
+
+  // ── Dinozavrni dasturlash o'yini ──
+  const [program, setProgram] = useState([]);   // masalan ['yur','sakra','sakra','yur']
+  const [pos, setPos] = useState(RG_START);     // dino qaysi katakda (0..6)
+  const [phase, setPhase] = useState('idle');   // idle | running | win | fail-cactus | fail-short
+  const [jumping, setJumping] = useState(false);
+  const [active, setActive] = useState(-1);      // hozir bajarilayotgan buyruq indeksi
+  const botTimer = useRef(null);
+  const running = phase === 'running';
+  const isCactus = (c) => RG_CACTI.indexOf(c) !== -1;
+
+  useEffect(() => () => clearTimeout(botTimer.current), []);
+  // Manzilga yetganda: bu ekran "yechildi" (Davom etish yonadi), Xulosa
+  // ochilib avtoscroll qilinadi. (Mentorni yopish — <MentorAutoClose/> orqali.)
+  useEffect(() => {
+    if (phase === 'win') {
+      setSolved(true);
+      if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true });
+      if (xulosaRef.current) {
+        const id = setTimeout(() => xulosaRef.current && xulosaRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }), 260);
+        return () => clearTimeout(id);
+      }
+    }
+  }, [phase]);
+
+  const resetDino = () => { clearTimeout(botTimer.current); setPos(RG_START); setPhase('idle'); setActive(-1); setJumping(false); };
+  const addCmd = (c) => { if (running) return; setProgram((p) => (p.length >= RG_MAX ? p : [...p, c])); resetDino(); };
+  const clearProgram = () => { if (running) return; setProgram([]); resetDino(); };
+
+  // Dinozavr dasturni qadam-baqadam, AYNAN tartibda bajaradi
+  const runProgram = () => {
+    if (running || !program.length) return;
+    clearTimeout(botTimer.current);
+    setPos(RG_START); setPhase('running'); setActive(-1); setJumping(false);
+    let cur = RG_START;
+    let i = 0;
+    const stepThrough = () => {
+      if (i >= program.length) {                 // buyruqlar tugadi
+        setActive(-1);
+        setPhase(cur >= RG_GOAL ? 'win' : 'fail-short');
+        return;
+      }
+      const cmd = program[i];
+      setActive(i);
+      if (cmd === 'sakra') setJumping(true);
+      cur += RG_CMDS[cmd].step;
+      const landed = cur;
+      setPos(landed);
+      botTimer.current = setTimeout(() => {
+        setJumping(false);
+        if (isCactus(landed)) { setActive(-1); setPhase('fail-cactus'); return; }  // kaktusga tushdi
+        if (landed >= RG_GOAL) { setActive(-1); setPhase('win'); return; }          // manzilga yetdi
+        i += 1;
+        botTimer.current = setTimeout(stepThrough, 160);
+      }, 600);
+    };
+    botTimer.current = setTimeout(stepThrough, 380);
   };
+
   const reveal = () => {
     setRevealed(true);
     audio.triggerEvent('solution_revealed');
     setTimeout(() => { if (answerRef.current) answerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
-    runStepper();
-    if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Javob: kompyuterga aniq, ketma-ket qadamlar yozamiz — bu kod, yozish jarayoni esa dasturlash. Xuddi pitsa retsepti kabi — qadamlar aniq tartibda.`); }, 300);
+    if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Mana, dinozavrga buyruq tuzib ko'ring: u o'zicha o'ylamaydi, faqat siz aytgan tartibda yuradi. Kompyuter ham xuddi shunday — biz buyruq beramiz, u darhol bajaradi, to'g'ri-noto'g'riligini esa biz nazorat qilamiz.`); }, 300);
   };
-  useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
+
+  const RG_MSG = {
+    running:      { cls: 'idle', text: '🦖 Dinozavr buyruqlaringizni bajaryapti…' },
+    win:          { cls: 'ok',   text: '🎉 Yetib keldi! Buyruqlaringiz to‘g‘ri ketma-ketlikda edi.' },
+    'fail-cactus':{ cls: 'bad',  text: '💥 Dinozavr kaktusga urildi! Undan «Sakra» bilan oshish kerak edi. U o‘zi o‘ylab sakramaydi — aniq buyurasiz.' },
+    'fail-short': { cls: 'bad',  text: '🤏 Dinozavr 🍖 gacha yetmadi. Yana buyruq qo‘shing va qaytadan urinib ko‘ring.' },
+  };
+  const msg = RG_MSG[phase];
+
   return (
-    <Stage eyebrow="Hayotdan misol" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Avval o'ylab ko'ring"} onClick={onNext} /></>}>
+    <Stage eyebrow="Hayotdan misol" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!solved} label={solved ? "Davom etish" : (revealed ? "Dinozavrni 🍖 ga yetkazing" : "Avval o'ylab ko'ring")} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Kompyuter <span className="italic" style={{ color: T.accent }}>o'zicha</span> o'ylay oladimi?</h2></div>
         <Mentor>Kompyuter juda tez ishlaydi, lekin sirni bilasizmi? U <b style={{ color: T.ink }}>o'zicha hech narsa qila olmaydi</b> — unga har bir ishni o'zimiz buyurishimiz kerak. Qanday qilib? Avval o'zingiz o'ylab ko'ring.</Mentor>
+        <MentorAutoClose when={phase === 'win'} />
         {!revealed && (
           <div className="frame frame-col savo fade-up delay-2">
             <p className="eyebrow" style={{ color: T.accent, margin: 0 }}>Savol</p>
-            <p className="body" style={{ margin: 0, color: T.ink, fontSize: 'clamp(15px,1.9vw,18px)', lineHeight: 1.5 }}>Kompyuter o'zicha o'ylay olmaydi — unga ishni <b>qanday tushuntiramiz</b>, qanday buyuramiz?</p>
-            <button className="btn" onClick={reveal} style={{ alignSelf: 'flex-start', marginTop: 4 }}>Yechimni ko'rsat →</button>
+            <p className="body" style={{ margin: 0, color: T.ink, fontSize: 'clamp(15px,1.9vw,18px)', lineHeight: 1.5 }}>Kompyuter o'zi hech narsa o'ylab topmaydi. Unga biror ishni <b>qanday bajartiramiz</b> — qanday qilib «mana shuni qil» deb tushuntiramiz?</p>
+            <button className="btn" onClick={reveal} style={{ alignSelf: 'flex-start', marginTop: 4 }}>Dinozavrda sinab ko'ramiz →</button>
           </div>
         )}
         {revealed && (
           <>
-            <div ref={answerRef} className="frame-success fade-step" style={{ scrollMarginTop: 12 }}>
-              <p className="small mono" style={{ margin: '0 0 6px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Javob</p>
-              <p className="body" style={{ margin: 0, color: T.ink }}>Kompyuterga <b>aniq, ketma-ket qadamlar</b> yozib beramiz. Bu qadamlar — <b style={{ color: T.success }}>kod</b>, yozish jarayoni esa <b style={{ color: T.success }}>dasturlash</b>. Kompyuter o'zicha o'ylamaydi — faqat aytganimizni, aytgan tartibimizda bajaradi.</p>
-            </div>
             <Zoomable>
-            <div className="frame frame-col fade-step">
-              <div className="pz-head"><span className="pz-emoji">🍕</span><div><p className="pz-title">Xuddi pitsa retsepti kabi</p><p className="pz-sub">Pitsa ham retseptsiz bo'lmaydi — qadamlar aniq <b style={{ color: T.ink }}>tartibda</b>. Kod ham shunday.</p></div></div>
-              <div className="pz-flow">{RECIPE.map((r, i) => (<React.Fragment key={i}><div className={`pz-step ${step > i ? 'on' : ''} ${running && step === i + 1 ? 'active' : ''}`}><span className="pz-ic">{step > i ? '✓' : i + 1}</span><span className="pz-lbl">{r}</span></div>{i < RECIPE.length - 1 && <span className={`pz-arrow ${step > i + 1 ? 'on' : ''}`}>→</span>}</React.Fragment>))}</div>
-              <button className="btn-soft" onClick={runStepper} disabled={running} style={{ alignSelf: 'flex-start', marginTop: 2 }}>{running ? 'Bajarilmoqda…' : '↻ Yana ko\u2019rsatish'}</button>
+            <div ref={answerRef} className="frame frame-col fade-step" style={{ scrollMarginTop: 12 }}>
+              <div className="pz-head">
+                <span className="pz-emoji">🦖</span>
+                <div>
+                  <p className="pz-title">Dinozavrni o'zingiz boshqaring</p>
+                  <p className="pz-sub">Dinozavrga buyruq bering — u <b style={{ color: T.ink }}>aynan</b> shuni, <b style={{ color: T.ink }}>shu tartibda</b> bajaradi. Tuzgan buyruqlaringiz ro'yxati — bu <b style={{ color: T.ink }}>dastur (kod)</b>.</p>
+                </div>
+              </div>
+
+              {/* Sahna — dinozavr, kaktuslar, manzil */}
+              <div className="rg-scene">
+                <div className="rg-sky" />
+                <div className="rg-ground" />
+                {Array.from({ length: RG_N }).map((_, i) => <span key={i} className="rg-cell" style={{ left: rgCellLeft(i) }} />)}
+                {RG_CACTI.map((c) => <div key={c} className="rg-cactus" style={{ left: rgCellLeft(c) }}>🌵</div>)}
+                <div className="rg-goal" style={{ left: rgCellLeft(RG_GOAL) }}><span className={`rg-meat ${phase === 'win' ? 'eaten' : ''}`}>🍖</span></div>
+                <div className={`rg-dino ${phase}`} style={{ left: rgCellLeft(Math.max(0, Math.min(pos, RG_GOAL))) }}>
+                  {phase === 'fail-cactus' && <span className="rg-burst">💥</span>}
+                  {phase === 'win' && <span className="rg-yum">😋</span>}
+                  <span className={`rg-dino-in ${jumping ? 'jump' : ''}`}><span className="rg-dino-face">🦖</span></span>
+                </div>
+                {phase === 'win' && (
+                  <div className="rg-confetti" aria-hidden="true">
+                    {RG_CONFETTI.map((c, i) => <i key={i} style={{ left: c.left, background: c.color, animationDelay: c.d }} />)}
+                  </div>
+                )}
+              </div>
+
+              {/* Buyruq tugmalari — dino ostida */}
+              <div className="rg-pad">
+                <button className="rg-key rg-key-yur" onClick={() => addCmd('yur')} disabled={running || program.length >= RG_MAX}><span className="rg-key-ic">🐾</span>Yur</button>
+                <button className="rg-key rg-key-jump" onClick={() => addCmd('sakra')} disabled={running || program.length >= RG_MAX}><span className="rg-key-ic">⤴️</span>Sakra</button>
+                <span className="rg-legend">🐾 Yur = <b>1 qadam</b> · ⤴️ Sakra = <b>2 qadam</b></span>
+              </div>
+
+              {/* DASTUR — kod tahririday ko'rinish */}
+              <div className="rg-code">
+                <div className="rg-code-bar"><span className="rg-dot" /><span className="rg-dot" /><span className="rg-dot" /><span className="rg-code-name">🦖 dino.kod</span></div>
+                <div className="rg-code-body">
+                  {program.length === 0
+                    ? <div className="rg-code-empty">// yuqoridagi tugmalardan buyruq qo'shing…</div>
+                    : program.map((c, i) => (
+                        <div key={i} className={`rg-line ${active === i ? 'now' : ''}`}>
+                          <span className="rg-ln">{i + 1}</span>
+                          <span className="rg-call"><span className="rg-fn">{c}</span><span className="rg-paren">()</span></span>
+                          <span className="rg-cmt">{RG_CMDS[c].icon} {RG_CMDS[c].note}</span>
+                        </div>
+                      ))}
+                </div>
+              </div>
+
+              {/* Boshqaruv — tozalash + ishga tushirish */}
+              <div className="rg-run-row">
+                <button className="rg-mini" onClick={clearProgram} disabled={running || !program.length}>↺ Tozala</button>
+                <button className="btn" onClick={runProgram} disabled={running || !program.length} style={{ marginLeft: 'auto' }}>{running ? 'Bajaryapti…' : '▶ Ishga tushir'}</button>
+              </div>
+
+              {msg && <p className={`rg-msg ${msg.cls}`} key={phase}>{msg.text}</p>}
             </div>
             </Zoomable>
+
+            {/* Yashil XULOSA — faqat dino 🍖 ga yetganda ochiladi */}
+            {phase === 'win' && (
+              <div ref={xulosaRef} className="rg-xulosa fade-step" style={{ scrollMarginTop: 16 }}>
+                <span className="rg-xulosa-ic">💡</span>
+                <div>
+                  <p className="xh">Xulosa</p>
+                  <p className="xb">Kompyuter — xuddi shu dinozavr: juda tez va itoatkor, lekin <b>o'zi o'ylamaydi</b>. Biz unga aniq, ketma-ket <b>buyruqlar — ya'ni kod</b> beramiz; u esa ularni <b>darhol va aynan</b> bajaradi, to'g'ri yoki xato ekanini o'zi bilmaydi. Demak, kompyuterni aqlli qiladigan — bu <b style={{ color: T.success }}>biz, dasturchilar!</b> To'g'ri natija buyruqlarimiz qanchalik aniq bo'lishiga bog'liq.</p>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -500,39 +668,91 @@ const Screen2 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 
 
-// ===== SCREEN 3 — HTML (mobil: natija tugma orqasida, v16) =====
+// ===== SCREEN 3 — HTML: "Brauzer mashinasi" (kodni o'qib sahifa quradi) =====
 const Screen3 = ({ screen, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's3', text: `Chrome yoki Safari'ni ochganingizda sayt chiroyli ko'rinadi. Lekin brauzer aslida HTML degan tilni o'qiydi, keyin uni sahifaga aylantiradi. Quyiga ismingizni yozing va kod bilan natija qanday bog'liqligini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
-  const FlowArrow = ({ delay = 0 }) => (<div className="flow-arrow"><span className="flow-track"><span className="flow-bead" style={{ animationDelay: `${delay}s` }} /></span><span className="flow-chevron" style={{ animationDelay: `${delay}s` }}>▼</span></div>);
+  const audio = useAudio([{ id: 's3', text: `Chrome yoki Safari'ni ochganingizda sayt chiroyli ko'rinadi. Lekin brauzer aslida HTML degan tilni o'qiydi, keyin uni sahifaga aylantiradi. Ismingizni yozing va "Brauzerni ishga tushir"ni bosing — brauzer kodni o'qib, sahifangizni qadam-baqadam quradi.`, trigger: 'on_mount', waits_for: null }]);
   const [name, setName] = useState('Aziz');
+  const [step, setStep] = useState(0);      // nechta bo'lak qurilgan (0..3)
+  const [active, setActive] = useState(-1);  // brauzer hozir o'qiyotgan qator
+  const [running, setRunning] = useState(false);
+  const timer = useRef(null);
   const isNarrow = useIsMobile(768);
-  const [showResult, setShowResult] = useState(false);
-  const ResultFlow = (
-    <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-      <FlowArrow delay={0} />
-      <div className="brauzer-step" key={`b-${name}`}><span className="brauzer-icon">🌐</span><div><p className="brauzer-h">Brauzer o'qiydi</p><p className="brauzer-sub">kod → sahifa</p></div></div>
-      <FlowArrow delay={0.4} />
-      <div className="flow-label">Sahifa</div>
-      <Preview title="profil.html" minH={92}><div className="profile-card" key={`p-${name}`}><div className="pf-ava">{(name || '?').trim().charAt(0).toUpperCase() || '?'}</div><h1 className="pf-name">{name || '...'}</h1><p className="pf-bio">HTML o'rganyapman</p><button className="pf-btn">Obuna bo'lish</button></div></Preview>
-    </div>
-  );
+  const built = step >= 3;
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const initial = (name || '?').trim().charAt(0).toUpperCase() || '?';
+  // 3 ta kod qatori — har biri sahifaning bitta bo'lagiga aylanadi
+  const codeLines = [
+    <><Tg>{'<h1>'}</Tg><span className="hl-sync" key={name}>{name || '...'}</span><Tg>{'</h1>'}</Tg></>,
+    <><Tg>{'<p>'}</Tg>HTML o'rganyapman<Tg>{'</p>'}</Tg></>,
+    <><Tg>{'<button>'}</Tg>Obuna bo'lish<Tg>{'</button>'}</Tg></>,
+  ];
+
+  // Brauzer kodni yuqoridan pastga o'qiydi: har qatorni yoqib, mos bo'lakni quradi
+  const runBrowser = () => {
+    clearTimeout(timer.current);
+    setStep(0); setActive(-1); setRunning(true);
+    let i = 0;
+    const tick = () => {
+      if (i >= codeLines.length) { setActive(-1); setRunning(false); return; }
+      setActive(i);                                   // qatorni o'qiymiz (yonadi)
+      timer.current = setTimeout(() => {
+        setStep(i + 1);                               // mos bo'lak sahifaga chiqadi
+        i += 1;
+        timer.current = setTimeout(tick, 260);
+      }, 520);
+    };
+    timer.current = setTimeout(tick, 350);
+  };
+  const reset = () => { clearTimeout(timer.current); setRunning(false); setStep(0); setActive(-1); };
+
   return (
     <Stage eyebrow="HTML" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext label="Davom etish" onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.5vw,14px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Yozgan so'zingiz qanday <span className="italic" style={{ color: T.accent }}>saytga</span> aylanadi?</h2></div>
-        <Mentor>Chrome yoki Safari'ni ochganingizda sayt chiroyli ko'rinadi. Lekin brauzer aslida <b style={{ color: T.ink }}>HTML</b> degan tilni o'qiydi, keyin uni sahifaga aylantiradi. Quyiga ismingizni yozing va kod bilan natija qanday bog'liqligini ko'ring.</Mentor>
+        <Mentor>Chrome yoki Safari'ni ochganingizda sayt chiroyli ko'rinadi. Lekin brauzer aslida <b style={{ color: T.ink }}>HTML</b> degan tilni o'qiydi, keyin uni sahifaga aylantiradi. Ismingizni yozing, so'ng <b style={{ color: T.ink }}>«Brauzerni ishga tushir»</b>ni bosing.</Mentor>
         <Zoomable>
         <div className="split">
-          <div className="col">
-            <div className="fade-up delay-1"><p className="eyebrow" style={{ color: T.ink2, margin: '0 0 8px' }}>Ismingizni yozing — kod va sahifa o'zgaradi</p><input className="text-input" value={name} onChange={e => setName(e.target.value)} maxLength={18} placeholder="Ismingiz" /></div>
-            <div className="hint fade-up delay-2"><p className="body" style={{ margin: 0, color: T.ink2 }}>Yozganingiz darhol <b style={{ color: T.ink }}>kodga</b>, kod esa <b style={{ color: T.ink }}>sahifaga</b> aylanadi. {isNarrow ? 'Pastda kuzating.' : "O'ngda kuzating."}</p></div>
+          <div className="col" style={{ gap: 8 }}>
+            <div className="fade-up delay-1">
+              <p className="eyebrow" style={{ color: T.ink2, margin: '0 0 8px' }}>Ismingizni yozing</p>
+              <input className="text-input" value={name} onChange={e => setName(e.target.value)} maxLength={18} placeholder="Ismingiz" disabled={running} />
+            </div>
+            <p className="flow-label">HTML kod {isNarrow ? '↓' : '→'} brauzer o'qiydi</p>
+            <div className="code-box br-code">
+              {codeLines.map((ln, i) => (
+                <div key={i} className={`br-line ${active === i ? 'now' : ''} ${step > i ? 'read' : ''}`}>
+                  <span className="br-caret">{active === i ? '▸' : ''}</span>
+                  <span>{ln}</span>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="col" style={{ gap: 7 }}>
-            <div className="flow-label">HTML kod</div>
-            <pre className="code-box"><Tg>{'<h1>'}</Tg><span className="hl-sync" key={name}>{name || '...'}</span><Tg>{'</h1>'}</Tg>{'\n'}<Tg>{'<p>'}</Tg>HTML o'rganyapman<Tg>{'</p>'}</Tg>{'\n'}<Tg>{'<button>'}</Tg>Obuna bo'lish<Tg>{'</button>'}</Tg></pre>
-            {(!isNarrow || showResult)
-              ? ResultFlow
-              : <button className="btn" style={{ alignSelf: 'flex-start', marginTop: 6 }} onClick={() => setShowResult(true)}>🌐 Natijani ko'rish (brauzer → sahifa)</button>}
+            <p className="flow-label">Brauzer oynasi</p>
+            <Preview title="profil.html" minH={isNarrow ? 124 : 150}>
+              {step === 0 && !running
+                ? <div className="br-empty"><span style={{ fontSize: 24 }}>🌐</span><span>Brauzer hali kodni o'qimadi.<br />Pastdagi tugmani bosing.</span></div>
+                : (
+                  <div className="profile-card">
+                    {step >= 1 && (
+                      <div className="br-el" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
+                        <div className="pf-ava">{initial}</div>
+                        <h1 className="pf-name">{name || '...'}</h1>
+                      </div>
+                    )}
+                    {step >= 2 && <p className="pf-bio br-el">HTML o'rganyapman</p>}
+                    {step >= 3 && <button className="pf-btn br-el">Obuna bo'lish</button>}
+                  </div>
+                )}
+            </Preview>
+            <div className="br-controls">
+              {built && !running && <button className="rg-mini" onClick={reset}>↺ Tozalash</button>}
+              <button className="btn" onClick={runBrowser} disabled={running} style={{ marginLeft: built && !running ? 'auto' : 0 }}>
+                {running ? 'Brauzer o’qiyapti…' : built ? '↻ Qaytadan qurish' : '▶ Brauzerni ishga tushir'}
+              </button>
+            </div>
+            {built && <p className="br-status">✓ Brauzer kodni <b>yuqoridan pastga</b> o'qib, har bir qatorni sahifaga aylantirdi.</p>}
           </div>
         </div>
         </Zoomable>
@@ -794,7 +1014,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <div ref={revealRef} className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 12, scrollMarginTop: 16 }}>
                 {!isNarrow && <div className="frame-success"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{picked === 'a' ? "✓ To'g'ri" : 'Mana gap'}</p><p className="body" style={{ margin: 0, color: T.ink }}>Eng <b>katta</b> yozuv darrov ko'zga tashlanadi — demak u eng muhim. HTML sarlavhalari ham aynan shunday darajalangan: <b>h1</b> eng katta, <b>h6</b> eng kichik.</p></div>}
                 <p className="flow-label">{isNarrow ? 'h1 → h6 — sarlavha darajalari' : 'h1 dan h6 gacha — darajalar narvoni'}</p>
-                <div className="ladder">{(isNarrow ? LADDER_COMPACT : LADDER).map((h, i) => h.ellipsis ? (<div key="el" className="hl-row" style={{ justifyContent: 'center', padding: '2px 0' }}><span style={{ color: T.ink3, fontSize: 18, letterSpacing: 3 }}>⋮</span></div>) : (<div key={h.n} className="hl-row"><span className="hl-chip">{`<h${h.n}>`}</span><span className="hl-text" style={{ fontSize: h.size }}>Sarlavha</span>{h.tag && <span className="hl-tag">{h.tag}</span>}</div>))}</div>
+                <div className="ladder ladder-stair">{(isNarrow ? LADDER_COMPACT : LADDER).map((h, i) => h.ellipsis ? (<div key="el" className="hl-row hl-stair" style={{ animationDelay: `${i * 0.1}s`, justifyContent: 'center', padding: '2px 0', background: 'transparent', boxShadow: 'none' }}><span style={{ color: T.ink3, fontSize: 18, letterSpacing: 3 }}>⋮</span></div>) : (<div key={h.n} className="hl-row hl-stair" style={{ animationDelay: `${i * 0.1}s`, marginLeft: isNarrow ? 0 : `${i * 15}px` }}><span className="hl-bar" style={{ opacity: Math.max(0.18, 1 - i * 0.15) }} /><span className="hl-chip">{`<h${h.n}>`}</span><span className="hl-text" style={{ fontSize: h.size }}>Sarlavha</span>{h.tag && <span className="hl-tag">{h.tag}</span>}</div>))}</div>
               </div>
             )}
           </div>
@@ -808,25 +1028,83 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 9 — MATN (Telegram analogiyasi + Mentor) =====
 const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's9', text: `Telegram'da do'stingizga yozganda, muhim so'zni ba'zan qalin qilasiz-ku. HTML'da ham shunaqa: muhim so'z qalin — strong, urg'u beriladigan so'z yotiq — em. Ikkala tugmani bosib ko'ring.`, trigger: 'on_mount', waits_for: null }]);
-  const [bold, setBold] = useState(false);
-  const [ital, setItal] = useState(false);
-  const [bt, setBt] = useState(false);
-  const [it, setIt] = useState(false);
-  const done = bt && it;
-  const toggleBold = () => { setBold(b => !b); setBt(true); };
-  const toggleItal = () => { setItal(v => !v); setIt(true); };
+  const audio = useAudio([{ id: 's9', text: `Telegram'da xabar yozasiz, muhim so'zni belgilab B yoki I bilan formatlaysiz, keyin yuborasiz. Veb-saytda esa xuddi shu ishni HTML tegi qiladi: strong qalin, em yotiq. So'zni bosib belgilang va sinab ko'ring.`, trigger: 'on_mount', waits_for: null }]);
+  const labels = { imtihon: 'imtihon', albatta: 'Albatta' };
+  const [fmt, setFmt] = useState({ imtihon: { b: false, i: false }, albatta: { b: false, i: false } });
+  const [sel, setSel] = useState(null);
+  const [usedB, setUsedB] = useState(false);
+  const [usedI, setUsedI] = useState(false);
+  const [sent, setSent] = useState(false);
+  const done = usedB && usedI;
+  const applyFmt = (k) => { if (!sel) return; setFmt(f => ({ ...f, [sel]: { ...f[sel], [k]: !f[sel][k] } })); if (k === 'b') setUsedB(true); else setUsedI(true); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
+
+  // Composer: belgilanadigan + format menyusi chiqadigan so'z
+  const chatWord = (id) => (
+    <span key={id} className={`tgm-word ${sel === id ? 'sel' : ''} ${fmt[id].b ? 'bold' : ''} ${fmt[id].i ? 'ital' : ''}`} onClick={(e) => { e.stopPropagation(); setSel(id); }}>
+      {labels[id]}
+      {sel === id && (
+        <span className="tgm-menu" onClick={(e) => e.stopPropagation()}>
+          <button className={fmt[id].b ? 'on' : ''} onClick={() => applyFmt('b')} title="Qalin"><b>B</b></button>
+          <button className={fmt[id].i ? 'on' : ''} onClick={() => applyFmt('i')} title="Yotiq"><i>I</i></button>
+        </span>
+      )}
+    </span>
+  );
+  // Read-only renderlangan so'z (pufak va sayt uchun)
+  const renderWord = (id) => <span key={id} className={`${fmt[id].b ? 'rw-b' : ''} ${fmt[id].i ? 'rw-i' : ''}`}>{labels[id]}</span>;
+  const codeWord = (id) => {
+    let el = labels[id];
+    if (fmt[id].i) el = <><span className="tg">&lt;em&gt;</span>{el}<span className="tg">&lt;/em&gt;</span></>;
+    if (fmt[id].b) el = <><span className="tg">&lt;strong&gt;</span>{el}<span className="tg">&lt;/strong&gt;</span></>;
+    return el;
+  };
+
   return (
-    <Stage eyebrow="Matn" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Ikkalasini sinab ko\u2019ring"} onClick={onNext} /></>}>
-      <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
+    <Stage eyebrow="Matn" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "B va I ni sinang"} onClick={onNext} /></>}>
+      <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }} onClick={() => setSel(null)}>
         <div className="head"><h2 className="title h-title fade-up">Muhim so'zni qanday <span className="italic" style={{ color: T.accent }}>ajratasiz</span>?</h2></div>
-        <Mentor>Telegram'da do'stingizga yozganda, muhim so'zni ba'zan <b style={{ color: T.ink }}>qalin</b> qilasiz-ku. HTML'da ham shunaqa: muhim so'z — qalin (<span className="mono">strong</span>), urg'u beriladigan so'z — yotiq (<span className="mono">em</span>). Ikkala tugmani bosib ko'ring.</Mentor>
-        <div className="split">
-          <div className="mcard fade-up delay-2"><div className="mc-head"><span className="mc-chip">&lt;strong&gt;</span><span className="mc-label">Qalin — muhim so'z</span></div><div className="mc-demo"><span>Bu&nbsp;</span><span key={`b-${bold}`} className={`w-anim ${bold ? 'w-bold' : ''}`}>muhim</span><span>!</span></div><button className={`mc-btn ${bold ? 'on' : ''}`} onClick={toggleBold}><span className="ic" style={{ fontWeight: 800 }}>B</span> {bold ? 'Qalin ✓' : 'Qalin qilish'}</button><p className="mc-code"><span className="tg">&lt;p&gt;</span>Bu {bold ? <><span className="tg">&lt;strong&gt;</span>muhim<span className="tg">&lt;/strong&gt;</span></> : 'muhim'}!<span className="tg">&lt;/p&gt;</span></p></div>
-          <div className="mcard fade-up delay-2"><div className="mc-head"><span className="mc-chip">&lt;em&gt;</span><span className="mc-label">Yotiq (kursiv) — urg'u</span></div><div className="mc-demo"><span key={`i-${ital}`} className={`w-anim ${ital ? 'w-ital' : ''}`}>Juda</span><span>&nbsp;zo'r!</span></div><button className={`mc-btn ${ital ? 'on' : ''}`} onClick={toggleItal}><span className="ic" style={{ fontStyle: 'italic' }}>I</span> {ital ? 'Yotiq ✓' : 'Yotiq qilish'}</button><p className="mc-code"><span className="tg">&lt;p&gt;</span>{ital ? <><span className="tg">&lt;em&gt;</span>Juda<span className="tg">&lt;/em&gt;</span></> : 'Juda'} zo'r!<span className="tg">&lt;/p&gt;</span></p></div>
+        <Mentor>Telegram'da so'zni <b style={{ color: T.ink }}>belgilab</b>, <b style={{ color: T.ink }}>B</b>/<b style={{ color: T.ink }}>I</b> bilan formatlab yuborasiz. Veb-saytda esa o'sha ishni <b style={{ color: T.ink }}>HTML tegi</b> qiladi: <span className="mono">strong</span> — qalin, <span className="mono">em</span> — yotiq.</Mentor>
+
+        <div className="cmp-grid fade-up delay-2">
+          {/* TELEGRAM muhiti */}
+          <div className="cmp-side">
+            <div className="cmp-hd cmp-hd-tg">💬 Telegram</div>
+            <div className="tgc-window">
+              <div className="tgc-head"><span className="tgc-ava">🧑‍🏫</span><div><p className="tgc-name">Sinfdosh</p><p className="tgc-status">online</p></div></div>
+              <div className="tgc-body">
+                <div className="tgc-row in"><div className="tgc-bubble in">Ertaga maktabda muhim narsa bormi?</div></div>
+                {sent && <div className="tgc-row out"><div className="tgc-bubble out">Ertaga {renderWord('imtihon')} bor! {renderWord('albatta')} keling.<span className="tgc-time">✓✓</span></div></div>}
+              </div>
+              <div className="tgc-composer" onClick={(e) => e.stopPropagation()}>
+                <span className="tgc-cic">😊</span>
+                <div className="tgc-input">Ertaga {chatWord('imtihon')} bor! {chatWord('albatta')} keling.</div>
+                <button className="tgc-send" onClick={() => setSent(true)} title="Yuborish" aria-label="Yuborish"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" /></svg></button>
+              </div>
+            </div>
+            <p className="tgc-hint">{sel ? '☝️ Ustidagi menyudan B (qalin) yoki I (yotiq) tanlang' : '👆 xabardagi so‘zni bosib belgilang'}</p>
+          </div>
+
+          <div className="cmp-vs">=</div>
+
+          {/* VEB-SAYT muhiti */}
+          <div className="cmp-side">
+            <div className="cmp-hd cmp-hd-html">🌐 Veb-saytda HTML buni teg bilan qiladi</div>
+            <div className="bp-window">
+              <div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">mening-saytim.uz</span></div>
+              <div className="cmp-siteview"><p>Ertaga {renderWord('imtihon')} bor! {renderWord('albatta')} keling.</p></div>
+            </div>
+            <div className="cmp-codeblock">
+              <span className="cmp-codelbl">&lt;/&gt; HTML kod</span>
+              <pre className="code-box cmp-code"><span className="tg">&lt;p&gt;</span>Ertaga {codeWord('imtihon')} bor! {codeWord('albatta')} keling.<span className="tg">&lt;/p&gt;</span></pre>
+              <p className="cmp-leg"><span className="cmp-leg-tag">&lt;strong&gt;</span> — qalin qiladi · <span className="cmp-leg-tag">&lt;em&gt;</span> — yotiq-kursiv qiladi</p>
+            </div>
+          </div>
         </div>
-        <div className="frame-soft fade-up delay-3"><p className="body" style={{ margin: 0, color: T.ink }}><b>Sizning loyihangiz:</b> o'zingiz haqingizdagi eng muhim so'zni qalin qilib ajratasiz.</p></div>
+
+        <div className={`cmp-merge fade-up delay-3 ${done ? 'done' : ''}`}>
+          {done ? '✓ ' : ''}Telegramda so‘zni belgilab <b>tugma</b> bosasiz; veb-saytda esa o‘sha so‘z <b>teg</b> ichiga olinadi.
+        </div>
       </div>
     </Stage>
   );
@@ -835,30 +1113,82 @@ const Screen9 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 10 — RO'YXATLAR (xarid ro'yxati vs retsept + Mentor) =====
 const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's10', text: `Do'konga borishdan oldin xarid ro'yxati yozasiz — tartib muhim emas, faqat ro'yxat. Lekin retseptda qadamlar tartib bilan: bir, ikki, uch. HTML'da ham ikki xil: ul belgili, ol raqamli. Turini almashtirib ko'ring.`, trigger: 'on_mount', waits_for: null }]);
-  const ITEMS = ['Minecraft', 'Futbol', 'Shaxmat'];
-  const [type, setType] = useState('ul');
-  const [touched, setTouched] = useState(false);
-  const done = touched;
-  const mctx = useContext(MentorCtx) || {};
+  const audio = useAudio([{ id: 's10', text: `Xarid ro'yxatida tartib muhim emas — non, sut, tuxum, qaysi biri avval bo'lsa ham bari bir. Lekin retseptda qadamlar aniq tartibda. Shuning uchun HTML'da ikki xil ro'yxat bor: ul belgili, tartibsiz uchun; ol raqamli, tartibli uchun. Har bir element esa li.`, trigger: 'on_mount', waits_for: null }]);
+  const SHOP = ['Non', 'Sut', 'Tuxum'];
+  const RECIPE = ['Limon siqing', 'Shakar soling', 'Suv quying'];
   const isNarrow = useIsMobile(768);
-  const showExtras = !isNarrow || mctx.collapsed;
-  const pick = (t) => { setType(t); setTouched(true); if (isNarrow && mctx.setCollapsed) mctx.setCollapsed(true); };
-  useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
+  const gridRef = useRef(null);
+  const [phase, setPhase] = useState(0); // 0 = boshlanmagan; >0 = quriladi (key sifatida)
+  const startedRef = useRef(false);
+  useEffect(() => { if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, []);
+  // Mobilda: kartalarga avtoscroll, so'ng qurilish boshlanadi; desktopda darrov boshlanadi
+  useEffect(() => {
+    const timers = [];
+    if (isNarrow && gridRef.current) timers.push(setTimeout(() => gridRef.current && gridRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }), 600));
+    if (!startedRef.current) { startedRef.current = true; timers.push(setTimeout(() => setPhase(1), isNarrow ? 1000 : 450)); }
+    return () => timers.forEach(clearTimeout);
+  }, [isNarrow]);
+  const replay = () => setPhase(p => p + 1);
+
+  const codeList = (tag, items) => (
+    <pre className="code-box cmp2-code"><span className="tg">{`<${tag}>`}</span>{'\n'}{items.map((it, i) => (<React.Fragment key={i}>{'  '}<span className="tg">&lt;li&gt;</span>{it}<span className="tg">&lt;/li&gt;</span>{'\n'}</React.Fragment>))}<span className="tg">{`</${tag}>`}</span></pre>
+  );
+
   return (
-    <Stage eyebrow="Ro'yxatlar" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Turini almashtiring"} onClick={onNext} /></>}>
+    <Stage eyebrow="Ro'yxatlar" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext label="Davom etish" onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Xarid ro'yxati va retsept — <span className="italic" style={{ color: T.accent }}>farqi</span> nimada?</h2></div>
-        <Mentor>Do'konga borishdan oldin <b style={{ color: T.ink }}>xarid ro'yxati</b> yozasiz — tartib muhim emas. Lekin <b style={{ color: T.ink }}>retseptda</b> qadamlar tartib bilan: 1, 2, 3. HTML'da ham ikki xil: <span className="mono">ul</span> (belgili) va <span className="mono">ol</span> (raqamli). Turini almashtirib ko'ring.</Mentor>
-        <div className="split">
-          <div className="col">
-            <div className="fade-up delay-2" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}><button className={`chip ${type === 'ul' ? 'chip-on' : ''}`} onClick={() => pick('ul')}>• Belgili (ul)</button><button className={`chip ${type === 'ol' ? 'chip-on' : ''}`} onClick={() => pick('ol')}>1. Raqamli (ol)</button></div>
-            {showExtras && <div className="when fade-up delay-2"><p className="body" style={{ margin: 0, color: T.ink }}>Tartib muhim bo'lsa (qadamlar, reyting) — <b style={{ color: T.accent }}>raqamli (ol)</b>. Aks holda — <b style={{ color: T.accent }}>belgili (ul)</b>.</p></div>}
-            <pre className="code-box fade-up delay-2" key={type}><span className="tg">{`<${type}>`}</span>{'\n'}{ITEMS.map((it, i) => (<React.Fragment key={i}>{'  '}<span className="tg">&lt;li&gt;</span>{it}<span className="tg">&lt;/li&gt;</span>{'\n'}</React.Fragment>))}<span className="tg">{`</${type}>`}</span></pre>
+        <Mentor>Xarid ro'yxatida tartib <b style={{ color: T.ink }}>muhim emas</b> (non, sut — qaysi avval bo'lsa ham bari bir). Retseptda esa qadamlar <b style={{ color: T.ink }}>aniq tartibda</b>. Shuning uchun HTML'da <b style={{ color: T.ink }}>ikki xil</b> ro'yxat bor — pastdan farqini ko'ring.</Mentor>
+
+        <div className="cmp2-grid" ref={gridRef} style={{ scrollMarginTop: 12 }}>
+          {/* XARID — ul */}
+          <div className="cmp2-card fade-up delay-2">
+            <div className="cmp2-hd">🛒 Xarid ro'yxati <span className="cmp2-chip">&lt;ul&gt;</span></div>
+            <span className="cmp2-order no">tartib muhim EMAS</span>
+            <div className="cmp2-bp">
+              <div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">xaridlar.uz</span></div>
+              <div className="cmp2-site shop">
+                <div className="cmp2-top"><span className="cmp2-logo">🛒</span><span className="cmp2-brand">Mahsulotlar</span><span className="cmp2-nav"><span>Bosh</span><span>Savat</span></span></div>
+                <div className="cmp2-body">
+                  <p className="cmp2-site-h">Bugungi xaridlar</p>
+                  <ul className={`cmp2-site-list ul ${phase ? 'play' : ''}`} key={`ul-${phase}`}>{SHOP.map((it, i) => <li key={i} style={{ animationDelay: `${0.15 + i * 0.07}s` }}>{it}</li>)}</ul>
+                </div>
+              </div>
+            </div>
+            <div className="cmp2-codewrap">
+              <span className="cmp2-pvlbl">&lt;/&gt; HTML kod</span>
+              {codeList('ul', SHOP)}
+            </div>
           </div>
-          <div className="col"><div className="flow-label">Saytda shunday ko'rinadi</div><div className="bp-window fade-up delay-2"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">mening-saytim.uz</span></div><div className="bp-body"><div className="site-header"><span className="site-brand"><span className="site-logo">M</span><span className="site-name">Mening saytim</span></span><span className="site-nav"><span>Asosiy</span><span>O'yinlar</span></span></div><div className="site-sec"><h3 className="site-h3">Sevimli o'yinlarim</h3><div className="site-list" key={type}>{type === 'ul' ? <ul>{ITEMS.map((it, i) => <li key={i}>{it}</li>)}</ul> : <ol>{ITEMS.map((it, i) => <li key={i}>{it}</li>)}</ol>}</div></div></div></div></div>
+
+          {/* RETSEPT — ol */}
+          <div className="cmp2-card fade-up delay-3">
+            <div className="cmp2-hd">🥤 Limonad retsepti <span className="cmp2-chip">&lt;ol&gt;</span></div>
+            <span className="cmp2-order yes">tartib MUHIM</span>
+            <div className="cmp2-bp">
+              <div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-title">limonad.uz</span></div>
+              <div className="cmp2-site lemon">
+                <div className="cmp2-top"><span className="cmp2-logo">🥤</span><span className="cmp2-brand">Limonad</span><span className="cmp2-nav"><span>Retseptlar</span></span></div>
+                <div className="cmp2-body">
+                  <p className="cmp2-site-h">Limonad retsepti</p>
+                  <ol className={`cmp2-site-list ol ${phase ? 'play' : ''}`} key={`ol-${phase}`}>{RECIPE.map((it, i) => <li key={i} style={{ animationDelay: `${0.15 + i * 0.42}s` }}>{it}</li>)}</ol>
+                </div>
+              </div>
+            </div>
+            <div className="cmp2-codewrap">
+              <span className="cmp2-pvlbl">&lt;/&gt; HTML kod</span>
+              {codeList('ol', RECIPE)}
+            </div>
+          </div>
         </div>
-        {showExtras && <div className="frame-soft fade-up delay-3"><p className="body" style={{ margin: 0, color: T.ink }}><b>Sizning loyihangiz:</b> sevimli mashg'ulotlaringizni ro'yxat qilib qo'shasiz.</p></div>}
+
+        <div className="cmp2-replaywrap">
+          <button className="cmp2-replay" onClick={replay}>↻ Qaytadan ko'rsatish</button>
+        </div>
+
+        <div className="cmp2-concl fade-up delay-3">
+          <p>💡 <b>🛒 ul</b> — belgili (•), tartib muhim emas. <b>🥤 ol</b> — raqamli (1, 2, 3), tartib muhim (limonadda avval shakar, keyin limon bo'lsa — boshqacha chiqadi!). Har bir element — <span className="mono" style={{ color: T.accent }}>&lt;li&gt;</span>.</p>
+        </div>
       </div>
     </Stage>
   );
@@ -891,10 +1221,27 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [jumped, setJumped] = useState(false);
   const done = jumped;
   const [revealed, setRevealed] = useState(false);
+  const [travel, setTravel] = useState(null); // havola bo'ylab uchayotgan nuqta
+  const travelKey = useRef(0);
+  const travelTimer = useRef(null);
   const mctx = useContext(MentorCtx) || {};
   const isNarrow = useIsMobile(768);
   const showResult = !isNarrow || revealed;
-  const go = (to) => { setPage(to); if (!jumped) { setJumped(true); audio.triggerEvent('link_jumped'); } setRevealed(true); if (isNarrow && mctx.setCollapsed) mctx.setCollapsed(true); };
+  useEffect(() => () => clearTimeout(travelTimer.current), []);
+  // Havola bosilganda: nuqta joriy sahifadan manzilga uchadi, so'ng sahifa almashadi
+  const go = (to) => {
+    if (to === page || travel) return;
+    const f = POS[page], t = POS[to];
+    setTravel({ fx: `${f[0] / 260 * 100}%`, fy: `${f[1] / 150 * 100}%`, tx: `${t[0] / 260 * 100}%`, ty: `${t[1] / 150 * 100}%`, key: ++travelKey.current });
+    clearTimeout(travelTimer.current);
+    travelTimer.current = setTimeout(() => {
+      setPage(to);
+      if (!jumped) { setJumped(true); audio.triggerEvent('link_jumped'); }
+      setRevealed(true);
+      if (isNarrow && mctx.setCollapsed) mctx.setCollapsed(true);
+      setTravel(null);
+    }, 480);
+  };
   const cur = PAGES[page];
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   useEffect(() => { if (isNarrow && mctx.collapsed === false) setRevealed(false); }, [mctx.collapsed]);
@@ -904,7 +1251,7 @@ const Screen12 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <div className="head"><h2 className="title h-title fade-up">Bir bosishda boshqa sahifaga qanday <span className="italic" style={{ color: T.accent }}>o'tamiz</span>?</h2></div>
         <Mentor>YouTube'da bitta videoni ko'rib bo'lgach, yonidagisiga bosib o'tasiz-ku. O'sha bosish — <b style={{ color: T.ink }}>havola</b>. HTML'da havola <span className="mono">{'<a href="…">'}</span> bilan yasaladi. Menyuni bosib, sahifalar o'rtasida yuring.</Mentor>
         <div className="split">
-          <div className="col"><div className="flow-label">Veb — bu "to'r"</div><div className="web fade-up delay-2"><svg className="web-svg" viewBox="0 0 260 150" preserveAspectRatio="none">{EDGES.map(([a, b], i) => { const active = page === a || page === b; return <line key={i} x1={POS[a][0]} y1={POS[a][1]} x2={POS[b][0]} y2={POS[b][1]} stroke={active ? T.accent : T.ink3} strokeWidth={active ? 2 : 1.2} strokeDasharray={active ? '0' : '4 3'} opacity={active ? 1 : 0.6} />; })}</svg>{Object.keys(PAGES).map(k => (<div key={k} className={`web-node ${page === k ? 'on' : ''}`} onClick={() => go(k)} style={{ left: `${POS[k][0] / 260 * 100}%`, top: `${POS[k][1] / 150 * 100}%` }}>{PAGES[k].title}</div>))}</div><p className="web-cap">Har sahifa boshqasiga <b>havola</b> bilan bog'langan. Shu bog'lanishlar <b>"to'r"</b> hosil qiladi — <b>Veb</b> (World Wide Web) shundan nom olgan.</p></div>
+          <div className="col"><div className="flow-label">Veb — bu "to'r"</div><div className="web fade-up delay-2"><svg className="web-svg" viewBox="0 0 260 150" preserveAspectRatio="none">{EDGES.map(([a, b], i) => { const active = page === a || page === b; return <line key={i} x1={POS[a][0]} y1={POS[a][1]} x2={POS[b][0]} y2={POS[b][1]} stroke={active ? T.accent : T.ink3} strokeWidth={active ? 2 : 1.2} strokeDasharray={active ? '0' : '4 3'} opacity={active ? 1 : 0.6} />; })}</svg>{Object.keys(PAGES).map(k => { const isCur = page === k; const linked = cur.links.some(l => l.to === k); const off = !isCur && !linked; return (<div key={k} className={`web-node ${isCur ? 'on' : ''} ${off ? 'web-node-off' : ''}`} onClick={linked && !isCur ? () => go(k) : undefined} style={{ left: `${POS[k][0] / 260 * 100}%`, top: `${POS[k][1] / 150 * 100}%` }}>{PAGES[k].title}</div>); })}{travel && <div className="web-travel" key={travel.key} style={{ '--fx': travel.fx, '--fy': travel.fy, '--tx': travel.tx, '--ty': travel.ty }} />}</div><p className="web-cap">Har sahifa boshqasiga <b>havola</b> bilan bog'langan. Shu bog'lanishlar <b>"to'r"</b> hosil qiladi — <b>Veb</b> (World Wide Web) shundan nom olgan.</p></div>
           {showResult && (<div className="col">
             {!isNarrow && (<div className="bp-window fade-up delay-2"><div className="bp-bar"><span className="bb-dots"><i /><i /><i /></span><span className="bp-url" key={`u-${page}`}><span className="lock">●</span>{cur.url}</span></div><div className="bp-body pg-in" key={`p-${page}`}><div className="site-top"><span className="site-wordmark">Mening saytim</span><span className="site-tag">o'quvchi · CoddyCamp</span></div><h1 className="pg-h1">{cur.title}</h1><p className="pg-body">{cur.body}</p><div className="pg-divider" /><p className="pg-linklabel">Boshqa sahifalar</p><div className="pg-links">{cur.links.map((l, i) => (<a key={i} className="pg-a" onClick={() => go(l.to)}>{l.label} <span className="arr">→</span></a>))}</div></div></div>)}
             <div className="codecard" key={`c-${page}`}><p className="codecard-top"><span className="dotf" />{cur.file} — havolalar kodi</p><pre className="codeblock">{cur.links.map((l, i) => (<span className="ln" key={i}><span className="tg">&lt;a </span><span className="at">href</span><span className="tx">=</span><span className="st">"{PAGES[l.to].file}"</span><span className="tg">&gt;</span><span className="tx">{l.label}</span><span className="tg">&lt;/a&gt;</span></span>))}</pre><p className="codecap">Har bir havola = bitta <span className="mn">&lt;a&gt;</span> teg.</p></div>
@@ -1311,6 +1658,17 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .pf-name { font-family: 'Georgia, serif'; font-size: clamp(16px,2.2vw,19px); color: ${T.ink}; margin: 0; }
         .pf-bio { color: ${T.ink2}; margin: 0; font-size: 12.5px; }
         .pf-btn { margin-top: 3px; background: ${T.accent}; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-family: 'Manrope'; font-weight: 700; font-size: 12.5px; cursor: default; }
+        /* ===== BRAUZER MASHINASI (Screen3) ===== */
+        .br-code { display: flex; flex-direction: column; gap: 3px; white-space: normal; }
+        .br-line { display: flex; align-items: center; gap: 6px; padding: 3px 7px; border-radius: 6px; border-left: 3px solid transparent; opacity: 0.5; transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease; }
+        .br-line.read { opacity: 1; }
+        .br-line.now { opacity: 1; background: rgba(255,79,40,0.18); border-left-color: ${T.accent}; }
+        .br-caret { width: 9px; flex-shrink: 0; color: ${T.accent}; font-weight: 700; }
+        .br-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 90px; height: 100%; text-align: center; color: ${T.ink3}; font-family: 'Manrope'; font-weight: 600; font-size: clamp(12px,1.6vw,13.5px); line-height: 1.4; }
+        .br-el { animation: br-pop 0.42s cubic-bezier(.34,1.4,.5,1); }
+        @keyframes br-pop { 0% { opacity: 0; transform: translateY(9px) scale(0.82); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        .br-controls { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+        .br-status { margin: 4px 0 0; font-family: 'Manrope'; font-weight: 600; font-size: clamp(12.5px,1.6vw,14px); color: ${T.success}; background: ${T.successSoft}; padding: 9px 13px; border-radius: 11px; animation: fade-step 0.35s ease-out; }
 
         /* === BSKEL (skeleton anatomy) === */
         .bskel { display: flex; flex-direction: column; gap: 0; }
@@ -1349,7 +1707,7 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .hug-lbl { font-family: 'JetBrains Mono'; font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: ${T.ink3}; }
         .role-line { background: ${T.paper}; border-radius: 10px; padding: 12px 15px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); animation: fade-step 0.3s; }
         .hint { background: ${T.bg}; border: 1.5px dashed ${T.ink3}; border-radius: 12px; padding: 14px 16px; font-size: clamp(13px,1.5vw,14px); color: ${T.ink2}; }
-        .pv-h1 { font-family: 'Georgia, serif'; font-size: clamp(22px,3vw,30px); color: ${T.ink}; margin: 0; animation: fade-step 0.4s; }
+        .pv-h1 { font-family: 'Georgia, serif'; font-size: clamp(22px,3vw,30px); color: ${T.ink}; margin: 0; animation: tb-pvpop 0.5s cubic-bezier(.34,1.4,.5,1); }
 
         /* === LADDER (sarlavhalar) === */
         .ladder { display: flex; flex-direction: column; gap: 6px; }
@@ -1359,22 +1717,74 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .hl-chip { font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 600; color: ${CODE.tag}; background: ${CODE.bg}; padding: 3px 8px; border-radius: 5px; flex-shrink: 0; }
         .hl-text { font-family: 'Georgia, serif'; font-weight: 700; color: ${T.ink}; line-height: 1; }
         .hl-tag { margin-left: auto; font-family: 'Manrope'; font-weight: 600; font-size: 11px; color: ${T.accent}; background: ${T.accentSoft}; padding: 3px 9px; border-radius: 99px; }
+        /* narvon zinapoya bo'lib, navbatma-navbat tushadi */
+        .hl-stair { animation: rung-drop 0.5s cubic-bezier(.34,1.35,.5,1) backwards; }
+        @keyframes rung-drop { 0% { opacity: 0; transform: translateY(-16px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        .hl-bar { width: 4px; align-self: stretch; border-radius: 99px; background: ${T.accent}; flex-shrink: 0; }
         .hl-note { background: ${T.paper}; border-radius: 10px; padding: 12px 15px; box-shadow: 0 6px 16px -6px rgba(${T.shadowBase},0.14); animation: fade-step 0.3s; }
         .hl-note .nb { font-family: 'JetBrains Mono'; font-weight: 700; color: ${T.accent}; }
         .hl-hint { padding: 10px 2px; }
 
         /* === MCARD (matn) === */
-        .mcard { background: ${T.paper}; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); }
-        .mc-head { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
-        .mc-chip { font-family: 'JetBrains Mono'; font-size: 12px; font-weight: 600; color: ${CODE.tag}; background: ${CODE.bg}; padding: 3px 9px; border-radius: 5px; }
-        .mc-label { font-weight: 600; font-size: 13px; color: ${T.ink2}; }
-        .mc-demo { font-family: 'Georgia, serif'; font-size: clamp(18px,2.5vw,24px); color: ${T.ink}; padding: 8px 0; }
-        .w-anim { display: inline-block; transition: all 0.3s; } .w-bold { font-weight: 800; } .w-ital { font-style: italic; }
-        .mc-btn { align-self: flex-start; font-family: 'Manrope'; font-weight: 600; font-size: 13px; padding: 8px 15px; border-radius: 9px; border: none; background: ${T.bg}; color: ${T.ink}; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 7px; }
-        .mc-btn:hover { box-shadow: 0 6px 14px -5px rgba(${T.shadowBase},0.2); }
-        .mc-btn.on { background: ${T.accent}; color: #fff; }
-        .mc-btn .ic { font-family: 'Georgia, serif'; }
-        .mc-code { font-family: 'JetBrains Mono'; font-size: 12px; color: ${T.ink2}; background: ${T.bg}; padding: 8px 11px; border-radius: 8px; margin: 0; } .mc-code .tg { color: ${CODE.tag}; }
+        /* ===== Telegram muhiti ↔ Veb-sayt (HTML teg) (Screen9) ===== */
+        .cmp-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: stretch; }
+        .cmp-side { display: flex; flex-direction: column; gap: 10px; background: ${T.paper}; border-radius: 14px; padding: 13px 14px; box-shadow: 0 8px 20px -8px rgba(${T.shadowBase},0.16); }
+        .cmp-hd { font-family: 'Manrope'; font-weight: 700; font-size: clamp(11.5px,1.5vw,13px); }
+        .cmp-hd-tg { color: #5288C1; }
+        .cmp-hd-html { color: ${CODE.tag}; }
+        .cmp-vs { align-self: center; font-family: 'Manrope'; font-weight: 800; font-size: 24px; color: ${T.ink3}; padding: 0 2px; }
+        /* Telegram oynasi */
+        .tgc-window { border-radius: 13px; overflow: hidden; box-shadow: 0 8px 22px -8px rgba(${T.shadowBase},0.25); display: flex; flex-direction: column; }
+        .tgc-head { background: #5288C1; display: flex; align-items: center; gap: 10px; padding: 9px 13px; }
+        .tgc-ava { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .tgc-name { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: #fff; margin: 0; }
+        .tgc-status { font-family: 'Manrope'; font-size: 11px; color: rgba(255,255,255,0.82); margin: 1px 0 0; }
+        .tgc-body { background: #D9E2EC; padding: 13px 12px; display: flex; flex-direction: column; gap: 8px; min-height: 92px; }
+        .tgc-row { display: flex; }
+        .tgc-row.in { justify-content: flex-start; } .tgc-row.out { justify-content: flex-end; }
+        .tgc-bubble { position: relative; max-width: 85%; padding: 8px 12px; border-radius: 14px; font-family: 'Manrope'; font-size: clamp(13px,1.8vw,14.5px); line-height: 1.6; color: #16202A; box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
+        .tgc-bubble.in { background: #fff; border-bottom-left-radius: 5px; }
+        .tgc-bubble.out { background: #E4F7CF; border-bottom-right-radius: 5px; animation: tgc-fly 0.45s cubic-bezier(.34,1.35,.5,1); }
+        @keyframes tgc-fly { 0% { opacity: 0; transform: translateY(16px) scale(0.88); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        .tgc-time { font-size: 10px; color: #5DA86A; margin-left: 6px; float: right; position: relative; top: 5px; }
+        .tgc-composer { display: flex; align-items: center; gap: 9px; background: #fff; padding: 8px 10px; }
+        .tgc-cic { font-size: 18px; flex-shrink: 0; }
+        .tgc-input { flex: 1; min-width: 0; font-family: 'Manrope'; font-size: clamp(13px,1.8vw,14.5px); color: #16202A; line-height: 2.1; }
+        .tgc-send { width: 38px; height: 38px; flex-shrink: 0; border: none; border-radius: 50%; background: #5288C1; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px -4px rgba(82,136,193,0.6); transition: transform 0.15s ease; }
+        .tgc-send:hover { transform: scale(1.08); }
+        .tgc-send:active { transform: scale(0.94); }
+        .tgc-send svg { width: 19px; height: 19px; margin-left: 1px; }
+        .tgc-hint { font-family: 'Manrope'; font-weight: 600; font-size: 11.5px; color: ${T.ink3}; text-align: center; margin: 0; }
+        /* belgilanadigan so'z + format menyusi */
+        .tgm-word { position: relative; display: inline-block; cursor: pointer; padding: 0 2px; border-radius: 3px; transition: background 0.15s ease; }
+        .tgm-word:hover { background: rgba(82,136,193,0.16); }
+        .tgm-word.sel { background: #A8D3FF; }
+        .tgm-word.sel::before, .tgm-word.sel::after { content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #2F86E0; }
+        .tgm-word.sel::before { left: -3px; top: -5px; } .tgm-word.sel::after { right: -3px; bottom: -5px; }
+        .tgm-word.bold { font-weight: 800; color: #000; animation: tgm-pop 0.4s cubic-bezier(.34,1.5,.5,1); }
+        .tgm-word.ital { font-style: italic; animation: tgm-pop 0.4s cubic-bezier(.34,1.5,.5,1); }
+        @keyframes tgm-pop { 0% { transform: scale(1); } 45% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .tgm-menu { position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%); display: flex; gap: 2px; background: #2B3A4A; border-radius: 9px; padding: 3px; box-shadow: 0 8px 18px -5px rgba(0,0,0,0.45); z-index: 6; animation: tgm-menuin 0.16s ease-out; }
+        .tgm-menu::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: #2B3A4A; }
+        .tgm-menu button { width: 32px; height: 30px; border: none; background: transparent; color: #fff; font-family: 'Georgia, serif'; font-size: 16px; border-radius: 7px; cursor: pointer; transition: background 0.15s ease; }
+        .tgm-menu button:hover { background: rgba(255,255,255,0.14); }
+        .tgm-menu button.on { background: #5288C1; }
+        @keyframes tgm-menuin { 0% { opacity: 0; transform: translateX(-50%) translateY(5px) scale(0.9); } 100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } }
+        /* Veb-sayt tomoni */
+        .cmp-siteview { padding: 14px 16px; background: #fff; }
+        .cmp-siteview p { font-family: 'Georgia, serif'; font-size: clamp(14px,2vw,16px); color: ${T.ink}; margin: 0; line-height: 1.6; }
+        .rw-b { font-weight: 800; } .rw-i { font-style: italic; }
+        .cmp-codeblock { display: flex; flex-direction: column; gap: 6px; margin-top: 9px; padding-top: 11px; border-top: 1.5px dashed ${T.line}; }
+        .cmp-codelbl { font-family: 'JetBrains Mono'; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; color: ${T.ink3}; }
+        .cmp-code { margin: 0; font-size: clamp(12px,1.6vw,13.5px) !important; }
+        .cmp-leg { margin: 0; font-family: 'Manrope'; font-weight: 500; font-size: clamp(11.5px,1.5vw,13px); color: ${T.ink2}; line-height: 1.5; }
+        .cmp-leg-tag { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: ${CODE.tag}; }
+        .cmp-merge { text-align: center; font-family: 'Manrope'; font-weight: 600; font-size: clamp(13px,1.8vw,15px); line-height: 1.5; color: ${T.ink}; background: ${T.accentSoft}; border-radius: 13px; padding: 13px 16px; transition: box-shadow 0.3s ease; }
+        .cmp-merge.done { box-shadow: inset 0 0 0 2px ${T.success}55; }
+        @media (max-width: 760px) {
+          .cmp-grid { grid-template-columns: 1fr; }
+          .cmp-vs { transform: rotate(90deg); }
+        }
 
         /* === WHEN / LISTS === */
         .when { background: ${T.accentSoft}; border-left: 4px solid ${T.accent}; border-radius: 10px; padding: 11px 15px; }
@@ -1384,13 +1794,56 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .site-sec { } .site-h3 { font-family: 'Georgia, serif'; font-size: clamp(16px,2.2vw,20px); color: ${T.ink}; margin: 0 0 8px; }
         .site-list { font-family: 'Georgia, serif'; color: ${T.ink}; font-size: clamp(14px,1.8vw,16px); }
         .site-list ul, .site-list ol { padding-left: 24px; } .site-list li { display: list-item; margin: 3px 0; }
+        /* ===== ul vs ol yonma-yon farq (Screen10) ===== */
+        .cmp2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; align-items: start; }
+        .cmp2-card { display: flex; flex-direction: column; gap: 8px; background: ${T.paper}; border-radius: 13px; padding: 12px 13px; box-shadow: 0 8px 20px -8px rgba(${T.shadowBase},0.16); }
+        .cmp2-hd { display: flex; align-items: center; gap: 7px; font-family: 'Manrope'; font-weight: 700; font-size: clamp(13px,1.7vw,15px); color: ${T.ink}; }
+        .cmp2-chip { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 600; color: ${CODE.tag}; background: ${CODE.bg}; padding: 2px 7px; border-radius: 5px; }
+        .cmp2-order { align-self: flex-start; font-family: 'Manrope'; font-weight: 700; font-size: 10px; letter-spacing: 0.03em; padding: 3px 10px; border-radius: 99px; }
+        .cmp2-order.no { color: ${T.ink2}; background: ${T.bg}; box-shadow: inset 0 0 0 1px ${T.line}; }
+        .cmp2-order.yes { color: ${T.accent}; background: ${T.accentSoft}; }
+        .cmp2-pvlbl { display: block; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; color: ${T.ink3}; margin-bottom: 5px; }
+        /* sayt = rangli, brendli klassik saytcha */
+        .cmp2-bp { border-radius: 10px; overflow: hidden; box-shadow: 0 5px 14px -7px rgba(${T.shadowBase},0.22), inset 0 0 0 1px ${T.line}; }
+        .cmp2-site { background: #fff; }
+        .cmp2-top { display: flex; align-items: center; gap: 8px; padding: 8px 11px; }
+        .cmp2-site.shop .cmp2-top { background: linear-gradient(135deg, #2FA84F, #46C46A); }
+        .cmp2-site.lemon .cmp2-top { background: linear-gradient(135deg, #F2A60C, #FFC93C); }
+        .cmp2-logo { width: 22px; height: 22px; border-radius: 7px; background: rgba(255,255,255,0.28); display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+        .cmp2-brand { font-family: 'Manrope'; font-weight: 800; font-size: 12.5px; color: #fff; }
+        .cmp2-nav { margin-left: auto; display: flex; gap: 10px; font-family: 'Manrope'; font-weight: 600; font-size: 10px; color: rgba(255,255,255,0.92); }
+        .cmp2-body { padding: 11px 13px 13px; }
+        .cmp2-site-h { font-family: 'Georgia, serif'; font-weight: 700; font-size: clamp(14px,1.9vw,16px); color: ${T.ink}; margin: 0 0 9px; }
+        /* klassik ro'yxat — kartochkasiz, oddiy qatorlar */
+        .cmp2-site-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+        .cmp2-site-list li { display: flex; align-items: center; gap: 10px; font-family: 'Manrope'; font-weight: 600; font-size: clamp(13.5px,1.8vw,15px); color: ${T.ink}; opacity: 0; }
+        .cmp2-site-list.play li { animation: li-build 0.45s cubic-bezier(.34,1.4,.5,1) both; }
+        @keyframes li-build { 0% { opacity: 0; transform: translateY(-9px) scale(0.92); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        .cmp2-replaywrap { display: flex; justify-content: center; }
+        .cmp2-replay { font-family: 'Manrope'; font-weight: 600; font-size: 12.5px; color: ${T.ink2}; background: transparent; border: none; border-radius: 9px; padding: 7px 14px; cursor: pointer; box-shadow: inset 0 0 0 1.5px ${T.line}; transition: all 0.15s ease; }
+        .cmp2-replay:hover { box-shadow: inset 0 0 0 1.5px ${T.accent}; color: ${T.accent}; }
+        .cmp2-site-list.ul li::before { content: ''; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .cmp2-site.shop .cmp2-site-list.ul li::before { background: #2FA84F; }
+        .cmp2-site-list.ol { counter-reset: step; }
+        .cmp2-site-list.ol li::before { counter-increment: step; content: counter(step); width: 22px; height: 22px; border-radius: 50%; color: #fff; font-family: 'Manrope'; font-weight: 700; font-size: 11.5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .cmp2-site.lemon .cmp2-site-list.ol li::before { background: #F2A60C; }
+        .cmp2-codewrap { margin-top: 8px; padding-top: 11px; border-top: 1.5px dashed ${T.line}; }
+        .cmp2-code { margin: 0; font-size: clamp(11px,1.4vw,12.5px) !important; }
+        .cmp2-concl { background: ${T.accentSoft}; border-radius: 12px; padding: 11px 15px; }
+        .cmp2-concl p { margin: 0; font-family: 'Manrope'; font-weight: 600; font-size: clamp(12.5px,1.7vw,14px); line-height: 1.5; color: ${T.ink}; }
+        @media (max-width: 620px) { .cmp2-grid { grid-template-columns: 1fr; } }
 
         /* === WEB (graf) === */
         .web { position: relative; height: 150px; background: ${T.paper}; border-radius: 14px; overflow: hidden; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); }
         .web-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
         .web-node { position: absolute; transform: translate(-50%,-50%); font-family: 'Manrope'; font-weight: 600; font-size: 11px; color: ${T.ink}; background: ${T.bg}; padding: 5px 10px; border-radius: 99px; cursor: pointer; transition: all 0.2s; white-space: nowrap; box-shadow: 0 3px 8px -3px rgba(${T.shadowBase},0.25); }
         .web-node:hover { transform: translate(-50%,-50%) scale(1.06); }
-        .web-node.on { background: ${T.accent}; color: #fff; }
+        .web-node-off { opacity: 0.38; cursor: default; box-shadow: none; }
+        .web-node-off:hover { transform: translate(-50%,-50%); }
+        .web-node.on { background: ${T.accent}; color: #fff; animation: node-pop 0.4s ease; }
+        @keyframes node-pop { 0% { transform: translate(-50%,-50%) scale(1); } 45% { transform: translate(-50%,-50%) scale(1.22); } 100% { transform: translate(-50%,-50%) scale(1); } }
+        .web-travel { position: absolute; width: 13px; height: 13px; border-radius: 50%; background: ${T.accent}; box-shadow: 0 0 12px 3px ${T.accent}; pointer-events: none; z-index: 4; animation: web-fly 0.48s cubic-bezier(.4,0,.25,1) forwards; }
+        @keyframes web-fly { 0% { left: var(--fx); top: var(--fy); opacity: 0; transform: translate(-50%,-50%) scale(0.4); } 16% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 84% { opacity: 1; transform: translate(-50%,-50%) scale(1); } 100% { left: var(--tx); top: var(--ty); opacity: 1; transform: translate(-50%,-50%) scale(1); } }
         .web-cap { font-size: clamp(12px,1.5vw,13px); color: ${T.ink2}; margin: 0; line-height: 1.5; }
 
         .bp-url { font-family: 'JetBrains Mono'; font-size: 11px; color: ${T.ink2}; display: flex; align-items: center; gap: 6px; animation: fade-step 0.3s; } .lock { color: ${T.success}; font-size: 8px; }
@@ -1458,39 +1911,112 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .pz-emoji { font-size: 26px; line-height: 1; flex-shrink: 0; }
         .pz-title { font-family: 'Manrope'; font-weight: 700; font-size: 14px; color: ${T.accent}; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 3px; }
         .pz-sub { font-size: clamp(13px,1.6vw,15px); color: ${T.ink2}; line-height: 1.45; margin: 0; }
-        .pz-flow { display: flex; align-items: flex-start; gap: 4px; overflow-x: auto; padding: 4px 2px 2px; }
-        .pz-step { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 88px; flex: 0 0 auto; padding: 10px 6px; border-radius: 12px; transition: background 0.3s; }
-        .pz-step.on { background: ${T.successSoft}; }
-        .pz-step.active { background: ${T.accentSoft}; }
-        .pz-ic { width: 34px; height: 34px; border-radius: 50%; box-shadow: inset 0 0 0 2px ${T.ink3}; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 14px; color: ${T.ink2}; background: transparent; transition: all 0.3s; }
-        .pz-step.on .pz-ic { box-shadow: inset 0 0 0 2px ${T.success}; background: ${T.success}; color: #fff; }
-        .pz-step.active .pz-ic { box-shadow: inset 0 0 0 2px ${T.accent}; color: ${T.accent}; }
-        .pz-lbl { font-size: 11.5px; text-align: center; color: ${T.ink2}; line-height: 1.25; font-weight: 500; }
-        .pz-step.on .pz-lbl { color: ${T.ink}; }
-        .pz-arrow { align-self: center; margin-top: 16px; color: ${T.ink3}; font-size: 15px; flex: 0 0 auto; transition: color 0.3s; }
-        .pz-arrow.on { color: ${T.success}; }
+        /* ===== DINOZAVRNI DASTURLASH O'YINI ===== */
+        .rg-scene { position: relative; height: clamp(134px,30vw,166px); border-radius: 14px; overflow: hidden; box-shadow: inset 0 0 0 1px ${T.line}; }
+        .rg-sky { position: absolute; inset: 0; background: linear-gradient(180deg,#EAF4FB 0%, #F5F9FC 58%); }
+        .rg-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 24%; background: linear-gradient(180deg,#DAC79F,#C8AF80); box-shadow: inset 0 2px 0 #E9DAB8; }
+        .rg-cell { position: absolute; bottom: 16%; width: 6px; height: 6px; border-radius: 50%; background: rgba(80,60,20,0.18); transform: translateX(-50%); }
+        .rg-cactus { position: absolute; bottom: 24%; transform: translateX(-50%); font-size: clamp(24px,5.6vw,36px); line-height: 1; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.18)); z-index: 1; }
+        .rg-goal { position: absolute; bottom: 24%; transform: translateX(-50%); font-size: clamp(26px,6vw,38px); line-height: 1; }
+        .rg-meat { display: inline-block; animation: rg-bobgoal 1.5s ease-in-out infinite; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.18)); }
+        @keyframes rg-bobgoal { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        /* dino yetib kelganda go'shtni "yeydi" — yo'qoladi (uyilib qolmaydi) */
+        .rg-meat.eaten { animation: rg-eaten 0.5s ease forwards; }
+        @keyframes rg-eaten { 0% { transform: scale(1) rotate(0); opacity: 1; } 55% { transform: scale(1.3) rotate(14deg); opacity: 1; } 100% { transform: scale(0) rotate(45deg); opacity: 0; } }
+        .rg-dino { position: absolute; bottom: 24%; transform: translateX(-50%); transition: left 0.55s cubic-bezier(.45,.05,.35,1); z-index: 2; }
+        .rg-dino-in { display: inline-block; }
+        .rg-dino-face { display: inline-block; transform: scaleX(-1); font-size: clamp(30px,7vw,44px); line-height: 1; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.22)); }
+        .rg-dino.running .rg-dino-in:not(.jump) { animation: rg-run 0.32s ease-in-out infinite; }
+        @keyframes rg-run { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        .rg-dino-in.jump { animation: rg-jump 0.6s cubic-bezier(.3,.05,.3,1); }
+        @keyframes rg-jump { 0% { transform: translateY(0); } 45% { transform: translateY(-44px); } 100% { transform: translateY(0); } }
+        .rg-dino.win .rg-dino-in { animation: rg-cheer 0.6s ease; }
+        @keyframes rg-cheer { 0%,100% { transform: translateY(0) scale(1); } 30% { transform: translateY(-16px) scale(1.12); } 60% { transform: translateY(0) scale(1); } 80% { transform: translateY(-7px); } }
+        .rg-dino.fail-cactus .rg-dino-in { animation: rg-shake 0.45s ease; }
+        @keyframes rg-shake { 0%,100% { transform: translateX(0) rotate(0); } 20% { transform: translateX(-5px) rotate(-10deg); } 60% { transform: translateX(5px) rotate(10deg); } }
+        .rg-burst { position: absolute; left: 50%; top: -20px; transform: translateX(-50%); font-size: clamp(22px,5vw,30px); z-index: 3; animation: rg-pop 0.55s ease; pointer-events: none; }
+        @keyframes rg-pop { 0% { opacity: 0; transform: translateX(-50%) scale(0.3); } 50% { opacity: 1; transform: translateX(-50%) scale(1.25); } 100% { opacity: 1; transform: translateX(-50%) scale(1); } }
+        /* g'alaba: dino ustida ko'tarilib o'chuvchi 😋 */
+        .rg-yum { position: absolute; left: 50%; top: -24px; transform: translateX(-50%); font-size: clamp(18px,4vw,24px); z-index: 3; pointer-events: none; animation: rg-yum 1s ease forwards; }
+        @keyframes rg-yum { 0% { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.5); } 25% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); } 75% { opacity: 1; transform: translateX(-50%) translateY(-14px) scale(1); } 100% { opacity: 0; transform: translateX(-50%) translateY(-28px) scale(1); } }
+        /* g'alaba konfettisi — butun sahna bo'ylab tushadi */
+        .rg-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 4; }
+        .rg-confetti i { position: absolute; top: -12px; width: 8px; height: 12px; border-radius: 2px; opacity: 0; animation: rg-fall 1.15s ease-in forwards; }
+        @keyframes rg-fall { 0% { transform: translateY(-12px) rotate(0); opacity: 0; } 12% { opacity: 1; } 100% { transform: translateY(160px) rotate(460deg); opacity: 0; } }
+
+        /* DASTUR — kod tahriri ko'rinishi */
+        .rg-code { border-radius: 12px; overflow: hidden; background: ${CODE.bg}; box-shadow: 0 8px 22px -8px rgba(${T.shadowBase},0.28); }
+        .rg-code-bar { display: flex; align-items: center; gap: 6px; padding: 7px 12px; background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.07); }
+        .rg-dot { width: 9px; height: 9px; border-radius: 50%; background: #4a5568; }
+        .rg-dot:nth-child(1) { background: #FF5F57; } .rg-dot:nth-child(2) { background: #FEBC2E; } .rg-dot:nth-child(3) { background: #28C840; }
+        .rg-code-name { margin-left: 8px; font-family: 'JetBrains Mono'; font-size: 11px; color: ${CODE.comment}; }
+        .rg-code-body { padding: 9px 10px; display: flex; flex-direction: column; gap: 2px; min-height: 92px; }
+        .rg-code-empty { font-family: 'JetBrains Mono'; font-size: 12.5px; color: ${CODE.comment}; padding: 6px 8px; }
+        .rg-line { display: flex; align-items: center; gap: 10px; padding: 4px 8px; border-radius: 6px; border-left: 3px solid transparent; transition: background 0.25s ease, border-color 0.25s ease; }
+        .rg-line.now { background: rgba(255,79,40,0.18); border-left-color: ${T.accent}; }
+        .rg-ln { font-family: 'JetBrains Mono'; font-size: 11px; color: ${CODE.comment}; width: 14px; text-align: right; flex-shrink: 0; }
+        .rg-call { font-family: 'JetBrains Mono'; font-size: 13.5px; }
+        .rg-fn { color: ${CODE.tag}; font-weight: 600; }
+        .rg-paren { color: ${CODE.punct}; }
+        .rg-cmt { font-family: 'JetBrains Mono'; font-size: 11px; color: ${CODE.comment}; margin-left: auto; }
+        .rg-line.now .rg-cmt { color: ${CODE.text}; }
+
+        /* Buyruq tugmalari (control pad) */
+        .rg-pad { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .rg-key { display: inline-flex; align-items: center; gap: 8px; font-family: 'Manrope'; font-weight: 700; font-size: 15px; color: ${T.ink}; border: none; border-radius: 12px; padding: 11px 20px; cursor: pointer; transition: transform 0.13s ease, box-shadow 0.13s ease, opacity 0.2s ease; }
+        .rg-key-ic { font-size: 19px; line-height: 1; }
+        .rg-key-yur { background: linear-gradient(180deg,#EAF7EE,#DAEFE2); box-shadow: 0 5px 14px -6px rgba(15,140,90,0.45), inset 0 0 0 1.5px #C2E6D2; }
+        .rg-key-jump { background: linear-gradient(180deg,#FFEDE5,#FFDFD2); box-shadow: 0 5px 14px -6px rgba(255,79,40,0.42), inset 0 0 0 1.5px #FFCDBA; }
+        .rg-key:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 9px 20px -7px rgba(${T.shadowBase},0.32); }
+        .rg-key:active:not(:disabled) { transform: translateY(0); }
+        .rg-key:disabled { opacity: 0.5; cursor: default; }
+        .rg-legend { font-family: 'Manrope'; font-weight: 500; font-size: clamp(11.5px,1.5vw,13px); color: ${T.ink3}; margin-left: 4px; }
+        .rg-legend b { color: ${T.ink2}; font-weight: 700; }
+        .rg-run-row { display: flex; align-items: center; gap: 10px; }
+        .rg-mini { font-family: 'Manrope'; font-weight: 600; font-size: 13px; color: ${T.ink2}; background: transparent; border: none; border-radius: 10px; padding: 9px 14px; cursor: pointer; box-shadow: inset 0 0 0 1.5px ${T.line}; transition: all 0.15s ease; }
+        .rg-mini:hover:not(:disabled) { box-shadow: inset 0 0 0 1.5px ${T.ink3}; }
+        .rg-mini:disabled { opacity: 0.45; cursor: default; }
+
+        .rg-msg { margin: 0; font-family: 'Manrope'; font-weight: 600; font-size: clamp(12.5px,1.7vw,14.5px); line-height: 1.45; padding: 10px 14px; border-radius: 11px; animation: fade-step 0.32s ease-out; }
+        .rg-msg.idle { color: ${T.ink2}; background: ${T.bg}; }
+        .rg-msg.ok { color: ${T.success}; background: ${T.successSoft}; }
+        .rg-msg.bad { color: ${T.accent}; background: ${T.accentSoft}; }
+
+        /* Yashil xulosa */
+        .rg-xulosa { display: flex; align-items: flex-start; gap: 13px; background: ${T.successSoft}; border-radius: 14px; padding: 15px 17px; box-shadow: inset 0 0 0 1.5px rgba(15,140,90,0.22); }
+        .rg-xulosa-ic { font-size: 24px; line-height: 1; flex-shrink: 0; }
+        .rg-xulosa .xh { font-family: 'Manrope'; font-weight: 800; font-size: 12px; color: ${T.success}; text-transform: uppercase; letter-spacing: 0.07em; margin: 0 0 4px; }
+        .rg-xulosa .xb { font-family: 'Manrope'; font-size: clamp(13.5px,1.8vw,15px); color: ${T.ink}; line-height: 1.5; margin: 0; }
         /* SCREEN 6 — Teg (qo'shtirnoq modeli) */
         .pv-plain { font-family: 'Georgia, serif'; font-size: 14px; color: ${T.ink3}; margin: 0; }
-        .tegbuild-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 0 14px; }
-        .tegbuild { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 78px; }
+        .tegbuild-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 0 16px; }
+        .tegbuild { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 84px; }
         .tegbuild.on { gap: 4px; }
-        .tb-chip { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 13px 16px; border-radius: 11px; transition: transform 0.55s cubic-bezier(.34,1.25,.4,1), opacity 0.4s; cursor: default; }
+        .tb-chip { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 13px 16px; border-radius: 11px; transition: transform 0.6s cubic-bezier(.34,1.45,.4,1), opacity 0.45s ease, box-shadow 0.3s ease; cursor: default; }
         .tegbuild.on .tb-chip { cursor: pointer; }
         .tb-tag { background: ${CODE.bg}; } .tb-content { background: ${T.accentSoft}; }
         .tb-code { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(16px,2.4vw,20px); }
         .tb-tag .tb-code { color: ${CODE.tag}; } .tb-content .tb-code { color: ${T.accent}; }
         .tb-slash { color: ${CODE.attr}; display: inline-block; }
-        .tegbuild.on .tb-slash { animation: slashpulse 1.3s ease-in-out 0.55s 2; }
-        @keyframes slashpulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.45); } }
-        .tb-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: ${T.ink3}; transition: opacity 0.3s 0.35s; }
-        .tb-open.hide { transform: translateX(-64px) scale(0.82); opacity: 0; }
-        .tb-close.hide { transform: translateX(64px) scale(0.82); opacity: 0; }
+        .tegbuild.on .tb-slash { animation: slashpulse 1.3s ease-in-out 0.7s 2; }
+        @keyframes slashpulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.5); } }
+        .tb-lbl { font-family: 'JetBrains Mono', monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: ${T.ink3}; transition: opacity 0.3s 0.4s; }
+        /* teglar navbatma-navbat (chap, keyin o'ng) sakrab kelib qamraydi */
+        .tb-open { transition-delay: 0.04s; }
+        .tb-close { transition-delay: 0.18s; }
+        .tb-open.hide { transform: translateX(-96px) scale(0.55) rotate(-9deg); opacity: 0; }
+        .tb-close.hide { transform: translateX(96px) scale(0.55) rotate(9deg); opacity: 0; }
         .tegbuild:not(.on) .tb-tag .tb-lbl { opacity: 0; }
         .tb-chip.active { box-shadow: 0 0 0 2px ${T.accent}; }
-        .tb-bracket { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0; transition: opacity 0.3s 0.5s; }
+        /* kontent qamrab olinganda sakraydi va apelsin yonadi */
+        .tegbuild.on .tb-content { animation: tb-capture 0.6s cubic-bezier(.34,1.45,.5,1) 0.46s; }
+        @keyframes tb-capture { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,79,40,0); } 45% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(255,79,40,0.3); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,79,40,0); } }
+        .tb-bracket { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0; transition: opacity 0.3s 0.6s; }
         .tegbuild-wrap.on .tb-bracket { opacity: 1; }
-        .tb-brace { width: 150px; max-width: 70%; height: 9px; border: 1.5px solid ${T.ink3}; border-top: none; border-radius: 0 0 9px 9px; }
+        .tb-brace { width: 150px; max-width: 70%; height: 9px; border: 1.5px solid ${T.ink3}; border-top: none; border-radius: 0 0 9px 9px; transform: scaleX(0); transform-origin: center; transition: transform 0.45s cubic-bezier(.34,1.2,.5,1) 0.6s; }
+        .tegbuild-wrap.on .tb-brace { transform: scaleX(1); }
         .tb-brace-lbl { font-family: 'Manrope'; font-weight: 600; font-size: 12px; color: ${T.ink2}; }
+        @keyframes tb-pvpop { 0% { opacity: 0; transform: scale(0.6); } 60% { transform: scale(1.08); } 100% { opacity: 1; transform: scale(1); } }
         .slash-callout { display: flex; align-items: center; gap: 13px; background: ${T.accentSoft}; border-left: 4px solid ${T.accent}; border-radius: 12px; padding: 12px 15px; }
         .slash-big { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 30px; color: ${T.accent}; line-height: 1; flex-shrink: 0; }
         /* SCREEN 8 — Sarlavhalar (gazeta -> teglar qo'nadi) */

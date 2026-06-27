@@ -356,7 +356,7 @@ const Zoomable = ({ children }) => {
 const Screen0 = ({ screen, storedAnswer, onAnswer, onNext }) => {
   const audio = useAudio([{ id: 's0', text: `Telefoningizda o'nlab ilova bor. Ba'zilarini har kuni ochasiz, ba'zilarini esa bir marta ham emas. Sizningcha, asosiy farq nimada? Javobingizni tanlang.`, trigger: 'on_mount', waits_for: { type: 'option_picked' } }]);
   const [picked, setPicked] = useState(storedAnswer?.picked ?? null);
-  const APPS = [{ ic: Ico.youtube(26), n: 'YouTube' }, { ic: Ico.market(26), n: 'Bozor' }, { ic: Ico.taxi(26), n: 'Taksi' }, { ic: Ico.telegram(26), n: 'Telegram' }];
+  const APPS = [{ ic: Ico.youtube(26), n: 'YouTube' }, { ic: Ico.market(26), n: "Do'kon" }, { ic: Ico.taxi(26), n: 'Taksi' }, { ic: Ico.telegram(26), n: 'Telegram' }];
   const OPTS = [
     { id: 'a', label: 'Chiroyli ko\'rinishi uchun' },
     { id: 'b', label: 'Ular mening biror muammomni yechgani uchun' },
@@ -413,20 +413,59 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   ];
   const isNarrow = useIsMobile(768);
   const [showSteps, setShowSteps] = useState(false);
-  const Idea = ({ ic, h, t, d }) => (
-    <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 18px', animationDelay: d }}>
-      <IcoChip>{ic}</IcoChip>
-      <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, color: T.ink, margin: 0, fontSize: 'clamp(16px,2.2vw,19px)' }}>{h}</p><p className="body" style={{ margin: '2px 0 0', color: T.ink2 }}>{t}</p></div>
-    </div>
-  );
+  const FORMULA = [
+    { q: 'Kim?', a: 'Chanqagan odam', ic: Ico.user },
+    { q: 'Qanday muammo?', a: 'Qayerda sotilishini bilmaydi', ic: Ico.problem },
+    { q: 'Qanday yechim?', a: 'Joyni ko\'rsatadigan sayt', ic: Ico.solution }
+  ];
+  const [phase, setPhase] = useState(-1); // -1 idle · 0..2 savollar · 3 yechim
+  const [playing, setPlaying] = useState(false);
+  const fTimer = useRef(null);
+  useEffect(() => () => clearTimeout(fTimer.current), []);
+  const play = useCallback(() => {
+    clearTimeout(fTimer.current); setPlaying(true); setPhase(0);
+    let i = 0;
+    const tick = () => {
+      fTimer.current = setTimeout(() => {
+        if (i < FORMULA.length - 1) { i++; setPhase(i); tick(); }
+        else { setPhase(FORMULA.length); setPlaying(false); }
+      }, 950);
+    };
+    tick();
+  }, []);
+  useEffect(() => { const t = setTimeout(play, 600); return () => clearTimeout(t); }, [play]); // ochilganda bir marta o'ynaydi
   const PreviewBlock = (
     <Col>
-      <p className="flow-label">Bugungi asosiy g'oya</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <Idea ic={Ico.solution(22)} h="SAYT = YECHIM" t="Har bir sayt muammoga yechim" d="0.05s" />
-        <Idea ic={Ico.problem(22)} h="3 SAVOL" t="Kim? · Qanday muammo? · Qanday yechim?" d="0.18s" />
+      <p className="flow-label">Har bir sayt — muammoga yechim</p>
+      <div className="frame frame-col fade-up" style={{ gap: 10, padding: '16px 18px' }}>
+        <div className="pf-row pf-prob">
+          <span className="pf-emoji">🥤</span>
+          <div><p className="pf-k">Muammo</p><p className="pf-v">"Issiqda chanqadim — qayerda ichimlik bor?"</p></div>
+        </div>
+        <div className="pf-arrow">↓ <span style={{ color: T.accent }}>Mahsulot menejeri 3 ta savol beradi</span></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {FORMULA.map((f, i) => {
+            const on = phase === i; const passed = phase > i;
+            return (
+              <div key={i} className={`pf-q ${on ? 'on' : ''} ${passed ? 'done' : ''}`}>
+                <span className="pf-qic">{passed ? Ico.check(16) : f.ic(17)}</span>
+                <span className="pf-qq">{f.q}</span>
+                <span className="pf-qa">{(on || passed) ? f.a : '…'}</span>
+              </div>
+            );
+          })}
+        </div>
+        <div className="pf-arrow">↓</div>
+        <div className={`pf-row pf-sol ${phase >= FORMULA.length ? 'show' : ''}`}>
+          <span style={{ color: T.success, display: 'inline-flex', flexShrink: 0 }}>{Ico.map(26)}</span>
+          <div><p className="pf-k" style={{ color: T.success }}>Yechim = Sayt</p><p className="pf-v"><b>Limonad sayti</b> — qayerda va qancha turadi</p></div>
+          {phase >= FORMULA.length && <span className="pf-check">{Ico.check(17)}</span>}
+        </div>
       </div>
-      <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ keyingi darslarda shu yechimni HTML'da quramiz</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+        <button className="btn-soft" onClick={play} disabled={playing}>{playing ? "Ko'rsatilmoqda…" : (phase >= FORMULA.length ? '↻ Yana ko\'rish' : '▶ Qanday ishlaydi?')}</button>
+        <p className="mono small" style={{ color: T.accent, margin: 0 }}>→ shu yechimni keyin HTML'da quramiz</p>
+      </div>
     </Col>
   );
   const StepsBlock = (
@@ -443,7 +482,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         <div className="head">
           <h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Bugun mahsulot menejeridek fikrlashni o'rganamiz!</span></h2>
         </div>
-        <Mentor>Dasturchi kod yozadi. Lekin undan oldin <b style={{ color: T.ink }}>mahsulot menejeri</b> ish boshlaydi — bu kod yozishdan oldin <b style={{ color: T.ink }}>"sayt kim uchun va qanday muammoga?"</b> degan savolga javob beradigan odam. Bugun aynan shunday fikrlashni o'rganamiz — 5 qadamda.</Mentor>
+        <Mentor>Dasturchi kod yozadi. Lekin undan oldin <b style={{ color: T.ink }}>mahsulot menejeri</b> ish boshlaydi — xuddi limonad sotishdan oldin <b style={{ color: T.ink }}>"kim oladi va nega oladi?"</b> deb o'ylaydigan tadbirkor kabi. U <b style={{ color: T.ink }}>"sayt kim uchun va qanday muammoga?"</b> degan savolga javob beradi. Bugun aynan shunday fikrlaymiz — 5 qadamda.</Mentor>
         {!isNarrow ? (
           <Zoomable><Split>{PreviewBlock}{StepsBlock}</Split></Zoomable>
         ) : !showSteps ? (
@@ -557,7 +596,7 @@ const Screen4 = (props) => (
     questionText="Sayt birinchi navbatda nima uchun yaratiladi?"
     question={<><p className="eyebrow" style={{ color: T.accent }}>To'g'ri javobni tanlang</p><h2 className="title h-sub" style={{ marginTop: 8 }}>Sayt birinchi navbatda <span className="italic" style={{ color: T.accent }}>nima uchun</span> yaratiladi?</h2></>}
     options={['Chiroyli ko\'rinishi uchun', 'Kimningdir real muammosini yechish uchun', 'Ko\'p tugma bo\'lishi uchun', 'Shunchaki, sababsiz']} correctIdx={1}
-    explainCorrect="To'g'ri! Sayt — bu vosita: u aniq odamning aniq muammosini yechadi. Dizayn va tugmalar keyin, shu maqsadga xizmat qiladi."
+    explainCorrect="To'g'ri! Sayt — bu yordamchi: u aniq odamning aniq muammosini yechadi. Dizayn va tugmalar keyin, shu maqsadga xizmat qiladi."
     explainWrong={{
       0: 'Chiroylilik yordam beradi, lekin asosiy sabab emas. Sayt avvalo muammoni yechadi.',
       2: 'Tugmalar soni maqsad emas. Maqsad — kimningdir muammosini yechish.',
@@ -574,8 +613,8 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const done = seen.size >= 2;
   const set = (m) => { setMode(m); setSeen(prev => { const n = new Set(prev); n.add(m); return n; }); };
   const V = {
-    vague: { title: 'Hamma uchun ovqat sayti', note: 'Kim bu odam? Unga nima kerak? Hech narsa aniq emas.' },
-    specific: { title: 'Vaqti yo\'q talabalar uchun: 15 daqiqada tayyor retseptlar', note: 'Aniq odam, aniq ehtiyoj — endi nima ko\'rsatish kerakligi ham ravshan.' }
+    vague: { title: 'Hamma uchun sovg\'a do\'koni', note: 'Bu kim — bola, katta, sportchi? Nima izlayotgani noaniq, shuning uchun saytda nima ko\'rsatishni ham bilmaysiz.' },
+    specific: { title: 'Sinfdoshiga sovg\'a izlayotgan o\'quvchilar uchun: 20 ming so\'mlik qo\'lbola bilakuzuklar', note: 'Aniq odam (sovg\'a izlayotgan o\'quvchi), aniq ehtiyoj. Yechim ham aniq: arzon, chiroyli qo\'lbola sovg\'alar.' }
   };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   return (
@@ -599,7 +638,7 @@ const Screen5 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
               <p className="eyebrow" style={{ color: mode === 'specific' ? T.success : T.accent, margin: '0 0 6px' }}>{mode === 'specific' ? 'Aniq' : 'Noaniq'}</p>
               <p className="body" style={{ margin: 0, color: T.ink }}>{V[mode].note}</p>
             </div>
-            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Aniq odamni tanlash — bu cheklov emas, <b>kuch</b>. Aniq foydalanuvchi = aniq, foydali yechim.</p></div>}
+            {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Aniq odamni tanlash — bu kamchilik emas, <b>kuch</b>. Aniq foydalanuvchi = aniq, foydali yechim.</p></div>}
           </Col>
         </div>
         </Zoomable>
@@ -630,7 +669,7 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const OPTS = [
     { id: 0, label: 'Men shunchaki chiroyli sayt qilmoqchiman', why: 'Bu — istak, lekin muammo emas. Kimga va nima uchun kerakligi yo\'q.' },
     { id: 1, label: 'Tengdoshlarim dars jadvalini doim unutishadi', why: 'Mana bu — real muammo: aniq odam, aniq qiyinchilik. Bundan yaxshi g\'oya tug\'iladi.' },
-    { id: 2, label: 'Sayt ko\'k rangda bo\'lsa zo\'r bo\'lardi', why: 'Bu — dizayn tafsiloti, muammo emas. Avval kimning qaysi muammosini yechishni hal qilamiz.' }
+    { id: 2, label: 'Sayt ko\'k rangda bo\'lsa zo\'r bo\'lardi', why: 'Bu — shunchaki dizayn, muammo emas. Avval kimning qaysi muammosini yechishni hal qilamiz.' }
   ];
   const [picked, setPicked] = useState(storedAnswer?.picked ?? null);
   const solved = picked === 1;
@@ -663,9 +702,9 @@ const Screen6 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's7', text: `Yaxshi g'oya uchta qadamda tug'iladi: avval kim, keyin uning muammosi, oxirida yechim. Bir misolda ko'rsataman. Tugmani bosib, g'oyaning yig'ilishini kuzating.`, trigger: 'on_mount', waits_for: { type: 'flow_done' } }]);
   const STEPS = [
-    { ic: Ico.user(24), h: 'KIM', t: 'Eski buyumini sotmoqchilar' },
-    { ic: Ico.problem(24), h: 'MUAMMO', t: 'Xaridorni qayerdan topishni bilishmaydi' },
-    { ic: Ico.solution(24), h: 'YECHIM', t: 'Marketplace — oldi-sotdi e\'lonlari sayti' }
+    { ic: Ico.user(24), h: 'KIM', t: "O'zi o'yin yasagan o'smir", link: '...ning qanday muammosi bor?' },
+    { ic: Ico.problem(24), h: 'MUAMMO', t: "O'yinini hech kim topib o'ynamayapti", link: '...ni nima yechadi?' },
+    { ic: Ico.solution(24), h: 'YECHIM', t: "O'yinni reklama qiladigan sayt", link: '' }
   ];
   const [step, setStep] = useState(storedAnswer ? STEPS.length : 0);
   const [running, setRunning] = useState(false);
@@ -685,17 +724,27 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Mentor>Yaxshi g'oya uchta qadamda tug'iladi: avval <b style={{ color: T.ink }}>kim</b>, keyin uning <b style={{ color: T.ink }}>muammosi</b>, oxirida <b style={{ color: T.ink }}>yechim</b>. Tugmani bosib, g'oyaning yig'ilishini kuzating.</Mentor>
         <Zoomable>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           {STEPS.map((s, i) => {
+            const COLORS = [T.blue, T.accent, T.success];
+            const SOFTS = [T.blueSoft, T.accentSoft, T.successSoft];
+            const c = COLORS[i];
             const on = step > i;
+            const linkOn = step > i + 1; // keyingi bosqich ham ochilgan — zanjir to'liq
             return (
               <React.Fragment key={i}>
-                <div className={on ? 'pm-pop' : undefined} style={{ display: 'flex', alignItems: 'center', gap: 14, background: T.paper, borderRadius: 14, padding: 'clamp(14px,2vw,18px)', opacity: on ? 1 : 0.4, boxShadow: on ? `0 8px 20px -8px rgba(${T.shadowBase},0.18)` : 'none', transition: 'all 0.4s' }}>
-                  <IcoChip color={on ? T.accent : T.ink3} soft={on ? T.accentSoft : '#ECEAE5'}>{s.ic}</IcoChip>
-                  <div><p className="mono" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: on ? T.accent : T.ink3, margin: '0 0 2px' }}>{s.h}</p><p className="body" style={{ margin: 0, color: on ? T.ink : T.ink3, fontWeight: 500 }}>{s.t}</p></div>
-                  {on && <span style={{ marginLeft: 'auto', color: T.success }}>{Ico.check(18)}</span>}
+                <div className={on ? 'pm-pop' : undefined} style={{ display: 'flex', alignItems: 'center', gap: 14, background: T.paper, borderRadius: 14, padding: 'clamp(14px,2vw,18px)', opacity: on ? 1 : 0.4, boxShadow: on ? `0 8px 20px -8px ${c}55` : 'none', borderLeft: `4px solid ${on ? c : 'transparent'}`, transition: 'all 0.4s' }}>
+                  <IcoChip color={on ? c : T.ink3} soft={on ? SOFTS[i] : '#ECEAE5'}>{s.ic}</IcoChip>
+                  <div><p className="mono" style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: on ? c : T.ink3, margin: '0 0 2px' }}>{s.h}</p><p className="body" style={{ margin: 0, color: on ? T.ink : T.ink3, fontWeight: 500 }}>{s.t}</p></div>
+                  {on && <span style={{ marginLeft: 'auto', color: c }}>{Ico.check(18)}</span>}
                 </div>
-                {i < STEPS.length - 1 && <div style={{ display: 'flex', justifyContent: 'center', color: step > i + 1 ? T.success : T.ink3, transform: 'rotate(90deg)', transition: 'color 0.3s' }}>{Ico.arrow(18)}</div>}
+                {i < STEPS.length - 1 && (
+                  <div className="g7-link" style={{ opacity: on ? 1 : 0.3, transition: 'opacity 0.4s' }}>
+                    <span className="g7-bar" style={{ background: linkOn ? c : T.ink3, opacity: linkOn ? 1 : 0.4 }} />
+                    <span className="g7-q" style={{ color: linkOn ? c : T.ink3, borderColor: linkOn ? `${c}40` : 'transparent', background: linkOn ? SOFTS[i] : 'transparent' }}>{s.link}</span>
+                    <span style={{ display: 'inline-flex', color: linkOn ? c : T.ink3, transform: 'rotate(90deg)', transition: 'color 0.3s' }}>{Ico.arrow(16)}</span>
+                  </div>
+                )}
               </React.Fragment>
             );
           })}
@@ -711,10 +760,10 @@ const Screen7 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 
 // ===== SCREEN 8 — BIR ODAM, BIR XIL EHTIYOJMI? (tap users) =====
 const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's8', text: `Bozor saytiga, ya'ni marketplacega turli odamlar keladi — sotuvchi, xaridor, kuryer. Har biri butunlay boshqa muammo bilan keladi. Har bir odamni bosing, u nimani izlashini toping.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's8', text: `Onlayn do'konga turli odamlar keladi — sotuvchi, xaridor, kuryer. Har biri butunlay boshqa muammo bilan keladi. Har bir odamni bosing, u nimani izlashini toping.`, trigger: 'on_mount', waits_for: null }]);
   const USERS = {
-    seller: { ic: Ico.market(26), name: 'Sotuvchi', want: 'Ortiqcha buyumini tez SOTISH va ko\'proq xaridor topish. Eng katta muammosi — sotish!' },
-    buyer: { ic: Ico.user(26), name: 'Xaridor', want: 'Arzon narx, ishonchli mahsulot va tez yetkazib berish.' },
+    seller: { ic: Ico.market(26), name: 'Sotuvchi o\'quvchi', want: 'Yasagan bilakuzuklarini SOTISH va ko\'proq xaridor topish. Eng katta muammosi — sotish!' },
+    buyer: { ic: Ico.user(26), name: 'Xaridor', want: 'Arzon narx, chiroyli mahsulot va tez yetkazib berish.' },
     courier: { ic: Ico.map(26), name: 'Kuryer', want: 'Aniq manzil va qulay yo\'nalish — tez yetkazish uchun.' }
   };
   const [active, setActive] = useState(null);
@@ -726,8 +775,8 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   return (
     <Stage eyebrow="Har xil odam" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : `${seen.size}/3 ko'ring`} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Bozorga kelgan har kim <span className="italic" style={{ color: T.accent }}>bir xil</span> narsa izlaydimi?</h2></div>
-        <Mentor>Bozor saytiga (<b style={{ color: T.ink }}>marketplace</b>) turli odamlar keladi: <b style={{ color: T.ink }}>sotuvchi</b> sotmoqchi, <b style={{ color: T.ink }}>xaridor</b> sotib olmoqchi. Har birining muammosi boshqacha. Har birini bosing.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Onlayn do'konga kelgan har kim <span className="italic" style={{ color: T.accent }}>bir xil</span> narsa izlaydimi?</h2></div>
+        <Mentor>Bitta onlayn do'konga (masalan, qo'lbola bilakuzuk sotadigan sayt) turli odamlar keladi: <b style={{ color: T.ink }}>sotuvchi</b> sotmoqchi, <b style={{ color: T.ink }}>xaridor</b> sotib olmoqchi, <b style={{ color: T.ink }}>kuryer</b> yetkazmoqchi. Har birining muammosi boshqacha. Har birini bosing.</Mentor>
         <Zoomable>
         <div className="split">
           <Col>
@@ -844,14 +893,14 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's11', text: `Endi g'oyani o'zingiz yig'ing. Lekin diqqat: uchala bo'lak bitta odamga mos kelishi kerak — kim, uning muammosi va aynan o'sha muammoning yechimi.`, trigger: 'on_mount', waits_for: null }]);
   // har bir g'oya — bitta butun (guruh). To'g'ri g'oya = uchala bo'lak bir guruhdan.
   const GROUPS = {
-    market: { kim: 'Ortiqcha buyumi bor odamlar', muammo: 'Sotmoqchi, lekin xaridor topolmaydi', yechim: 'Marketplace — e\'lon joylash sayti' },
-    baby: { kim: 'Kichkina bolali onalar', muammo: 'Bola uxlash vaqtini eslolmaydi', yechim: 'Uyqu jadvali eslatmasi' },
-    exam: { kim: 'Imtihonga tayyorlanayotgan o\'quvchilar', muammo: 'Qaysi mavzuni takrorlashni bilmaydi', yechim: 'Mavzular ro\'yxati va test' }
+    limonad: { kim: 'Limonad sotadigan bola', muammo: 'Xaridor qayerda sotilishini bilmaydi', yechim: 'Sotiladigan joy va narx sayti' },
+    game: { kim: 'O\'yin yasagan o\'smir', muammo: 'O\'yinini hech kim topib o\'ynamaydi', yechim: 'O\'yinni reklama qiladigan sayt' },
+    exam: { kim: 'Imtihonga tayyorlanayotgan o\'quvchilar', muammo: 'Qaysi mavzuni takrorlashni bilmaydi', yechim: 'Mavzular ro\'yxati va test sayti' }
   };
   const ROWS = [
-    { key: 'kim', label: 'KIM', ic: Ico.user(18), color: T.blue, order: ['market', 'baby', 'exam'] },
-    { key: 'muammo', label: 'MUAMMO', ic: Ico.problem(18), color: T.accent, order: ['baby', 'exam', 'market'] },
-    { key: 'yechim', label: 'YECHIM', ic: Ico.solution(18), color: T.success, order: ['exam', 'market', 'baby'] }
+    { key: 'kim', label: 'KIM', ic: Ico.user(18), color: T.blue, order: ['limonad', 'game', 'exam'] },
+    { key: 'muammo', label: 'MUAMMO', ic: Ico.problem(18), color: T.accent, order: ['game', 'exam', 'limonad'] },
+    { key: 'yechim', label: 'YECHIM', ic: Ico.solution(18), color: T.success, order: ['exam', 'limonad', 'game'] }
   ];
   const [pick, setPick] = useState({ kim: null, muammo: null, yechim: null });
   const keys = ['kim', 'muammo', 'yechim'];
@@ -869,29 +918,43 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Zoomable>
         <div className="split">
           <Col>
-            {ROWS.map(r => (
-              <div key={r.key}>
-                <p className="flow-label" style={{ margin: '0 0 6px', color: r.color }}>{r.label}</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                  {r.order.map(g => (
-                    <button key={g} className="gchip" onClick={() => set(r.key, g)} style={pick[r.key] === g ? { background: r.color, color: '#fff', boxShadow: `0 6px 14px -6px ${r.color}` } : undefined}>{GROUPS[g][r.key]}</button>
-                  ))}
+            {ROWS.map((r, ri) => (
+              <div key={r.key} className="g11-group fade-up" style={{ animationDelay: `${0.05 + ri * 0.08}s` }}>
+                <p className="g11-glabel" style={{ color: r.color }}><span className="g11-num" style={{ background: r.color }}>{ri + 1}</span>{r.label}ni tanlang</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {r.order.map(g => {
+                    const sel = pick[r.key] === g;
+                    return (
+                      <button key={g} className={`g11-opt ${sel ? 'sel' : ''}`} onClick={() => set(r.key, g)}
+                        style={sel ? { background: r.color, color: '#fff', boxShadow: `0 8px 18px -7px ${r.color}` } : undefined}>
+                        <span className="g11-tick" style={{ borderColor: sel ? 'rgba(255,255,255,0.9)' : `${r.color}55`, color: '#fff' }}>{sel && Ico.check(12)}</span>
+                        <span style={{ flex: 1 }}>{GROUPS[g][r.key]}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ))}
           </Col>
           <Col>
             <p className="flow-label">Mening g'oyam</p>
-            <div className="algo-build fade-up delay-1" style={{ minHeight: 140 }}>
-              {keys.every(k => !pick[k]) ? (
-                <p style={{ color: T.ink3, fontStyle: 'italic', margin: 0, fontFamily: "'JetBrains Mono',monospace", fontSize: 13 }}>// bo'laklarni tanlang…</p>
-              ) : keys.map(k => pick[k] && (
-                <div key={k + '|' + pick[k]} className="algo-line el-in" style={{ borderLeft: `3px solid ${META[k].color}` }}>
-                  <span style={{ color: META[k].color, display: 'inline-flex' }}>{META[k].ic}</span>
-                  <span className="mono" style={{ fontSize: 10, color: META[k].color, textTransform: 'uppercase', minWidth: 52 }}>{META[k].label}</span>
-                  <span style={{ flex: 1, fontFamily: "'Manrope',sans-serif", fontSize: 13.5, color: T.ink }}>{GROUPS[pick[k]][k]}</span>
-                </div>
-              ))}
+            <div className="algo-build fade-up delay-1" style={{ minHeight: 150, gap: 9 }}>
+              {keys.map(k => {
+                const g = pick[k];
+                return (
+                  <div key={k} className={`g11-slot ${g ? 'filled' : ''}`} style={g ? { borderLeftColor: META[k].color } : undefined}>
+                    <span className="mono g11-slabel" style={{ color: g ? META[k].color : T.ink3 }}>{META[k].label}</span>
+                    {g ? (
+                      <span key={g} className="g11-val el-in">
+                        <span style={{ color: META[k].color, display: 'inline-flex', flexShrink: 0 }}>{META[k].ic}</span>
+                        {GROUPS[g][k]}
+                      </span>
+                    ) : (
+                      <span className="g11-empty">tanlanmagan…</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             {matched && (
               <div className="frame-success fade-step pm-match" key={pick.kim}>
@@ -940,20 +1003,21 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const fix = () => { setFixed(true); if (!audio.muted) setTimeout(() => { const e = getAudioEngine(); if (e && !audio.muted) e.pushOneOff(`Tuzatildi! Endi g'oya to'liq: kim, qanday muammo va qanday yechim.`); }, 300); };
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
   const WRONG = [
-    { id: 'kim', label: 'KIM', text: 'Sport bilan shug\'ullanadigan o\'smirlar', ok: true },
+    { id: 'kim', label: 'KIM', text: 'Ingliz tilini o\'rganayotganlar', ok: true },
     { id: 'muammo', label: 'MUAMMO', text: '— (bo\'sh) —', ok: false },
-    { id: 'yechim', label: 'YECHIM', text: 'Mashqlar ro\'yxatini ko\'rsatadigan sayt', ok: true }
+    { id: 'yechim', label: 'YECHIM', text: 'Har kuni yangi so\'z yuboradigan sayt', ok: true }
   ];
   const RIGHT = [
-    { id: 'kim', label: 'KIM', text: 'Sport bilan shug\'ullanadigan o\'smirlar' },
-    { id: 'muammo', label: 'MUAMMO', text: 'Qaysi mashqni qachon qilishni bilishmaydi' },
-    { id: 'yechim', label: 'YECHIM', text: 'Mashqlar ro\'yxatini ko\'rsatadigan sayt' }
+    { id: 'kim', label: 'KIM', text: 'Ingliz tilini o\'rganayotganlar' },
+    { id: 'muammo', label: 'MUAMMO', text: 'Yangi so\'zlarni tez unutib qo\'yishadi' },
+    { id: 'yechim', label: 'YECHIM', text: 'Har kuni yangi so\'z yuboradigan sayt' }
   ];
   return (
     <Stage eyebrow="Kamchilikni top" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? 'Davom etish' : (found ? 'Endi to\'g\'rilang' : 'Kamchilikni toping')} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Bu g'oyada nima <span className="italic" style={{ color: T.accent }}>yetishmayapti</span>?</h2></div>
         <Mentor>Do'stingiz g'oya yozdi, lekin nimadir <b style={{ color: T.ink }}>yetishmayapti</b>. Qaysi savolga javob yo'q? O'sha qatorni bosing.</Mentor>
+        <Zoomable>
         <div className="split">
           <Col>
             <div className="ai-card fade-up delay-1">
@@ -981,6 +1045,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             {fixed && <div className="takeaway fade-step"><div className="ta-bulb" style={{ color: T.accent, display: 'inline-flex' }}>{Ico.problem(34)}</div><p className="ta-h">Muammosiz g'oya — bo'sh g'oya</p><p className="ta-sub">Eng ko'p unutiladigan qism — aynan muammo</p></div>}
           </Col>
         </div>
+        </Zoomable>
       </div>
     </Stage>
   );
@@ -1002,9 +1067,15 @@ const Screen14 = ({ screen, onNext, onPrev }) => {
         <Zoomable>
         <div className="split">
           <Col>
-            <div className="frame fade-up" style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 'clamp(18px,2.6vw,26px)' }}>
-              <IcoChip size={54}>{Ico.solution(28)}</IcoChip>
-              <div><p style={{ fontFamily: "'Source Serif 4',serif", fontWeight: 600, margin: 0, color: T.ink, fontSize: 'clamp(18px,2.4vw,22px)' }}>Sayt = yechim</p><p className="body" style={{ margin: '3px 0 0', color: T.ink2 }}>Har bir sayt aniq odamning aniq muammosini yechadi.</p></div>
+            <div className="frame fade-up" style={{ padding: 'clamp(18px,2.6vw,26px)' }}>
+              <div className="eq-row">
+                <span className="eq-term"><IcoChip color={T.blue} soft={T.blueSoft} size={48}>{Ico.user(24)}</IcoChip><span className="eq-lbl">Aniq odam</span></span>
+                <span className="eq-op">+</span>
+                <span className="eq-term"><IcoChip color={T.accent} soft={T.accentSoft} size={48}>{Ico.problem(24)}</IcoChip><span className="eq-lbl">Muammo</span></span>
+                <span className="eq-op eq-eq">=</span>
+                <span className="eq-term pm-pop"><IcoChip color={T.success} soft={T.successSoft} size={48}>{Ico.solution(24)}</IcoChip><span className="eq-lbl" style={{ color: T.success, fontWeight: 700 }}>Sayt = yechim</span></span>
+              </div>
+              <p className="body" style={{ margin: '16px 0 0', color: T.ink2, textAlign: 'center' }}>Har bir sayt — <b style={{ color: T.ink }}>aniq odam + uning muammosi</b>ning yechimi.</p>
             </div>
           </Col>
           <Col>
@@ -1029,17 +1100,24 @@ const Screen14 = ({ screen, onNext, onPrev }) => {
 // Eslatma: ataylab saqlanmaydi — har kirganda bo'sh boshlanadi, o'quvchi yangi muammo o'ylasin.
 const emptyIdea = () => ({ kim: '', muammo: '', yechim: '' });
 const FIELDS = [
-  { key: 'kim', ic: Ico.user(18), color: T.blue, label: 'KIM uchun?', ph: 'Masalan: ortiqcha buyumi bor odamlar' },
-  { key: 'muammo', ic: Ico.problem(18), color: T.accent, label: 'Qanday MUAMMO?', ph: 'Masalan: sotmoqchi, lekin xaridor topa olmaydi' },
-  { key: 'yechim', ic: Ico.solution(18), color: T.success, label: 'Qanday YECHIM (sayt)?', ph: 'Masalan: e\'lon joylaydigan bozor (marketplace) sayti' }
+  { key: 'kim', ic: Ico.user(18), color: T.blue, label: 'KIM uchun?', ph: 'Masalan: yozda limonad sotadigan o\'quvchilar' },
+  { key: 'muammo', ic: Ico.problem(18), color: T.accent, label: 'Qanday MUAMMO?', ph: 'Masalan: xaridor qayerda sotilishini bilmaydi' },
+  { key: 'yechim', ic: Ico.solution(18), color: T.success, label: 'Qanday YECHIM (sayt)?', ph: 'Masalan: sotiladigan joyni ko\'rsatadigan sayt' }
 ];
 
 const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's15', text: `Mana eng muhim qadam. O'zingiz sezgan bitta muammoni oling. Uchta savolga javob yozing: kim uchun, qanday muammo va qanday sayt yordam beradi. O'ng tomonda g'oyangiz jonli yig'iladi.`, trigger: 'on_mount', waits_for: { type: 'typed_ok' } }]);
   const [idea, setIdea] = useState(() => storedAnswer?.idea || emptyIdea());
-  const isNarrow = useIsMobile(768);
-  const filled = FIELDS.filter(f => idea[f.key] && idea[f.key].trim().length >= 3).length;
-  const passed = filled >= 3;
+  const [showEx, setShowEx] = useState(false);
+  const EXAMPLES = [
+    { kim: 'Limonad sotadigan o\'quvchi', muammo: 'Xaridor qayerda va qachon sotilishini bilmaydi', yechim: 'Sotiladigan joy va narxni ko\'rsatadigan sayt' },
+    { kim: 'Qo\'lbola bilakuzuk yasaydigan o\'quvchi', muammo: 'Yasaganini kimga sotishni bilmaydi', yechim: 'Rasm va narx qo\'yiladigan mini do\'kon sayti' }
+  ];
+  const isFilled = (v) => v && v.trim().length >= 6;
+  const filled = FIELDS.filter(f => isFilled(idea[f.key])).length;
+  const vals = FIELDS.map(f => idea[f.key].trim().toLowerCase()).filter(Boolean);
+  const allDistinct = new Set(vals).size === vals.length;
+  const passed = filled >= 3 && allDistinct;
   const prevPassed = useRef(false);
   useEffect(() => {
     if (passed && !prevPassed.current) {
@@ -1051,14 +1129,14 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   }, [passed]);
   const update = (k, v) => setIdea(prev => ({ ...prev, [k]: v }));
   return (
-    <Stage eyebrow="Yakuniy ish" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? 'Davom etish' : `To'ldiring (${filled}/3)`} onClick={onNext} /></>}>
+    <Stage eyebrow="Yakuniy ish" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!passed} label={passed ? 'Davom etish' : (filled < 3 ? `To'ldiring (${filled}/3)` : 'Har maydon boshqacha bo\'lsin')} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Endi navbat sizda — qanday <span className="italic" style={{ color: T.accent }}>muammoni</span> yechasiz?</h2></div>
         <Mentor>O'zingiz sezgan bitta muammoni oling. Uchta savolga javob yozing: <b style={{ color: T.ink }}>kim uchun</b>, <b style={{ color: T.ink }}>qanday muammo</b> va <b style={{ color: T.ink }}>qanday sayt</b> yordam beradi.</Mentor>
         <div className="split">
           <Col>
             {FIELDS.map(f => {
-              const ok = idea[f.key] && idea[f.key].trim().length >= 3;
+              const ok = isFilled(idea[f.key]);
               return (
                 <div key={f.key} style={{ background: T.paper, borderRadius: 13, padding: '13px 15px', boxShadow: ok ? `inset 0 0 0 1.5px ${T.success}, 0 6px 16px -9px rgba(31,122,77,0.18)` : `0 6px 16px -9px rgba(${T.shadowBase},0.16)`, transition: 'box-shadow 0.2s' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 7 }}>
@@ -1070,6 +1148,21 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 </div>
               );
             })}
+            <button type="button" className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowEx(v => !v)}>
+              {showEx ? '✕ Namunalarni yopish' : '💡 Qiynaldingizmi? Namuna ko\'ring'}
+            </button>
+            {showEx && (
+              <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {EXAMPLES.map((ex, i) => (
+                  <div key={i} className="ex-card">
+                    <span className="mono ex-tag"><span style={{ color: T.blue }}>KIM:</span> {ex.kim}</span>
+                    <span className="mono ex-tag"><span style={{ color: T.accent }}>MUAMMO:</span> {ex.muammo}</span>
+                    <span className="mono ex-tag"><span style={{ color: T.success }}>YECHIM:</span> {ex.yechim}</span>
+                  </div>
+                ))}
+                <p className="small" style={{ color: T.ink3, margin: 0, fontStyle: 'italic' }}>Bular — shunchaki ilhom. O'zingiznikini o'ylab toping!</p>
+              </div>
+            )}
           </Col>
           <Col>
             <p className="flow-label">Sizning saytingiz shunday ko'rinadi</p>
@@ -1087,7 +1180,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 />
               )}
             </Preview>
-            {passed && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! G'oyangiz allaqachon sayt kabi ko'rinmoqda — keyingi darslarda HTML bilan shunday saytni quramiz.</p></div>}
+            {passed && <div className="frame-success fade-step pm-match" key="final-ok"><p className="body" style={{ margin: 0, color: T.ink }}>Tayyor! G'oyangiz allaqachon sayt kabi ko'rinmoqda — keyingi darslarda HTML bilan shunday saytni quramiz.</p></div>}
           </Col>
         </div>
       </div>
@@ -1099,7 +1192,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
 const Screen16 = ({ screen, answers, onReset, onPrev, onFinish }) => {
   const audio = useAudio([{ id: 's16', text: "Tabriklaymiz! Bugun siz mahsulot menejeridek o'ylay boshladingiz. Eslang: har bir sayt kimningdir muammosiga yechim. Avval kim va qanday muammo ekanini bilamiz, keyingina yechimni quramiz. Keyingi darslarda shu yechimni HTML bilan o'z qo'lingiz bilan qurishni boshlaymiz.", trigger: 'on_mount', waits_for: null }]);
   const RECAP = ['Har bir sayt kimningdir real muammosiga yechim', 'Avval aniq odamni (foydalanuvchini) tanlaymiz', '"Hamma uchun" — aslida hech kim uchun', 'To\'liq g\'oya: KIM + MUAMMO + YECHIM'];
-  const HOMEWORK = [{ b: 'Bitta muammo toping', t: '— atrofingizdagi odam (do\'st, oila) sezgan qiyinchilikni yozing' }, { b: 'Foydalanuvchini aniqlang', t: '— bu muammo aniq kimniki?' }, { b: 'Yechim o\'ylang', t: '— qanday oddiy sayt yordam berishi mumkin?' }];
+  const HOMEWORK = [{ b: 'Bitta muammo toping', t: '— o\'zing, do\'sting yoki maktabda sezgan qiyinchilikni yozing' }, { b: 'Foydalanuvchini aniqlang', t: '— bu muammo aniq kimniki?' }, { b: 'Yechim o\'ylang', t: '— qanday sayt yordam beradi yoki hatto pul ishlab beradi?' }];
   const GLOSSARY = [{ b: 'Foydalanuvchi', t: '— saytni ishlatadigan aniq odam' }, { b: 'Muammo', t: '— odam his qiladigan real qiyinchilik' }, { b: 'Yechim', t: '— sayt muammoni qanday osonlashtiradi' }, { b: 'Mahsulot menejeri (PM)', t: '— kim, qanday muammo, qanday yechim ekanini hal qiladi' }];
   const correct = SCORED_IDX.filter(i => answers[i]?.correct).length;
   const total = SCORED_IDX.length;
@@ -1258,6 +1351,9 @@ export default function PmLesson1({ lang: langProp, onFinished }) {
 
         /* === FRAME === */
         .frame { background: ${T.paper}; border-radius: 16px; padding: clamp(16px,3vw,24px); border: none; box-shadow: 0 8px 22px -7px rgba(${T.shadowBase},0.14); }
+        .frame-col { display: flex; flex-direction: column; }
+        .ex-card { display: flex; flex-direction: column; gap: 3px; background: ${T.bg}; border-radius: 11px; padding: 11px 13px; box-shadow: inset 0 0 0 1px rgba(${T.shadowBase},0.08); }
+        .ex-tag { font-size: 12px; color: ${T.ink}; line-height: 1.45; } .ex-tag span { font-weight: 700; letter-spacing: 0.03em; }
         .frame-soft { background: ${T.accentSoft}; border-left: 4px solid ${T.accent}; border-radius: 12px; padding: clamp(14px,2.5vw,20px); box-shadow: 0 6px 16px -8px rgba(255,79,40,0.22); }
         .frame-success { background: ${T.successSoft}; border-left: 4px solid ${T.success}; border-radius: 12px; padding: clamp(14px,2.5vw,20px); box-shadow: 0 6px 16px -8px rgba(31,122,77,0.22); }
         .frame-warn { background: ${T.accentSoft}; border-left: 4px solid ${T.accent}; border-radius: 12px; padding: 12px 15px; }
@@ -1285,6 +1381,26 @@ export default function PmLesson1({ lang: langProp, onFinished }) {
         @media (max-width: 760px) { .split { grid-template-columns: 1fr; gap: clamp(14px,3vw,20px); } }
 
         /* === ROADMAP === */
+        /* Reja (2-page) — muammo → 3 savol → yechim animatsiyasi */
+        .pf-row { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border-radius: 12px; background: ${T.bg}; }
+        .pf-emoji { font-size: 26px; line-height: 1; flex-shrink: 0; }
+        .pf-k { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: ${T.ink3}; margin: 0; }
+        .pf-v { font-family: 'Source Serif 4', serif; font-size: 14px; color: ${T.ink}; margin: 1px 0 0; }
+        .pf-arrow { text-align: center; font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 11.5px; color: ${T.ink3}; }
+        .pf-q { display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: 10px; background: ${T.paper}; box-shadow: inset 0 0 0 1.5px transparent; opacity: 0.45; transition: opacity 0.35s ease, background 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease; }
+        .pf-q.on { opacity: 1; background: ${T.accentSoft}; box-shadow: inset 0 0 0 1.5px ${T.accent}; transform: scale(1.025); }
+        .pf-q.done { opacity: 1; background: ${T.paper}; box-shadow: inset 0 0 0 1.5px ${T.successSoft}; }
+        .pf-qic { display: flex; flex-shrink: 0; color: ${T.accent}; }
+        .pf-q.done .pf-qic { color: ${T.success}; }
+        .pf-qq { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 13px; color: ${T.ink}; flex-shrink: 0; }
+        .pf-qa { font-family: 'Source Serif 4', serif; font-size: 13px; color: ${T.ink2}; margin-left: auto; text-align: right; }
+        .pf-sol { background: ${T.successSoft}; opacity: 0.4; transform: translateY(8px); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(.34,1.3,.4,1); }
+        .pf-sol.show { opacity: 1; transform: none; }
+        .pf-check { margin-left: auto; display: flex; color: ${T.success}; }
+        /* G'oya tug'iladi (Screen7) — mantiqiy zanjir bog'lovchisi */
+        .g7-link { display: flex; align-items: center; gap: 9px; padding: 7px 0 7px 26px; }
+        .g7-bar { width: 3px; height: 22px; border-radius: 2px; flex-shrink: 0; transition: background 0.35s ease, opacity 0.35s ease; }
+        .g7-q { font-family: 'Source Serif 4', serif; font-style: italic; font-size: 13px; padding: 4px 11px; border-radius: 8px; border: 1px solid transparent; transition: all 0.35s ease; }
         .roadmap { display: flex; flex-direction: column; gap: 8px; list-style: none; }
         .step-card { display: flex; align-items: center; gap: 14px; background: ${T.paper}; border-radius: 12px; padding: 13px 16px; box-shadow: 0 5px 14px -7px rgba(${T.shadowBase},0.16); }
         .step-num { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 13px; color: ${T.accent}; flex-shrink: 0; }
@@ -1313,6 +1429,25 @@ export default function PmLesson1({ lang: langProp, onFinished }) {
         /* === ALGO BUILD === */
         .algo-build { background: ${T.paper}; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 7px; box-shadow: 0 8px 20px -8px rgba(${T.shadowBase},0.14); }
         .algo-line { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: ${T.bg}; }
+        /* G'oya yig'ish (Screen11) — toza tanlov + slotlar */
+        .g11-group { display: flex; flex-direction: column; gap: 7px; }
+        .g11-glabel { display: flex; align-items: center; gap: 8px; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin: 0; }
+        .g11-num { width: 18px; height: 18px; border-radius: 50%; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
+        .g11-opt { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: none; border-radius: 11px; padding: 12px 14px; font-family: 'Manrope', sans-serif; font-weight: 500; font-size: clamp(13px,1.6vw,14.5px); color: ${T.ink}; background: ${T.paper}; cursor: pointer; transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease; box-shadow: 0 5px 14px -8px rgba(${T.shadowBase},0.18); }
+        .g11-opt:hover:not(.sel) { transform: translateY(-1px); box-shadow: 0 10px 20px -9px rgba(${T.shadowBase},0.26); }
+        .g11-opt.sel { animation: pmPop 0.4s cubic-bezier(.34,1.5,.5,1); }
+        .g11-tick { width: 19px; height: 19px; border-radius: 50%; border: 2px solid; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; transition: all 0.16s; }
+        .g11-slot { display: flex; align-items: center; gap: 11px; padding: 13px 14px; border-radius: 10px; background: ${T.bg}; border-left: 3px solid ${T.ink3}40; min-height: 48px; transition: border-color 0.3s ease, background 0.3s ease; }
+        .g11-slot.filled { background: ${T.paper}; box-shadow: 0 5px 14px -9px rgba(${T.shadowBase},0.2); }
+        .g11-slabel { font-size: 10px; text-transform: uppercase; min-width: 52px; font-weight: 700; letter-spacing: 0.04em; transition: color 0.3s; }
+        .g11-val { display: flex; align-items: center; gap: 8px; flex: 1; font-family: 'Manrope', sans-serif; font-size: 13.5px; color: ${T.ink}; font-weight: 500; }
+        .g11-empty { flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: ${T.ink3}; font-style: italic; }
+        /* Qoida (Screen14) — vizual formula */
+        .eq-row { display: flex; align-items: center; justify-content: center; gap: clamp(8px,1.6vw,14px); flex-wrap: wrap; }
+        .eq-term { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+        .eq-lbl { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 12.5px; color: ${T.ink}; text-align: center; }
+        .eq-op { font-family: 'Source Serif 4', serif; font-size: clamp(20px,2.6vw,26px); font-weight: 600; color: ${T.ink3}; padding-bottom: 18px; }
+        .eq-eq { color: ${T.success}; }
 
         /* === AI CARD === */
         .ai-card { background: ${T.paper}; border-radius: 14px; padding: 15px 17px; display: flex; flex-direction: column; gap: 11px; box-shadow: 0 8px 20px -8px rgba(${T.shadowBase},0.14); }
