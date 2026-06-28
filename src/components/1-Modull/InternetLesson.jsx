@@ -155,6 +155,7 @@ const SCREEN_META = [
   { id: 's11', type: 'exploration', template: 'custom',   scored: false, scope: null },
   { id: 's12', type: 'test',        template: 'MCScreen', scored: true,  scope: 'module-mikro' },
   { id: 's13', type: 'case',        template: 'custom',   scored: false, scope: null },
+  { id: 's13b', type: 'game',       template: 'custom',   scored: false, scope: null },
   { id: 's14', type: 'rule',        template: 'custom',   scored: false, scope: null },
   { id: 's15', type: 'test',        template: 'MCScreen', scored: true,  scope: 'final' },
   { id: 's16', type: 'summary',     template: 'custom',   scored: false, scope: null }
@@ -172,10 +173,10 @@ const Preview = ({ children, title = 'preview.html', minH }) => (
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
-const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, audioState, narrow, mentorStatic }) => {
+const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, audioState, narrow, mentorStatic, mentorCollapse }) => {
   const isMobile = useIsMobile();
   const isNarrow = useIsMobile(768); // mobil: Mentor yig'ilish rejimi
-  const collapseOn = isNarrow && !mentorStatic; // ba'zi sahifalarda Mentor yig'ilmaydi
+  const collapseOn = (isNarrow || mentorCollapse) && !mentorStatic; // mentorCollapse — desktopda ham yig'iladi
   const padH = isMobile ? 12 : 100;
   const [mCollapsed, setMCollapsed] = useState(false);
   const contentRef = useRef(null);
@@ -454,6 +455,35 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       ? "✓ Tayyor! YouTube ekraningizda ochildi — har bir sayt va ilova xuddi shu yo'l bilan, atigi 1 soniyada keladi."
       : JR_STEPS[jstep].cap;
 
+  const isNarrow = useIsMobile(768);
+  const [showSteps, setShowSteps] = useState(false);
+  const AnimBlock = (
+    <Zoomable>
+    <div className="jr fade-up delay-1">
+      <div className="jr-ring">
+        <div className="jr-ring-circle" />
+        <div className="jr-hub"><span className="jr-hub-ic">⏱️</span><span className="jr-hub-t">≈ 1 soniya</span></div>
+        {JR_STATIONS.map(s => {
+          const on = activeKey === s.k;
+          const delivered = jstep >= DONE && s.k === 'you';
+          return (
+            <div key={s.k} className={`jr-st ${on ? 'on' : ''} ${delivered ? 'delivered' : ''}`} style={jrPos(s.a)}>
+              {delivered && <span className="jr-badge">▶️ YouTube ✓</span>}
+              <span className="jr-ic">{s.ic}</span>
+              <span className="jr-l">{s.l}</span>
+            </div>
+          );
+        })}
+        <div className="jr-orbit" style={{ transform: `rotate(${turn}deg)` }}>
+          <div className={`jr-packet ${cur ? cur.kind : ''} ${cur ? 'show' : ''}`} style={{ transform: `translate(-50%,-50%) rotate(${-turn}deg)` }}>{cur ? cur.pkt : ''}</div>
+        </div>
+      </div>
+      <div className={`jr-cap ${jstep >= DONE ? 'done' : ''}`} key={jstep}>{caption}</div>
+      <div className="jr-dots">{JR_STEPS.map((_, i) => <span key={i} className={`jr-dot ${(jstep > i || jstep >= DONE) ? 'fill' : ''} ${jstep === i ? 'cur' : ''}`} />)}</div>
+      <button className="btn" style={{ alignSelf: 'center' }} onClick={play} disabled={playing}>{playing ? 'Sayohat ketmoqda…' : (jstep >= DONE ? "↻ Yana ko'rish" : '▶ Sayohatni boshlash')}</button>
+    </div>
+    </Zoomable>
+  );
   const StepsBlock = (
     <Col>
       <p className="flow-label">Dars rejasi — 5 qadam</p>
@@ -466,34 +496,19 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
       <div className="screen">
         <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>Sayt sizgacha qanday yetib keladi?</span></h2></div>
         <Mentor>Bugun bitta savolga to'liq javob topamiz: <b style={{ color: T.ink }}>youtube.com</b> yozib Enter bosganingizda, sayt ekraningizga qanday yetib keladi? Quyidagi <b style={{ color: T.ink }}>aylanma sayohatni</b> kuzating — dars oxirida hammasini o'zingiz tushuntirib bera olasiz.</Mentor>
-        <Split>
-          <Zoomable>
-          <div className="jr fade-up delay-1">
-            <div className="jr-ring">
-              <div className="jr-ring-circle" />
-              <div className="jr-hub"><span className="jr-hub-ic">⏱️</span><span className="jr-hub-t">≈ 1 soniya</span></div>
-              {JR_STATIONS.map(s => {
-                const on = activeKey === s.k;
-                const delivered = jstep >= DONE && s.k === 'you';
-                return (
-                  <div key={s.k} className={`jr-st ${on ? 'on' : ''} ${delivered ? 'delivered' : ''}`} style={jrPos(s.a)}>
-                    {delivered && <span className="jr-badge">▶️ YouTube ✓</span>}
-                    <span className="jr-ic">{s.ic}</span>
-                    <span className="jr-l">{s.l}</span>
-                  </div>
-                );
-              })}
-              <div className="jr-orbit" style={{ transform: `rotate(${turn}deg)` }}>
-                <div className={`jr-packet ${cur ? cur.kind : ''} ${cur ? 'show' : ''}`} style={{ transform: `translate(-50%,-50%) rotate(${-turn}deg)` }}>{cur ? cur.pkt : ''}</div>
-              </div>
-            </div>
-            <div className={`jr-cap ${jstep >= DONE ? 'done' : ''}`} key={jstep}>{caption}</div>
-            <div className="jr-dots">{JR_STEPS.map((_, i) => <span key={i} className={`jr-dot ${(jstep > i || jstep >= DONE) ? 'fill' : ''} ${jstep === i ? 'cur' : ''}`} />)}</div>
-            <button className="btn" style={{ alignSelf: 'center' }} onClick={play} disabled={playing}>{playing ? 'Sayohat ketmoqda…' : (jstep >= DONE ? "↻ Yana ko'rish" : '▶ Sayohatni boshlash')}</button>
+        {!isNarrow ? (
+          <Split>{AnimBlock}{StepsBlock}</Split>
+        ) : !showSteps ? (
+          <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
+            {AnimBlock}
+            <button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>📋 Dars rejasini ko'rish</button>
           </div>
-          </Zoomable>
-          {StepsBlock}
-        </Split>
+        ) : (
+          <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
+            <button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(false)}>↩ Animatsiyani ko'rish</button>
+            {StepsBlock}
+          </div>
+        )}
       </div>
     </Stage>
   );
@@ -848,74 +863,158 @@ const Screen9 = (props) => (
     explainWrong={{ 0: 'Brauzer DNS’dan so’raydi, lekin aylantirishni DNS bajaradi.', 1: 'Domen — bu nomning o’zi. Uni IP’ga aylantiradigan — DNS.', 2: 'Server — sayt saqlanadigan kompyuter. Nomni IP’ga aylantiradigan — DNS.', default: 'Domen → IP aylantirishni DNS bajaradi.' }} />
 );
 
-// ===== SCREEN 10 — SO'ROV YO'LI (sayohat) =====
+// ===== SCREEN 10 — SO'ROV YO'LI (oldinga oqadigan ma'lumot konveyeri) =====
+// Ma'lumot CHAPDAN O'NGGA, oldinga oqadi (orqaga qaytmaydi): Manzil → DNS → Server
+// → Brauzer (HTML'ni o'qiydi) → Ekran. Har bosqichda paket o'zgaradi; pastdagi
+// detal-kartada o'sha bosqich jonli ko'rsatiladi (URL, IP, HTML kod, o'qish, render).
+const PIPE = [
+  { k: 'addr',    ic: '⌨️', l: 'Manzil',  pos: 10, pkt: '⌨️ youtube.com',    cls: 'req',  cap: '1 — Siz brauzerga youtube.com yozib Enter bosdingiz', note: 'Mana, siz brauzerimizga youtube.com yozib Enter bosdingiz. Endi brauzer ishga tushadi va saytni qidira boshlaydi.' },
+  { k: 'dns',     ic: '🗂️', l: 'DNS',     pos: 30, pkt: '🔢 142.250.190.78', cls: 'ip',   cap: '2 — DNS nomni IP raqamiga aylantiradi', note: "Hozir brauzerimizdan DNS'ga «youtube.com qaysi raqam?» degan so'rov oqib bormoqda. DNS uni 142.250.190.78 degan IP raqamiga aylantirib beryapti." },
+  { k: 'server',  ic: '🖥️', l: 'Server',  pos: 50, pkt: '📄 HTML kod',        cls: 'page', cap: "3 — Server shu IP'dan sahifani HTML kod sifatida yuboradi", note: "Mana, brauzerimiz shu IP'dagi serverga bordi. Endi server bizga sahifani HTML kod ko'rinishida qaytarib yuboryapti — bu oddiy matn." },
+  { k: 'browser', ic: '🌐', l: 'Brauzer', pos: 70, pkt: "👀 o'qilmoqda",      cls: 'read', cap: "4 — Brauzer HTML kodni satrma-satr o'qiydi", note: "Endi brauzerimiz server yuborgan HTML kodni satrma-satr o'qiyapti — har bir kodni tushunib chiqyapti." },
+  { k: 'screen',  ic: '🖼️', l: 'Ekran',   pos: 90, pkt: '🎨 sahifa',          cls: 'page', cap: "5 — O'qilgan koddan ekranga chiroyli sahifa chiziladi", note: "Va mana — o'qilgan koddan chiroyli YouTube sahifasi ekraningizga chizildi! Hammasi tayyor." },
+];
+const PIPE_MS = 2100; // har qadamda biroz to'xtab, Mentor gapini o'qishga ulguriladi
+// YouTube'ga mos kod — manzil youtube.com, shuning uchun kod ham, ekran ham YouTube
+const PIPE_CODE = [
+  <><Tg>{'<h1>'}</Tg>▶️ YouTube<Tg>{'</h1>'}</Tg></>,
+  <><Tg>{'<video>'}</Tg>Mushuklar 🐱<Tg>{'</video>'}</Tg></>,
+  <><Tg>{'<video>'}</Tg>Futbol ⚽<Tg>{'</video>'}</Tg></>,
+];
+
 const Screen10 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's10', text: `Endi hammasini birlashtiramiz. youtube.com yozib Enter bosganingizda, mana nima bo'ladi: brauzer DNS'dan IP so'raydi, DNS IP qaytaradi, brauzer serverga so'rov yuboradi, server sahifani qaytaradi, brauzer ekranga chizadi. Tugmani bosib, butun yo'lni kuzating.`, trigger: 'on_mount', waits_for: null }]);
-  const STEPS = [
-    { ic: '⌨️', l: 'youtube.com yoziladi' },
-    { ic: '🗂️', l: "Brauzer DNS'dan IP so'raydi" },
-    { ic: '🔢', l: 'DNS IP qaytaradi' },
-    { ic: '🖥️', l: "Serverga so'rov boradi" },
-    { ic: '📄', l: 'Server sahifani qaytaradi' },
-    { ic: '✅', l: 'Brauzer ekranga chizadi' }
-  ];
-  const [step, setStep] = useState(storedAnswer ? STEPS.length : 0);
-  const [running, setRunning] = useState(false);
-  const timer = useRef(null);
-  const done = step >= STEPS.length;
-  useEffect(() => () => clearTimeout(timer.current), []);
-  const run = () => {
-    clearTimeout(timer.current); setStep(0); setRunning(true);
-    const tick = (i) => { setStep(i); if (i < STEPS.length) timer.current = setTimeout(() => tick(i + 1), 760); else { setRunning(false); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); } };
-    timer.current = setTimeout(() => tick(1), 340);
-  };
-  const activeIdx = running ? step - 1 : -1;
-  const progPct = (Math.min(step, STEPS.length) / STEPS.length) * 100;
-  const cap = done
-    ? '✓ Tayyor! Bularning bari atigi 1 soniyada bajariladi.'
-    : running
-      ? (activeIdx >= 0 && activeIdx < STEPS.length ? `${activeIdx + 1}/${STEPS.length} — ${STEPS[activeIdx].l}` : 'Boshlanmoqda…')
-      : "▶ tugmani bosing — butun yo'lni jonli kuzating.";
+  const audio = useAudio([{ id: 's10', text: `Endi hammasini birlashtiramiz! youtube.com yozsangiz, ma'lumot chapdan o'ngga, bosqichma-bosqich oqadi: manzil DNS'da IP raqamiga aylanadi, server shu IP'dan sahifani HTML kod sifatida yuboradi, brauzer HTML'ni o'qib, ekranga chiroyli chizadi. Tugmani bosib, butun jarayonni kuzating.`, trigger: 'on_mount', waits_for: null }]);
+  const [step, setStep] = useState(storedAnswer ? PIPE.length - 1 : -1); // -1 idle, 0..4
+  const [playing, setPlaying] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [finished, setFinished] = useState(!!storedAnswer);
+  const doneRef = useRef(null);
+  const firstRef = useRef(true);
+  // Bosqichma-bosqich oldinga yuradi; pauza qilsa to'xtaydi, davom etsa yana yuradi
+  useEffect(() => {
+    if (!playing || paused) return;
+    if (step >= PIPE.length - 1) {
+      setPlaying(false); setFinished(true);
+      if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true });
+      return;
+    }
+    const t = setTimeout(() => setStep(s => s + 1), PIPE_MS);
+    return () => clearTimeout(t);
+  }, [step, playing, paused]);
+  // Oxirida natijaga avtoskroll (desktop va mobil)
+  useEffect(() => {
+    if (firstRef.current) { firstRef.current = false; return; }
+    if (finished && doneRef.current) {
+      const el = doneRef.current;
+      const id = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 280);
+      return () => clearTimeout(id);
+    }
+  }, [finished]);
+  const start = () => { setFinished(false); setPaused(false); setStep(0); setPlaying(true); };
+  const togglePause = () => setPaused(p => !p);
+  const cur = step >= 0 && step < PIPE.length ? PIPE[step] : null;
+  const done = finished;
+  const pktLeft = cur ? cur.pos : PIPE[0].pos;
+  const fillPct = step < 0 ? 0 : (step / (PIPE.length - 1)) * 100;
+  const cap = step < 0 ? "▶ tugmani bosing — ma'lumot chapdan o'ngga, bosqichma-bosqich oqadi." : (cur ? cur.cap : '');
   return (
-    <Stage eyebrow="So'rov yo'li" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Yo'lni ishga tushiring"} onClick={onNext} /></>}>
-      <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
+    <Stage eyebrow="So'rov yo'li" screen={screen} audioState={audio} mentorCollapse navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Yo'lni ishga tushiring"} onClick={onNext} /></>}>
+      <div className="screen" style={{ gap: 'clamp(10px,1.7vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Enter'dan saytgacha — <span className="italic" style={{ color: T.accent }}>butun yo'l</span></h2></div>
-        <Mentor>Endi hamma narsani birlashtiramiz. <b style={{ color: T.ink }}>youtube.com</b> yozib Enter bosganingizda, so'rovingiz <b style={{ color: T.ink }}>6 ta qadamdan</b> o'tadi — va bularning bari ko'z ochib yumguncha bajariladi. Tugmani bosib, butun yo'lni kuzating.</Mentor>
+        <Mentor><b style={{ color: T.ink }}>youtube.com</b> yozsangiz nima bo'ladi? ▶ tugmasini bosing — ma'lumot <b style={{ color: T.ink }}>chapdan o'ngga</b> oqib, sayt ochiladi. Har qadamni Mentor tushuntirib boradi.</Mentor>
         <Zoomable>
-        <div className="frame frame-col fade-up delay-2">
-          <div className="hz-flow">{STEPS.map((s, i) => (
-            <React.Fragment key={i}>
-              <div className={`hz-step ${step > i ? 'done' : ''} ${running && step === i + 1 ? 'active' : ''}`}>
-                <span className="hz-node">{step > i ? '✓' : i + 1}</span>
-                <span className="hz-ic">{s.ic}</span>
-                <span className="hz-lbl">{s.l}</span>
+        <div className="frame frame-col fade-up delay-2" style={{ gap: 'clamp(10px,1.6vw,14px)' }}>
+          {/* Konveyer — oldinga oqadigan ma'lumot */}
+          <div className="pl-line">
+            <div className="pl-belt"><div className={`pl-belt-fill ${playing && !paused ? 'go' : ''}`} style={{ width: `${fillPct}%` }} /></div>
+            {step >= 0 && <div className={`pl-pkt ${cur ? cur.cls : ''}`} style={{ left: `${pktLeft}%` }}>{cur ? cur.pkt : ''}</div>}
+            {PIPE.map((s, i) => (
+              <div key={s.k} className={`pl-st ${step === i ? 'on' : ''} ${step > i ? 'done' : ''}`} style={{ left: `${s.pos}%` }}>
+                <span className="pl-st-ic">{s.ic}</span>
+                <span className="pl-st-l">{s.l}</span>
               </div>
-              {i < STEPS.length - 1 && <span className={`hz-arrow ${step > i + 1 ? 'on' : ''} ${running && step - 1 === i ? 'flow' : ''}`}>→</span>}
-            </React.Fragment>
-          ))}</div>
-          <div className="hz-prog"><div className="hz-prog-fill" style={{ width: `${progPct}%` }} /></div>
-          <div className={`hz-cap ${done ? 'done' : ''}`} key={step}>{cap}</div>
-          <button className="btn" onClick={run} disabled={running} style={{ alignSelf: 'center', marginTop: 2 }}>{running ? 'Yo’l boshlandi…' : (done ? '↻ Yana ko’rsatish' : '▶ Yo’lni boshlash')}</button>
+            ))}
+          </div>
+          <div className="pl-dots">{PIPE.map((_, i) => <span key={i} className={`pl-dot ${step >= i ? 'fill' : ''} ${step === i ? 'cur' : ''}`} />)}</div>
+          {step < 0 && <div className="pl-cap">{cap}</div>}
+
+          {/* Detal-karta — joriy bosqich jonli ko'rsatiladi */}
+          <div className="pl-detail">
+            {step < 0 && <p className="pl-idle">Har bosqich shu yerda jonli ochiladi 👇</p>}
+            {step === 0 && (<div className="pl-url fade-step"><span className="pl-lock">🔒</span><span className="mono" style={{ flex: 1, color: T.ink }}>youtube.com</span><span className="pl-enter">Enter ↵</span></div>)}
+            {step === 1 && (<div className="pl-conv fade-step"><span className="pl-pill name">youtube.com</span><span className="pl-conv-arr">→</span><span className="pl-pill ip">142.250.190.78</span></div>)}
+            {(step === 2 || step === 3) && (
+              <div className="pl-codewrap fade-step">
+                <div className="pl-codehead">{step === 2 ? '📄 Server yuborgan HTML kod' : "🌐 Brauzer kodni o'qiyapti…"}</div>
+                <pre className={`pl-code ${step === 3 ? 'reading' : ''}`}>
+                  {PIPE_CODE.map((c, i) => <div key={i} className="pl-codeline">{c}</div>)}
+                  {step === 3 && <span className="pl-scan" />}
+                </pre>
+              </div>
+            )}
+            {step === 4 && (
+              <div className="pl-render fade-step">
+                <div className="pl-codehead">🖼️ Ekranda — tayyor sahifa</div>
+                <Preview title="youtube.com" minH={150}>
+                  <SiteMock site={siteInfo('youtube.com')} />
+                </Preview>
+              </div>
+            )}
+          </div>
+
+          {/* Har bosqichda Mentor o'sha qadamni tushuntiradi (pauzada — to'liq o'qishga to'xtaydi) */}
+          {playing && cur && (
+            <div className={`mentor pl-pausebubble fade-step ${paused ? 'is-paused' : ''}`} key={step}>
+              <div className="mentor-ava" aria-hidden="true"><img src={mentorImg} alt="" /></div>
+              <div className="mentor-col">
+                <span className="mentor-name">{paused ? `⏸ ${step + 1}/${PIPE.length} — o'qing, keyin «Davom etish»` : `Mentor · ${step + 1}/${PIPE.length}-qadam`}</span>
+                <div className="mentor-msg body">{cur.note}</div>
+              </div>
+            </div>
+          )}
+
+          <div className="pl-controls">
+            {playing
+              ? <button className="btn" onClick={togglePause} style={{ alignSelf: 'center' }}>{paused ? '▶ Davom etish' : '⏸ Pauza'}</button>
+              : <button className="btn" onClick={start} style={{ alignSelf: 'center' }}>{finished ? "↻ Yana ko'rsatish" : "▶ Yo'lni boshlash"}</button>}
+          </div>
         </div>
         </Zoomable>
-        {done && (<div className="frame-success fade-step"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Mana butun sayohat</p><p className="body" style={{ margin: 0, color: T.ink }}>Siz <b>manzil</b> yozasiz → <b>DNS</b> IP topadi → <b>server</b> sahifani beradi → <b>brauzer</b> chizadi. Va bularning hammasi — <b>bir soniyada</b>!</p></div>)}
+        {done && (<div ref={doneRef} className="frame-success fade-step"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Mana butun sayohat</p><p className="body" style={{ margin: 0, color: T.ink }}>Siz <b>manzil</b> yozasiz → <b>DNS</b> IP topadi → <b>server</b> <b>HTML kodini</b> beradi → <b>brauzer</b> uni o'qib ekranga chizadi. Bularning bari — <b>bir soniyada</b>! Keyingi darsda brauzer HTML'ni qanday o'qishini ochamiz.</p></div>)}
       </div>
     </Stage>
   );
 };
 
-// ===== SCREEN 11 — SERVER -> HTML (ko'prik) =====
+// ===== SCREEN 11 — SERVER -> HTML: BRAUZER YOUTUBE'NI O'QIB QURADI (oldingi qadamning ichi) =====
+// Yuqorida oldingi sahifa (so'rov yo'li)ni eslatuvchi "ichiga zoom" strip (Server→Brauzer→Ekran, brauzerga 🔍).
+// Pastda: brauzer server bergan YouTube HTML'ini satrma-satr o'qib, sahifani quradi.
+const YT_VIDEO = (title, views, dur) => (
+  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', margin: '0 0 11px' }}>
+    <div style={{ position: 'relative', width: 78, height: 45, borderRadius: 8, background: 'linear-gradient(135deg,#eaeaea,#d2d2d2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <span style={{ width: 23, height: 23, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, paddingLeft: 2, lineHeight: 1 }}>▶</span>
+      <span style={{ position: 'absolute', bottom: 3, right: 3, background: 'rgba(0,0,0,0.8)', color: '#fff', fontSize: 8, fontWeight: 600, borderRadius: 3, padding: '1px 4px', fontFamily: "'Manrope', sans-serif" }}>{dur}</span>
+    </div>
+    <div style={{ minWidth: 0, paddingTop: 1 }}>
+      <div style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: 12.5, color: '#0f0f0f', lineHeight: 1.25, marginBottom: 3 }}>{title}</div>
+      <div style={{ fontSize: 10.5, color: '#777', fontFamily: "'Manrope', sans-serif" }}>CoddyCamp · {views} ko'rish</div>
+    </div>
+  </div>
+);
+
 const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
-  const audio = useAudio([{ id: 's11', text: `Server sizga tayyor rasm emas, HTML kod yuboradi — bu oddiy matn. Brauzer shu kodni satrma-satr o'qib, har bir qismni ekranga chizadi. Tugmani bosing — kod qanday jonli sahifaga aylanishini ko'ring.`, trigger: 'on_mount', waits_for: null }]);
+  const audio = useAudio([{ id: 's11', text: `Hozirgina server brauzerga HTML kod qaytarganini ko'rdik. Endi aynan shu qadamning ichiga kiramiz: brauzer o'sha kodni satrma-satr o'qib, YouTube sahifasini chizadi. Tugmani bosing.`, trigger: 'on_mount', waits_for: null }]);
   const HTML = [
-    { code: <><Tg>{'<h1>'}</Tg>Salom! 👋<Tg>{'</h1>'}</Tg></>, el: <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(20px,2.8vw,26px)', color: T.ink, margin: '0 0 6px' }}>Salom! 👋</h1>, tag: 'sarlavha' },
-    { code: <><Tg>{'<p>'}</Tg>Bu mening saytim.<Tg>{'</p>'}</Tg></>, el: <p style={{ fontFamily: 'Georgia, serif', color: T.ink2, margin: '0 0 10px', fontSize: 14 }}>Bu mening saytim.</p>, tag: 'matn' },
-    { code: <><Tg>{'<button>'}</Tg>Obuna<Tg>{'</button>'}</Tg></>, el: <span style={{ display: 'inline-block', background: T.accent, color: '#fff', borderRadius: 8, padding: '7px 16px', fontFamily: "'Manrope', sans-serif", fontWeight: 700, fontSize: 13 }}>Obuna</span>, tag: 'tugma' }
+    { code: <><Tg>{'<h1>'}</Tg>▶️ YouTube<Tg>{'</h1>'}</Tg></>, el: <h1 style={{ fontFamily: "'Manrope', sans-serif", fontWeight: 800, fontSize: 'clamp(18px,2.6vw,22px)', letterSpacing: '-0.6px', color: '#0f0f0f', margin: '0 0 13px', paddingBottom: 11, borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#FF0000', color: '#fff', borderRadius: 6, width: 30, height: 21, fontSize: 12, paddingLeft: 1, lineHeight: 1 }}>▶</span>YouTube</h1>, tag: 'sarlavha' },
+    { code: <><Tg>{'<video>'}</Tg>Mushuklar 🐱<Tg>{'</video>'}</Tg></>, el: YT_VIDEO('Mushuklar 🐱', '1.2M', '10:24'), tag: 'video' },
+    { code: <><Tg>{'<video>'}</Tg>Futbol ⚽<Tg>{'</video>'}</Tg></>, el: YT_VIDEO('Futbol ⚽', '890K', '4:07'), tag: 'video' }
   ];
   const [phase, setPhase] = useState(storedAnswer ? 'done' : 'idle'); // idle | reading | done
   const [active, setActive] = useState(-1); // hozir o'qilayotgan satr
   const [rd, setRd] = useState(storedAnswer ? HTML.length : 0); // chizilgan elementlar soni
   const timer = useRef(null);
+  const animRef = useRef(null);
+  const isMobile = useIsMobile();
   const done = phase === 'done';
   useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
@@ -923,6 +1022,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     if (phase === 'reading') return;
     clearTimeout(timer.current);
     setPhase('reading'); setRd(0); setActive(0);
+    if (isMobile && animRef.current) { const el = animRef.current; requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' })); } // mobil: o'qish boshlanganda animatsiyaga skroll
     let i = 0;
     const tick = () => {
       setActive(i);
@@ -937,31 +1037,44 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   };
   const reading = phase === 'reading';
   return (
-    <Stage eyebrow="Server javobi" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Kodni sahifaga aylantiring"} onClick={onNext} /></>}>
+    <Stage eyebrow="Brauzer ichida" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "Kodni sahifaga aylantiring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
-        <div className="head"><h2 className="title h-title fade-up">Server aniq <span className="italic" style={{ color: T.accent }}>nima</span> qaytaradi?</h2></div>
-        <Mentor>Server sizga tayyor rasm emas — <b style={{ color: T.ink }}>HTML kod</b> (oddiy matn) yuboradi. Brauzer shu kodni <b style={{ color: T.ink }}>satrma-satr o'qib</b>, har bir qismni ekranga <b style={{ color: T.ink }}>chizadi</b>. Tugmani bosing — kod qanday jonli sahifaga aylanishini ko'ring.</Mentor>
+        <div className="head"><h2 className="title h-title fade-up">Brauzer kodni qanday <span className="italic" style={{ color: T.accent }}>sahifaga</span> aylantiradi?</h2></div>
+        <Mentor>Hozirgina server brauzerga <b style={{ color: T.ink }}>HTML kod</b> qaytarganini ko'rdik. Endi aynan <b style={{ color: T.ink }}>shu qadamning ichiga</b> kiramiz: brauzer o'sha kodni <b style={{ color: T.ink }}>satrma-satr o'qib</b>, YouTube sahifasini chizadi.</Mentor>
+        {/* 12-darsni eslatuvchi "ichiga zoom" strip */}
+        <div className="zi fade-up delay-1">
+          <div className="zi-mini">
+            <div className="zi-node"><span className="zi-node-ic">🖥️</span><span className="zi-node-l">Server</span></div>
+            <div className="zi-wire"><span className="zi-pkt">📄</span></div>
+            <div className="zi-node focus"><span className="zi-node-ic">🌐</span><span className="zi-node-l">Brauzer</span><span className="zi-lens">🔍</span></div>
+            <div className="zi-wire" />
+            <div className="zi-node"><span className="zi-node-ic">🖼️</span><span className="zi-node-l">Ekran</span></div>
+          </div>
+          <p className="zi-label">🔍 Hozirgina ko'rgan <b>«brauzer o'qiydi»</b> qadamning <b>ichiga</b> kiramiz ↓</p>
+        </div>
         <Zoomable>
-        <div className="split">
-          <div className="col">
-            <div className="flow-label">📥 Server qaytargan kod (HTML){reading && <span className="dns-status">o'qilmoqda…</span>}</div>
-            <pre className="code-box fade-up delay-2">{HTML.map((h, i) => {
-              const cls = i === active ? 'reading' : (i < rd ? 'read' : (phase === 'idle' ? '' : 'dim'));
-              return <div key={i} className={`htl-line ${cls}`}>{h.code}{i < rd && <span className="htl-tick"> ✓ chizildi</span>}</div>;
-            })}</pre>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(10px,1.6vw,16px)' }}>
+          <div className="split" ref={animRef}>
+            <div className="col">
+              <div className="flow-label">📥 Server qaytargan kod (HTML){reading && <span className="dns-status">o'qilmoqda…</span>}</div>
+              <pre className="code-box fade-up delay-2">{HTML.map((h, i) => {
+                const cls = i === active ? 'reading' : (i < rd ? 'read' : (phase === 'idle' ? '' : 'dim'));
+                return <div key={i} className={`htl-line ${cls}`}><span className="htl-code">{h.code}</span>{i < rd && <span className="htl-tick">✓ chizildi</span>}</div>;
+              })}</pre>
+            </div>
+            <div className="col">
+              <div className="flow-label">🌐 Brauzer chizgan sahifa</div>
+              <Preview title="youtube.com" minH={150}>
+                {rd === 0
+                  ? (<p style={{ fontFamily: 'Georgia, serif', color: T.ink3, fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Tugmani bosing — brauzer kodni o'qib, YouTube sahifasini shu yerda chizadi</p>)
+                  : (<div style={{ display: 'block' }}>{HTML.slice(0, rd).map((h, i) => <div key={i} className="htl-pop">{h.el}</div>)}</div>)}
+              </Preview>
+            </div>
           </div>
-          <div className="col">
-            <div className="flow-label">🖥️ Brauzer chizgan sahifa</div>
-            <Preview title="mening-saytim.uz" minH={150}>
-              {rd === 0
-                ? (<p style={{ fontFamily: 'Georgia, serif', color: T.ink3, fontStyle: 'italic', margin: 0, textAlign: 'center' }}>Tugmani bosing — brauzer kodni o'qib, sahifani shu yerda chizadi</p>)
-                : (<div style={{ display: 'block' }}>{HTML.slice(0, rd).map((h, i) => <div key={i} className="htl-pop">{h.el}</div>)}</div>)}
-            </Preview>
-          </div>
+          <button className="btn" style={{ alignSelf: 'center' }} onClick={start} disabled={reading}>{reading ? "Brauzer o'qiyapti…" : (done ? '↻ Qaytadan' : '🖥️ Brauzer bilan o\'qib chizish')}</button>
         </div>
         </Zoomable>
-        <button className="btn" style={{ alignSelf: 'center' }} onClick={start} disabled={reading}>{reading ? "Brauzer o'qiyapti…" : (done ? '↻ Qaytadan' : '🖥️ Brauzer bilan o\'qib chizish')}</button>
-        {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Chapdagi <b>kod</b> = o'ngdagi <b>sahifa</b>. Server faqat matn yuboradi, chiroyli sahifani esa <b>brauzer chizadi</b>. Aynan shu HTML'ni keyingi modulda <b>o'zingiz yozasiz</b>!</p></div>}
+        {done && <div className="frame-success fade-step"><p className="body" style={{ margin: 0, color: T.ink }}>✓ Chapdagi <b>kod</b> = o'ngdagi <b>YouTube sahifasi</b>. Server faqat HTML matn yuboradi, chiroyli sahifani esa <b>brauzer chizadi</b>. Aynan shunday HTML'ni keyingi modulda <b>o'zingiz yozasiz</b>!</p></div>}
       </div>
     </Stage>
   );
@@ -1023,18 +1136,22 @@ const SiteMock = ({ site }) => {
   if (site.mock === 'youtube') {
     return (
       <div className="fade-step">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 11, borderBottom: '1px solid #eee', paddingBottom: 8 }}>
-          <span style={{ background: '#FF0000', color: '#fff', borderRadius: 4, fontSize: 10, padding: '2px 5px', lineHeight: 1 }}>▶</span>
-          <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: 14, letterSpacing: '-0.5px', color: '#0f0f0f' }}>YouTube</span>
-          <div style={{ marginLeft: 'auto', width: 64, height: 9, background: '#f0f0f0', borderRadius: 99 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12, borderBottom: '1px solid #eee', paddingBottom: 9 }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#FF0000', color: '#fff', borderRadius: 5, width: 23, height: 16, fontSize: 9, paddingLeft: 1, lineHeight: 1 }}>▶</span>
+          <span style={{ fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: 14, letterSpacing: '-0.6px', color: '#0f0f0f' }}>YouTube</span>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, flex: '0 1 130px', maxWidth: 140, border: '1px solid #e3e3e3', borderRadius: 99, padding: '4px 10px', background: '#fff' }}>
+            <div style={{ flex: 1, height: 5, background: '#ececec', borderRadius: 3 }} />
+            <span style={{ fontSize: 10, color: '#909090', lineHeight: 1 }}>🔍</span>
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 9 }}>
           {[0, 1].map(i => (
             <div key={i} style={{ flex: 1 }}>
-              <div style={{ height: 48, background: 'linear-gradient(135deg,#e9e9e9,#d4d4d4)', borderRadius: 8, marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(0,0,0,0.55)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9 }}>▶</span>
+              <div style={{ position: 'relative', height: 50, background: 'linear-gradient(135deg,#eaeaea,#d2d2d2)', borderRadius: 9, marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, paddingLeft: 2, lineHeight: 1 }}>▶</span>
+                <span style={{ position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,0.78)', color: '#fff', fontSize: 8, fontWeight: 600, borderRadius: 3, padding: '1px 4px', fontFamily: 'Manrope, sans-serif' }}>{i === 0 ? '10:24' : '4:07'}</span>
               </div>
-              <div style={{ height: 6, background: '#cfcfcf', borderRadius: 3, width: '92%', marginBottom: 4 }} />
+              <div style={{ height: 6, background: '#c9c9c9', borderRadius: 3, width: '92%', marginBottom: 4 }} />
               <div style={{ height: 5, background: '#e2e2e2', borderRadius: 3, width: '58%' }} />
             </div>
           ))}
@@ -1075,7 +1192,7 @@ const SIM13_STEP_MS = 1500; // har bir bo'lak (Siz→Brauzer→DNS→Server→Si
 
 const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const audio = useAudio([{ id: 's13', text: `Endi o'zingiz sinab ko'ring. Sayt manzilini yozing yoki tanlang, Yubor tugmasini bosing — so'rov aylanma yo'lni bosib o'tib, sayt ochiladi.`, trigger: 'on_mount', waits_for: null }]);
-  const SITES = ['youtube.com', 'google.com', 'wikipedia.org'];
+  const SITES = ['google.com', 'youtube.com', 'wikipedia.org'];
   const DONE = sim13Steps({ domain: '', ic: '', name: '', ip: '' }).length;
   const [url, setUrl] = useState('');
   const [site, setSite] = useState(storedAnswer?.picked ? siteInfo(storedAnswer.picked) : null);
@@ -1125,7 +1242,7 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
         <Zoomable>
         <div className="split">
           <div className="col">
-            <div className="urlbar fade-up delay-2"><span className="urlbar-lock">🔒</span><input className="urlbar-input" value={url} placeholder="masalan: youtube.com" onChange={e => setUrl(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(); }} /><button className="urlbar-go" onClick={() => send()} disabled={running}>Yubor</button></div>
+            <div className="urlbar fade-up delay-2"><span className="urlbar-lock">🔒</span><input className="urlbar-input" value={url} placeholder="masalan: google.com" onChange={e => setUrl(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') send(); }} /><button className="urlbar-go" onClick={() => send()} disabled={running}>Yubor</button></div>
             <div className="fade-up delay-2" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{SITES.map(s => (<button key={s} className="chip" disabled={running} onClick={() => send(s)}>{s}</button>))}</div>
             <div className="jr jr-sim fade-up delay-3" ref={animRef}>
               <div className="jr-ring">
@@ -1160,6 +1277,189 @@ const Screen13 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
           </div>
         </div>
         </Zoomable>
+      </div>
+    </Stage>
+  );
+};
+
+// ===== SCREEN 13b — SINOV: SAYTNI TOP VA EKRANGA KELTIR (IP bo'yicha to'g'ri serverni top) =====
+// Bola izlovchi: 🗂️ DNS serverning IP-manzilini beradi → keyin 3 ta serverdan o'sha IP'ga
+// MOS kelganini o'qib-taqqoslab o'zi topadi → 🖼️ Ekranga keltiradi. Xato server = 404
+// (boshqa sayt o'zini fosh qiladi). IP endi MA'NOLI: uni o'qish, solishtirish, tanlash kerak.
+const NET_POS = {
+  you: [9, 50], dns: [31, 50], srv0: [61, 16], srv1: [61, 50], srv2: [61, 84], screen: [89, 50],
+};
+const NET_EDGES = [['you', 'dns'], ['dns', 'srv0'], ['dns', 'srv1'], ['dns', 'srv2'], ['srv0', 'screen'], ['srv1', 'screen'], ['srv2', 'screen']];
+// Har serverning o'z IP-manzili bor (ba'zilari ataylab o'xshash — diqqat bilan o'qitadi)
+const SRV_POOL = [
+  { name: 'YouTube',   ip: '142.250.190.78', domain: 'youtube.com',   mock: 'youtube' },
+  { name: 'Google',    ip: '142.250.185.78', domain: 'google.com',    mock: 'google' },
+  { name: 'Wikipedia', ip: '208.80.154.224', domain: 'wikipedia.org', mock: 'wikipedia' },
+  { name: 'Facebook',  ip: '31.13.72.36',    domain: 'facebook.com',  mock: 'generic' },
+];
+const NET_TARGETS = ['youtube.com', 'google.com', 'wikipedia.org']; // chiroyli mock'li saytlar
+const netShuffle = (a) => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+const netPick = (not) => { const o = NET_TARGETS.filter(s => s !== not); return o[Math.floor(Math.random() * o.length)]; };
+// O'xshash IP: oxirgi raqamni o'zgartiramiz — bola raqamni oxirigacha o'qishi kerak bo'ladi
+const nearMissIP = (ip) => { const p = ip.split('.'); p[3] = String((parseInt(p[3], 10) + 17) % 200 + 11); return p.join('.'); };
+// Bitta raund: to'g'ri sayt + o'xshash IP (boshqa kompyuter) + bitta boshqa real sayt
+const buildRound = (domain) => {
+  const target = SRV_POOL.find(s => s.domain === domain) || SRV_POOL[0];
+  const nearMiss = { name: null, ip: nearMissIP(target.ip), mock: 'generic' };
+  const other = netShuffle(SRV_POOL.filter(s => s.domain !== target.domain))[0];
+  const servers = netShuffle([target, nearMiss, other]).map((s, i) => ({ ...s, slot: i }));
+  return { target, servers };
+};
+
+const Screen13b = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
+  const audio = useAudio([{ id: 's13b', text: `Vazifa: youtube.com qayerda joylashganini topib, sahifasini ekranga keltirish. Avval DNS serverning IP-manzilini beradi. Keyin bir nechta serverdan o'sha IP'ga aynan mos kelganini o'zingiz topib boring. Raqamlarni diqqat bilan o'qing!`, trigger: 'on_mount', waits_for: null }]);
+  const won = !!storedAnswer;
+  const [round, setRound] = useState(() => buildRound('youtube.com'));
+  const target = round.target;
+  const site = siteInfo(target.domain) || { ...target, ic: '🌐' };
+  const [cur, setCur] = useState(won ? 'screen' : 'you');
+  const [pktPos, setPktPos] = useState(won ? NET_POS.screen : NET_POS.you);
+  const [hasIP, setHasIP] = useState(won);
+  const [hasPage, setHasPage] = useState(won);
+  const [visited, setVisited] = useState(won ? ['you', 'dns', 'screen'] : ['you']);
+  const [traveled, setTraveled] = useState([]);
+  const [moving, setMoving] = useState(false);
+  const [phase, setPhase] = useState(won ? 'win' : 'play');
+  const [msg, setMsg] = useState(null);
+  const [moves, setMoves] = useState(0);
+  const [shakeNode, setShakeNode] = useState(null);
+  const [matchNode, setMatchNode] = useState(null);
+  const timer = useRef(null);
+  const winRef = useRef(null);
+  const firstRef = useRef(true);
+
+  useEffect(() => () => clearTimeout(timer.current), []);
+  // To'g'ri topilganda (g'alaba) — desktop va mobilda natijaga avtoskroll
+  useEffect(() => {
+    if (firstRef.current) { firstRef.current = false; return; }
+    if (phase === 'win' && winRef.current) {
+      const el = winRef.current;
+      const id = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 220);
+      return () => clearTimeout(id);
+    }
+  }, [phase]);
+
+  // Tugunlar — server slotlari raundga qarab to'ladi (har birida o'z IP'si)
+  const nodes = {
+    you:    { ic: '🧑', l: 'Siz',   note: 'boshlanish',    kind: 'start',  pos: NET_POS.you },
+    dns:    { ic: '🗂️', l: 'DNS',   note: 'manzil beradi', kind: 'dns',    pos: NET_POS.dns },
+    screen: { ic: '🖼️', l: 'Ekran', note: 'chizadi',       kind: 'screen', pos: NET_POS.screen },
+  };
+  round.servers.forEach((s) => { nodes['srv' + s.slot] = { ic: '🖥️', l: 'Server', ip: s.ip, name: s.name, mock: s.mock, kind: 'server', pos: NET_POS['srv' + s.slot] }; });
+  const NODE_LIST = ['you', 'dns', 'srv0', 'srv1', 'srv2', 'screen'];
+
+  const ek = (a, b) => [a, b].sort().join('-');
+  const adjacent = (a, b) => NET_EDGES.some(e => (e[0] === a && e[1] === b) || (e[0] === b && e[1] === a));
+
+  const resetRound = (domain) => {
+    clearTimeout(timer.current);
+    if (domain) setRound(buildRound(domain));
+    setCur('you'); setPktPos(NET_POS.you); setHasIP(false); setHasPage(false);
+    setVisited(['you']); setTraveled([]); setMoving(false); setPhase('play'); setMsg(null); setMoves(0); setShakeNode(null); setMatchNode(null);
+  };
+  const replay = () => { firstRef.current = false; resetRound(netPick(target.domain)); };
+  const restart = () => resetRound();
+
+  // Paketni 'to' tuguniga jonli yuborish (har qadamni bola o'zi tanlaydi)
+  const go = (to) => {
+    if (moving || phase !== 'play' || !adjacent(cur, to)) return;
+    const from = cur;
+    setMoving(true); setMsg(null); setMoves(m => m + 1);
+    setPktPos(nodes[to].pos);
+    timer.current = setTimeout(() => {
+      const node = nodes[to];
+      const bounce = (t, type = 'bad') => {
+        setMsg({ t, type }); setShakeNode(to); setPktPos(nodes[from].pos);
+        timer.current = setTimeout(() => setShakeNode(null), 520); setMoving(false);
+      };
+      if (node.kind === 'dns') { setHasIP(true); setMsg({ t: `🗂️ DNS manzillar kitobidan topdi: ${target.domain} → ${target.ip}`, type: 'good' }); }
+      else if (node.kind === 'server') {
+        if (!hasIP) return bounce("🔒 Qaysi server kerakligini bilmaysiz — avval IP-manzilni oling.");
+        if (node.ip === target.ip) { setHasPage(true); setMatchNode(to); setMsg({ t: '🤝 IP mos keldi! Aynan shu server — sahifa olindi.', type: 'good' }); }
+        else if (node.name) return bounce(`❌ ${node.ip} — bu ${node.name}'niki, sizniki emas! (404)`);
+        else return bounce(`❌ ${node.ip} — juda o'xshash, lekin boshqa kompyuter! Raqamni oxirigacha solishtiring.`);
+      } else if (node.kind === 'screen') {
+        if (!hasPage) return bounce("🖼️ Hali sahifa yo'q — uni to'g'ri serverdan olib keling.");
+      }
+      setTraveled(tr => Array.from(new Set([...tr, ek(from, to)])));
+      setVisited(v => Array.from(new Set([...v, to])));
+      setCur(to); setMoving(false);
+      if (node.kind === 'screen') { setPhase('win'); if (storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }
+    }, 600);
+  };
+
+  const pktCls = hasPage ? 'page' : hasIP ? 'key' : 'req';
+  const pktIc = hasPage ? '📄' : hasIP ? '📇' : '📨';
+
+  return (
+    <Stage eyebrow="Sinov · saytni top" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={phase !== 'win'} label={phase === 'win' ? 'Davom etish' : 'Saytni ekranga keltiring'} onClick={onNext} /></>}>
+      <div className="screen" style={{ gap: 'clamp(12px,2vw,18px)' }}>
+        <div className="head"><h2 className="title h-title fade-up"><span className="italic" style={{ color: T.accent }}>{target.domain}</span> ni topib, ekranga keltira olasizmi?</h2></div>
+        <Mentor>🔎 Har bir sayt biror <b style={{ color: T.ink }}>serverda</b> yashaydi. Avval <b className="mono" style={{ color: T.accent }}>{target.domain}</b> ning <b style={{ color: T.ink }}>IP-manzilini</b> bilib oling, so'ng o'shanga <b style={{ color: T.ink }}>aynan mos serverni</b> tanlang — raqamlarni diqqat bilan solishtiring!</Mentor>
+        <Zoomable>
+        <div className="frame frame-col fade-up delay-2">
+          {/* Inventar — paket nimani tashiydi */}
+          <div className="net-hud">
+            <span className={`net-slot ${hasIP ? 'on' : ''}`}><span className="net-slot-ic">📇</span>{hasIP ? <span className="net-hud-ip">{target.ip}</span> : "IP-manzil yo'q"}</span>
+            <span className={`net-slot ${hasPage ? 'on' : ''}`}><span className="net-slot-ic">📄</span>{hasPage ? 'Sahifa ✓' : "Sahifa yo'q"}</span>
+            <span className="net-moves">Qadam: {moves}</span>
+          </div>
+
+          {/* Tarmoq xaritasi */}
+          <div className="net-map">
+            <svg className="net-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+              {NET_EDGES.map((e, i) => {
+                const k = ek(e[0], e[1]);
+                const done = traveled.includes(k);
+                const live = !done && (e[0] === cur || e[1] === cur) && phase === 'play';
+                const a = nodes[e[0]].pos, b = nodes[e[1]].pos;
+                return <line key={i} className={`net-edge ${done ? 'done' : ''} ${live ? 'live' : ''}`} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} vectorEffect="non-scaling-stroke" />;
+              })}
+            </svg>
+            {NODE_LIST.map((k) => {
+              const n = nodes[k];
+              const isCur = cur === k;
+              const isVisited = visited.includes(k);
+              const reachable = phase === 'play' && !moving && adjacent(cur, k);
+              return (
+                <button key={k} className={`net-node ${n.kind} ${isCur ? 'cur' : ''} ${isVisited ? 'visited' : ''} ${reachable ? 'reachable' : ''} ${matchNode === k ? 'match' : ''} ${shakeNode === k ? 'shake' : ''}`} style={{ left: `${n.pos[0]}%`, top: `${n.pos[1]}%` }} onClick={() => go(k)} disabled={!reachable}>
+                  <span className="net-node-ic">{n.ic}</span>
+                  <span className="net-node-l">{n.l}</span>
+                  {n.kind === 'server' ? <span className="net-ip">{n.ip}</span> : <span className="net-node-note">{n.note}</span>}
+                </button>
+              );
+            })}
+            <div className={`net-packet ${pktCls}`} style={{ left: `${pktPos[0]}%`, top: `${pktPos[1]}%` }}>{pktIc}</div>
+          </div>
+
+          {/* Xabar / maslahat + boshqaruv */}
+          {msg ? <p className={`net-msg ${msg.type}`} key={msg.t}>{msg.t}</p>
+            : phase === 'play' && <p className="net-hint">{hasIP ? "📇 Kartangizdagi IP'ga MOS serverni tanlang — raqamlarni oxirigacha solishtiring!" : '🟢 yonayotgan DNS tugunini bosing'}</p>}
+          <div className="dlv-run-row">
+            <button className="dlv-mini" onClick={restart} disabled={moving || (cur === 'you' && !hasIP && !hasPage)}>↺ Boshidan</button>
+            {phase === 'win' && <button className="btn" onClick={replay} style={{ marginLeft: 'auto' }}>↻ Boshqa sayt bilan yana</button>}
+          </div>
+        </div>
+        </Zoomable>
+
+        {phase === 'win' && (
+          <div ref={winRef} className="dlv-result fade-step">
+            <Confetti />
+            <p className="dlv-open-lbl">🎉 Topdingiz! Brauzer <b>{target.name}</b>'ni ekraningizda ochdi</p>
+            <div className="dlv-browser">
+              <Preview title={target.domain} minH={185}><SiteMock site={site} /></Preview>
+            </div>
+            <div className="dlv-win">
+              <span className="dlv-win-ic">💡</span>
+              <p className="dlv-win-b"><b className="dlv-win-h">{moves <= 3 ? "Aniq nishonga!" : 'Topdingiz!'}</b> 🗂️ DNS <b>{target.domain}</b> ning manzilini berdi — <b className="mono">{target.ip}</b>. Har bir kompyuterning <b>o'z IP-manzili</b> bor; aynan shu raqam internetda <b>bitta serverni</b> aniqlaydi. Bitta raqam farq qilsa ham — butunlay boshqa kompyuter! Shuning uchun to'g'ri IP = to'g'ri sayt.</p>
+            </div>
+          </div>
+        )}
       </div>
     </Stage>
   );
@@ -1276,7 +1576,7 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
     if (typeof onFinished === 'function') onFinished(payload);
   };
 
-  const screens = [Screen0, Screen1, Screen2, Screen3, Screen4, Screen5, Screen5b, Screen6, Screen7, Screen8, Screen9, Screen10, Screen11, Screen12, Screen13, Screen14, Screen15, Screen16];
+  const screens = [Screen0, Screen1, Screen2, Screen3, Screen4, Screen5, Screen5b, Screen6, Screen7, Screen8, Screen9, Screen10, Screen11, Screen12, Screen13, Screen13b, Screen14, Screen15, Screen16];
   const Current = screens[screen];
   return (
     <LangContext.Provider value={lang}>
@@ -1362,11 +1662,12 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
 
         .code-box { background: ${CODE.bg}; color: ${CODE.text}; font-family: 'JetBrains Mono', monospace; font-size: clamp(12.5px,1.6vw,14.5px); line-height: 1.55; padding: clamp(12px,2.2vw,18px); border-radius: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; margin: 0; box-shadow: 0 8px 22px -6px rgba(${T.shadowBase},0.2); }
         /* HTML satrma-satr o'qish (Screen11) */
-        .htl-line { display: block; padding: 3px 8px; margin: 0 -4px; border-radius: 6px; transition: background 0.3s ease, opacity 0.3s ease; }
+        .htl-line { display: flex; align-items: flex-start; gap: 8px; padding: 3px 8px; margin: 0 -4px; border-radius: 6px; transition: background 0.3s ease, opacity 0.3s ease; }
+        .htl-code { flex: 1; min-width: 0; white-space: pre-wrap; word-break: break-word; }
         .htl-line.dim { opacity: 0.35; }
         .htl-line.reading { background: rgba(255,79,40,0.20); box-shadow: inset 3px 0 0 ${CODE.tag}; animation: htl-blink 0.6s ease-in-out infinite; }
         .htl-line.read { background: rgba(125,209,129,0.12); }
-        .htl-tick { color: ${CODE.str}; font-size: 0.82em; opacity: 0.85; }
+        .htl-tick { flex-shrink: 0; white-space: nowrap; color: ${CODE.str}; font-size: 0.82em; opacity: 0.85; }
         @keyframes htl-blink { 0%,100% { background: rgba(255,79,40,0.12); } 50% { background: rgba(255,79,40,0.26); } }
         .htl-pop { animation: htl-pop 0.5s cubic-bezier(.34,1.4,.4,1); }
         @keyframes htl-pop { from { opacity: 0; transform: translateY(10px) scale(0.96); } to { opacity: 1; transform: none; } }
@@ -1766,18 +2067,18 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         @keyframes dc-pulse { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,79,40,0); } 50% { transform: scale(1.07); box-shadow: 0 0 0 6px rgba(255,79,40,0.10); } }
         @keyframes dc-flow { 0% { opacity: 0.25; transform: translateY(-3px); } 50% { opacity: 1; transform: translateY(3px); } 100% { opacity: 0.25; transform: translateY(-3px); } }
         .cs { display: flex; align-items: center; gap: clamp(10px,2vw,18px); background: ${T.paper}; border-radius: 14px; padding: 16px 14px; box-shadow: 0 8px 20px -6px rgba(${T.shadowBase},0.14); overflow: hidden; }
-        .cs-node { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; padding: 8px; border-radius: 10px; transition: all 0.3s; min-width: 76px; }
+        .cs-node { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; padding: 8px; border-radius: 10px; transition: all 0.3s; min-width: 64px; }
         .cs-node.cs-active { background: ${T.accentSoft}; }
-        .cs-ic { font-size: 30px; }
+        .cs-ic { font-size: 26px; }
         .cs-l { font-family: 'Manrope'; font-size: 11px; font-weight: 600; color: ${T.ink2}; text-align: center; line-height: 1.2; }
-        .cs-wire { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 64px; justify-content: center; }
-        .cs-track { position: relative; height: 40px; }
-        .cs-track::before { content: ''; position: absolute; left: 4px; right: 4px; top: 50%; height: 2px; transform: translateY(-50%); background: repeating-linear-gradient(90deg, rgba(${T.shadowBase},0.22) 0 6px, transparent 6px 12px); border-radius: 2px; }
-        .cs-chip { position: absolute; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 5px; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 11px; padding: 6px 11px; border-radius: 20px; white-space: nowrap; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.25); transition: left 0.95s cubic-bezier(.5,0,.3,1), opacity 0.35s ease; }
+        .cs-wire { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 96px; justify-content: center; }
+        .cs-track { position: relative; height: 36px; }
+        .cs-track::before { content: ''; position: absolute; left: 2px; right: 2px; top: 50%; height: 2px; transform: translateY(-50%); background: repeating-linear-gradient(90deg, rgba(${T.shadowBase},0.22) 0 6px, transparent 6px 12px); border-radius: 2px; }
+        .cs-chip { position: absolute; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 3px; font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 9.5px; padding: 3px 7px; border-radius: 99px; white-space: nowrap; box-shadow: 0 4px 11px -4px rgba(${T.shadowBase},0.3); transition: left 1.05s cubic-bezier(.5,0,.3,1), opacity 0.3s ease; }
         .cs-chip-req { left: 0; background: ${T.accentSoft}; color: ${T.accent}; }
-        .cs-chip-req.sent { left: calc(100% - 82px); }
+        .cs-chip-req.sent { left: calc(100% - 56px); }
         .cs-chip-req.gone { opacity: 0; }
-        .cs-chip-res { left: calc(100% - 82px); background: ${T.successSoft}; color: ${T.success}; opacity: 0; }
+        .cs-chip-res { left: calc(100% - 56px); background: ${T.successSoft}; color: ${T.success}; opacity: 0; }
         .cs-chip-res.sent { left: 0; opacity: 1; }
         .cs-node.cs-proc { background: ${T.accentSoft}; animation: cs-procring 0.7s ease-in-out infinite; }
         .cs-node.cs-proc .cs-ic { animation: cs-procscale 0.7s ease-in-out infinite; }
@@ -1857,6 +2158,193 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .fin-emoji { font-size: clamp(46px,9vw,66px); line-height: 1; margin-bottom: 10px; animation: pop 0.5s cubic-bezier(.34,1.4,.4,1); }
         .fin-h { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: clamp(22px,3.4vw,28px); color: ${T.ink}; margin: 0 0 8px; }
         .fin-sub { font-family: 'Manrope', sans-serif; font-size: clamp(14px,1.8vw,15px); color: ${T.ink2}; margin: 0 0 22px; line-height: 1.5; }
+
+        /* === O'YIN: SO'ROVNI O'ZING YETKAZ (Screen13b) === */
+        .dlv-mission { display: flex; align-items: center; gap: 12px; background: ${T.bg}; border-radius: 12px; padding: 11px 14px; }
+        .dlv-mission-ic { font-size: 26px; line-height: 1; flex-shrink: 0; }
+        .dlv-mission-h { font-family: 'Manrope'; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; color: ${T.accent}; margin: 0 0 2px; }
+        .dlv-mission-t { font-size: clamp(13px,1.7vw,15px); color: ${T.ink}; margin: 0; }
+        .dlv-attempts { margin-left: auto; font-family: 'JetBrains Mono'; font-size: 11px; color: ${T.ink3}; flex-shrink: 0; }
+
+        .dlv-scene { position: relative; background: linear-gradient(180deg, #FBFAF7, ${T.paper}); border-radius: 14px; padding: clamp(18px,3vw,28px) clamp(8px,2vw,16px) clamp(20px,3vw,30px); box-shadow: inset 0 0 0 1px rgba(${T.shadowBase},0.06); overflow: hidden; }
+        .dlv-track { display: flex; align-items: flex-start; justify-content: center; gap: 0; position: relative; min-height: 98px; }
+        .dlv-node { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 0 0 auto; width: clamp(72px,18vw,98px); padding: 6px 2px; }
+        .dlv-node-ic { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 23px; background: ${T.bg}; box-shadow: inset 0 0 0 2px rgba(${T.shadowBase},0.16); transition: all 0.35s cubic-bezier(.34,1.35,.4,1); }
+        .dlv-node.start .dlv-node-ic { box-shadow: inset 0 0 0 2px ${T.ink3}; }
+        .dlv-node.on .dlv-node-ic { box-shadow: inset 0 0 0 2px ${T.accent}, 0 0 0 6px ${T.accentSoft}; background: ${T.accentSoft}; transform: scale(1.12); animation: vz-pulse 1.1s ease-in-out infinite; }
+        .dlv-node.reached .dlv-node-ic { box-shadow: inset 0 0 0 2px ${T.success}, 0 0 0 5px ${T.successSoft}; background: ${T.successSoft}; }
+        .dlv-node-l { font-family: 'Manrope'; font-weight: 700; font-size: 11.5px; color: ${T.ink2}; }
+        .dlv-node.on .dlv-node-l, .dlv-node.reached .dlv-node-l { color: ${T.ink}; }
+        .dlv-node-note { font-family: 'Manrope'; font-size: 9.5px; color: ${T.ink3}; text-align: center; line-height: 1.2; min-height: 22px; }
+        .dlv-node.reached .dlv-node-note { color: ${T.success}; font-weight: 600; }
+        .dlv-link { flex: 1 1 8px; max-width: 40px; height: 2px; margin-top: 28px; border-radius: 2px; background: repeating-linear-gradient(90deg, rgba(${T.shadowBase},0.25) 0 5px, transparent 5px 10px); }
+        .dlv-packet { position: absolute; top: -8px; transform: translateX(-50%); white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(10px,1.4vw,12.5px); padding: 5px 10px; border-radius: 99px; color: #fff; box-shadow: 0 7px 18px -4px rgba(${T.shadowBase},0.4); transition: left 0.6s cubic-bezier(.45,0,.3,1), background 0.3s ease; z-index: 5; }
+        .dlv-packet.req { background: ${T.accent}; }
+        .dlv-packet.ip { background: ${T.blue}; }
+        .dlv-packet.page { background: ${T.success}; }
+        .dlv-packet.done { background: ${T.success}; }
+        .dlv-packet.fail { animation: dlv-shake 0.5s ease; }
+        @keyframes dlv-shake { 0%,100% { transform: translateX(-50%) rotate(0); } 20% { transform: translateX(-58%) rotate(-6deg); } 40% { transform: translateX(-42%) rotate(6deg); } 60% { transform: translateX(-54%) rotate(-4deg); } 80% { transform: translateX(-46%) rotate(4deg); } }
+        .dlv-empty { text-align: center; font-family: 'Georgia, serif'; font-style: italic; color: ${T.ink3}; font-size: 13px; margin: 10px 0 0; }
+
+        .dlv-palette { display: flex; gap: 8px; flex-wrap: wrap; }
+        .dlv-key { flex: 1 1 110px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 8px; border-radius: 12px; border: none; background: ${T.paper}; cursor: pointer; transition: all 0.18s; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.18); }
+        .dlv-key:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px -6px rgba(${T.shadowBase},0.26); }
+        .dlv-key:disabled { opacity: 0.4; cursor: not-allowed; }
+        .dlv-key-ic { font-size: 22px; line-height: 1; }
+        .dlv-key-l { font-family: 'Manrope'; font-weight: 700; font-size: 13px; color: ${T.ink}; }
+        .dlv-key-note { font-family: 'Manrope'; font-size: 10px; color: ${T.ink3}; }
+        .dlv-key-dns:hover:not(:disabled) { box-shadow: 0 10px 20px -6px rgba(1,154,203,0.35); }
+        .dlv-key-server:hover:not(:disabled) { box-shadow: 0 10px 20px -6px rgba(255,79,40,0.32); }
+        .dlv-key-screen:hover:not(:disabled) { box-shadow: 0 10px 20px -6px rgba(31,122,77,0.32); }
+
+        .dlv-route { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; background: ${CODE.bg}; border-radius: 10px; padding: 11px 13px; }
+        .dlv-route-lbl { font-family: 'JetBrains Mono'; font-size: 11px; color: ${CODE.comment}; }
+        .dlv-route-empty { font-family: 'JetBrains Mono'; font-size: 12px; color: ${CODE.comment}; font-style: italic; }
+        .dlv-chip { display: inline-flex; align-items: center; gap: 5px; font-family: 'Manrope'; font-weight: 700; font-size: 12px; padding: 5px 10px; border-radius: 99px; border: none; background: ${T.paper}; color: ${T.ink}; cursor: pointer; transition: all 0.15s; }
+        .dlv-chip:hover:not(:disabled) { box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.3); }
+        .dlv-chip:disabled { cursor: default; }
+        .dlv-chip-start { background: rgba(255,255,255,0.14); color: #fff; cursor: default; }
+        .dlv-x { font-size: 9px; color: ${T.accent}; }
+        .dlv-arr { font-family: 'JetBrains Mono'; font-weight: 700; color: ${CODE.attr}; font-size: 13px; }
+
+        .dlv-run-row { display: flex; align-items: center; gap: 10px; }
+        .dlv-mini { font-family: 'Manrope'; font-weight: 600; font-size: 12.5px; padding: 8px 14px; border-radius: 9px; border: none; background: ${T.bg}; color: ${T.ink2}; cursor: pointer; transition: all 0.2s; }
+        .dlv-mini:hover:not(:disabled) { color: ${T.ink}; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.2); }
+        .dlv-mini:disabled { opacity: 0.45; cursor: not-allowed; }
+        .dlv-msg { font-family: 'Manrope'; font-weight: 600; font-size: clamp(13px,1.6vw,15px); text-align: center; margin: 0; padding: 10px 14px; border-radius: 10px; animation: fade-step 0.3s ease-out; }
+        .dlv-msg.bad { background: ${T.accentSoft}; color: ${T.accent}; }
+        .dlv-msg.idle { background: ${T.bg}; color: ${T.ink2}; }
+
+        .dlv-result { display: flex; flex-direction: column; align-items: center; gap: clamp(10px,2vw,14px); }
+        .dlv-open-lbl { font-family: 'Manrope'; font-weight: 700; font-size: clamp(12px,1.6vw,14px); color: ${T.success}; text-align: center; margin: 0; animation: fade-step 0.45s ease-out; }
+        .dlv-open-lbl b { color: ${T.ink}; }
+        .dlv-browser { width: 100%; max-width: 470px; animation: dlv-open 0.55s cubic-bezier(.34,1.3,.4,1); }
+        @keyframes dlv-open { 0% { opacity: 0; transform: translateY(16px) scale(0.93); } 100% { opacity: 1; transform: none; } }
+        .dlv-win { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 600px; background: ${T.successSoft}; border-left: 4px solid ${T.success}; border-radius: 12px; padding: 13px 16px; }
+        .dlv-win-ic { font-size: 24px; line-height: 1; flex-shrink: 0; }
+        .dlv-win-h { color: ${T.success}; }
+        .dlv-win-b { font-size: clamp(13px,1.6vw,15px); color: ${T.ink}; line-height: 1.5; margin: 0; }
+        @media (max-width: 560px) {
+          .dlv-node { width: clamp(62px,22vw,84px); }
+          .dlv-node-ic { width: 40px; height: 40px; font-size: 20px; }
+          .dlv-packet { font-size: 9.5px; padding: 4px 8px; }
+        }
+
+        /* === O'YIN: TARMOQ XARITASI (Screen13b) === */
+        .net-hud { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .net-slot { display: inline-flex; align-items: center; gap: 6px; font-family: 'Manrope'; font-weight: 700; font-size: 11px; padding: 5px 11px; border-radius: 99px; background: ${T.bg}; color: ${T.ink3}; box-shadow: inset 0 0 0 1.5px rgba(${T.shadowBase},0.12); transition: all 0.3s; }
+        .net-slot.on { color: ${T.success}; background: ${T.successSoft}; box-shadow: inset 0 0 0 1.5px rgba(31,122,77,0.5); }
+        .net-slot.bad { color: ${T.accent}; background: ${T.accentSoft}; box-shadow: inset 0 0 0 1.5px rgba(255,79,40,0.5); }
+        .net-slot-ic { font-size: 14px; }
+        .net-moves { margin-left: auto; font-family: 'JetBrains Mono'; font-size: 11px; color: ${T.ink3}; }
+        .net-map { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 330px; background: radial-gradient(circle at 50% 45%, #FFFDF9, ${T.paper}); border-radius: 16px; box-shadow: inset 0 0 0 1px rgba(${T.shadowBase},0.06); overflow: hidden; }
+        .net-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+        .net-edge { stroke: rgba(${T.shadowBase},0.18); stroke-width: 2.5; fill: none; transition: stroke 0.3s; }
+        .net-edge.live { stroke: ${T.accent}; stroke-width: 3; stroke-dasharray: 6 5; animation: net-dash 0.7s linear infinite; }
+        .net-edge.done { stroke: ${T.success}; stroke-width: 3.5; }
+        .net-edge.blocked { stroke: rgba(255,79,40,0.40); stroke-dasharray: 3 4; }
+        @keyframes net-dash { to { stroke-dashoffset: -22; } }
+        .net-node { position: absolute; transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; width: clamp(56px,15vw,78px); background: transparent; border: none; padding: 0; cursor: default; }
+        .net-node-ic { position: relative; width: clamp(38px,9vw,50px); height: clamp(38px,9vw,50px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: clamp(18px,4.5vw,24px); background: ${T.paper}; box-shadow: 0 4px 12px -4px rgba(${T.shadowBase},0.25), inset 0 0 0 2px rgba(${T.shadowBase},0.12); transition: transform 0.3s cubic-bezier(.34,1.35,.4,1), box-shadow 0.3s, background 0.3s; }
+        .net-node.cur .net-node-ic { box-shadow: 0 6px 16px -4px rgba(255,79,40,0.4), inset 0 0 0 2px ${T.accent}; }
+        .net-node.visited .net-node-ic { box-shadow: 0 4px 12px -4px rgba(31,122,77,0.3), inset 0 0 0 2px ${T.success}; background: ${T.successSoft}; }
+        .net-node.trap .net-node-ic { background: #FFF4F1; }
+        .net-node.reachable { cursor: pointer; }
+        .net-node.reachable .net-node-ic { box-shadow: 0 6px 18px -4px rgba(${T.shadowBase},0.3), inset 0 0 0 2px ${T.accent}; animation: net-pulse 1.2s ease-in-out infinite; }
+        .net-node.reachable:hover .net-node-ic { transform: scale(1.1); }
+        @keyframes net-pulse { 0%,100% { box-shadow: 0 6px 18px -4px rgba(${T.shadowBase},0.3), inset 0 0 0 2px ${T.accent}, 0 0 0 0 rgba(255,79,40,0.3); } 50% { box-shadow: 0 6px 18px -4px rgba(${T.shadowBase},0.3), inset 0 0 0 2px ${T.accent}, 0 0 0 9px rgba(255,79,40,0); } }
+        .net-node.shake .net-node-ic { animation: net-shake 0.45s ease; }
+        @keyframes net-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .net-node-l { font-family: 'Manrope'; font-weight: 700; font-size: clamp(10px,2.4vw,12px); color: ${T.ink}; white-space: nowrap; }
+        .net-node-note { font-family: 'Manrope'; font-size: clamp(8px,2vw,9.5px); color: ${T.ink3}; white-space: nowrap; }
+        .net-node.visited .net-node-note { color: ${T.success}; }
+        .net-lock { position: absolute; top: -7px; right: -7px; font-size: 14px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25)); }
+        .net-ip { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(8.5px,2vw,10.5px); color: ${T.ink}; background: ${T.bg}; padding: 1px 6px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(${T.shadowBase},0.14); white-space: nowrap; }
+        .net-node.match .net-ip { color: ${T.success}; background: ${T.successSoft}; box-shadow: inset 0 0 0 1px rgba(31,122,77,0.4); }
+        .net-node.match .net-node-ic { box-shadow: 0 6px 16px -4px rgba(31,122,77,0.5), inset 0 0 0 2px ${T.success}, 0 0 0 7px ${T.successSoft}; background: ${T.successSoft}; animation: net-matchpop 0.55s cubic-bezier(.34,1.4,.4,1); }
+        @keyframes net-matchpop { 0% { transform: scale(1); } 45% { transform: scale(1.22); } 100% { transform: scale(1); } }
+        .net-hud-ip { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+        .net-packet { position: absolute; transform: translate(-50%,-50%); z-index: 6; width: clamp(28px,7vw,36px); height: clamp(28px,7vw,36px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: clamp(14px,3.4vw,18px); background: ${T.accent}; color: #fff; box-shadow: 0 0 0 4px rgba(255,79,40,0.18), 0 6px 16px -4px rgba(255,79,40,0.6); transition: left 0.6s cubic-bezier(.45,0,.3,1), top 0.6s cubic-bezier(.45,0,.3,1), background 0.3s, box-shadow 0.3s; pointer-events: none; }
+        .net-packet.key { background: ${T.blue}; box-shadow: 0 0 0 4px rgba(1,154,203,0.18), 0 6px 16px -4px rgba(1,154,203,0.6); }
+        .net-packet.page { background: ${T.success}; box-shadow: 0 0 0 4px rgba(31,122,77,0.18), 0 6px 16px -4px rgba(31,122,77,0.6); }
+        .net-packet::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid #fff; opacity: 0.4; animation: net-halo 1.5s ease-in-out infinite; }
+        @keyframes net-halo { 0%,100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.3); opacity: 0; } }
+        .net-msg { font-family: 'Manrope'; font-weight: 600; font-size: clamp(13px,1.7vw,15px); text-align: center; margin: 0; padding: 10px 14px; border-radius: 10px; animation: fade-step 0.3s ease-out; }
+        .net-msg.good { background: ${T.successSoft}; color: ${T.success}; }
+        .net-msg.warn { background: #FFF3E0; color: #B26A00; }
+        .net-msg.bad { background: ${T.accentSoft}; color: ${T.accent}; }
+        .net-hint { font-family: 'Georgia, serif'; font-style: italic; color: ${T.ink3}; font-size: clamp(12.5px,1.5vw,13.5px); text-align: center; margin: 0; }
+        @media (prefers-reduced-motion: reduce) { .net-edge.live { animation: none; } .net-node.reachable .net-node-ic, .net-packet::after { animation: none; } }
+
+        /* === SO'ROV YO'LI — OLDINGA OQADIGAN KONVEYER (Screen10) === */
+        .pl-line { position: relative; height: clamp(104px,21.5vw,126px); }
+        .pl-belt { position: absolute; left: 6%; right: 6%; top: 20%; height: 7px; transform: translateY(-50%); border-radius: 99px; background: rgba(${T.shadowBase},0.14); overflow: hidden; }
+        .pl-belt-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, ${T.accent}, ${T.blue}, ${T.success}); background-size: 200% 100%; box-shadow: 0 0 8px rgba(255,79,40,0.35); transition: width 1.15s cubic-bezier(.45,0,.3,1); }
+        .pl-belt-fill.go { animation: pl-flow 1s linear infinite; }
+        @keyframes pl-flow { from { background-position: 0 0; } to { background-position: -40px 0; } }
+        .pl-pkt { position: absolute; top: 20%; transform: translate(-50%,-50%); white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(10px,1.6vw,12.5px); padding: 5px 11px; border-radius: 99px; color: #fff; box-shadow: 0 8px 18px -4px rgba(${T.shadowBase},0.4); transition: left 1.15s cubic-bezier(.45,0,.3,1), background 0.4s ease; z-index: 6; }
+        .pl-pkt::after { content: '▾'; position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%); font-size: 13px; line-height: 1; opacity: 0.95; }
+        .pl-pkt.req { background: ${T.accent}; } .pl-pkt.req::after { color: ${T.accent}; }
+        .pl-pkt.ip { background: ${T.blue}; } .pl-pkt.ip::after { color: ${T.blue}; }
+        .pl-pkt.page { background: ${T.success}; } .pl-pkt.page::after { color: ${T.success}; }
+        .pl-pkt.read { background: ${CODE.bg}; color: ${CODE.text}; animation: pl-readblink 0.6s ease-in-out infinite; } .pl-pkt.read::after { color: ${CODE.bg}; }
+        @keyframes pl-readblink { 0%,100% { box-shadow: 0 8px 18px -4px rgba(${T.shadowBase},0.45), 0 0 0 0 rgba(255,79,40,0); } 50% { box-shadow: 0 8px 18px -4px rgba(${T.shadowBase},0.45), 0 0 0 5px rgba(255,79,40,0.2); } }
+        .pl-st { position: absolute; top: 56%; transform: translate(-50%,-50%); display: flex; flex-direction: column; align-items: center; gap: 5px; width: clamp(52px,14vw,72px); }
+        .pl-st-ic { width: clamp(38px,9vw,48px); height: clamp(38px,9vw,48px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: clamp(19px,4.6vw,25px); background: ${T.paper}; box-shadow: 0 5px 14px -5px rgba(${T.shadowBase},0.28), inset 0 0 0 2px rgba(${T.shadowBase},0.12); transition: transform 0.35s cubic-bezier(.34,1.35,.4,1), box-shadow 0.35s, background 0.35s; }
+        .pl-st.done .pl-st-ic { box-shadow: 0 5px 14px -5px rgba(31,122,77,0.32), inset 0 0 0 2px ${T.success}; background: ${T.successSoft}; }
+        .pl-st.on .pl-st-ic { box-shadow: 0 8px 20px -5px rgba(255,79,40,0.45), inset 0 0 0 2px ${T.accent}, 0 0 0 6px ${T.accentSoft}; transform: scale(1.14); animation: vz-pulse 1.1s ease-in-out infinite; }
+        .pl-st-l { font-family: 'Manrope'; font-weight: 700; font-size: clamp(9.5px,2.3vw,12px); color: ${T.ink2}; transition: color 0.3s; }
+        .pl-st.on .pl-st-l, .pl-st.done .pl-st-l { color: ${T.ink}; }
+        .pl-dots { display: flex; justify-content: center; gap: 7px; }
+        .pl-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(${T.shadowBase},0.18); transition: all 0.3s; }
+        .pl-dot.fill { background: ${T.success}; }
+        .pl-dot.cur { background: ${T.accent}; transform: scale(1.4); }
+        .pl-cap { font-family: 'Manrope'; font-weight: 600; font-size: clamp(13px,1.8vw,15.5px); color: ${T.ink}; text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center; padding: 0 6px; animation: fade-step 0.4s ease-out; }
+        .pl-cap.done { color: ${T.success}; }
+        .pl-detail { min-height: clamp(88px,18vw,110px); display: flex; align-items: center; justify-content: center; background: ${T.bg}; border-radius: 12px; padding: 12px; }
+        .pl-idle { font-family: 'Georgia, serif'; font-style: italic; color: ${T.ink3}; font-size: 13px; margin: 0; }
+        .pl-url { display: flex; align-items: center; gap: 9px; width: 100%; max-width: 360px; background: ${T.paper}; border-radius: 10px; padding: 9px 13px; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.18); font-size: clamp(13px,1.8vw,15px); }
+        .pl-lock { font-size: 12px; }
+        .pl-enter { font-family: 'Manrope'; font-weight: 700; font-size: 11px; color: #fff; background: ${T.accent}; padding: 4px 10px; border-radius: 7px; }
+        .pl-conv { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
+        .pl-conv-arr { font-family: 'JetBrains Mono'; font-weight: 700; color: ${T.accent}; font-size: 18px; }
+        .pl-pill { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: clamp(13px,2vw,16px); padding: 8px 14px; border-radius: 10px; }
+        .pl-pill.name { background: ${T.accentSoft}; color: ${T.accent}; }
+        .pl-pill.ip { background: #E2F1F7; color: ${T.blue}; animation: pop 0.45s cubic-bezier(.34,1.4,.4,1); }
+        .pl-codewrap { width: 100%; max-width: 420px; }
+        .pl-codehead { font-family: 'Manrope'; font-weight: 700; font-size: 11px; color: ${T.ink2}; margin-bottom: 6px; }
+        .pl-code { position: relative; background: ${CODE.bg}; color: ${CODE.text}; font-family: 'JetBrains Mono', monospace; font-size: clamp(12px,1.6vw,13.5px); line-height: 1.6; padding: 11px 13px; border-radius: 10px; margin: 0; overflow: hidden; }
+        .pl-codeline { white-space: pre-wrap; }
+        .pl-code .tg { color: ${CODE.tag}; }
+        .pl-scan { position: absolute; left: 0; right: 0; top: 0; height: 26px; background: linear-gradient(180deg, rgba(255,79,40,0.28), transparent); box-shadow: 0 1px 0 rgba(255,79,40,0.7); animation: pl-scanmove 1.1s ease-in-out infinite; }
+        @keyframes pl-scanmove { 0% { transform: translateY(-12px); } 100% { transform: translateY(66px); } }
+        .pl-render { width: 100%; max-width: 360px; }
+        .pl-page { background: #fff; border-radius: 10px; padding: 14px 16px; box-shadow: 0 5px 14px -6px rgba(${T.shadowBase},0.2); }
+        .pl-pop { animation: htl-pop 0.5s cubic-bezier(.34,1.4,.4,1) both; }
+        .pl-controls { display: flex; justify-content: center; margin-top: 2px; }
+        .pl-pausebubble { align-items: flex-start; }
+        .pl-pausebubble .mentor-name { color: ${T.accent}; }
+        .pl-pausebubble .mentor-msg { background: ${T.accentSoft}; box-shadow: 0 6px 16px -6px rgba(255,79,40,0.28); }
+        .pl-pausebubble.is-paused .mentor-msg { box-shadow: 0 0 0 2px ${T.accent}, 0 6px 16px -6px rgba(255,79,40,0.4); }
+        @media (prefers-reduced-motion: reduce) { .pl-st.on .pl-st-ic, .pl-belt-fill.go, .pl-scan { animation: none; } .pl-pkt { transition: none; } }
+
+        /* === 12-DARSGA "ICHIGA ZOOM" STRIP (Screen11) === */
+        .zi { display: flex; flex-direction: column; gap: 7px; background: ${T.bg}; border-radius: 12px; padding: 11px 14px; }
+        .zi-mini { display: flex; align-items: center; justify-content: center; gap: clamp(4px,2vw,12px); }
+        .zi-node { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .zi-node-ic { width: clamp(34px,8vw,42px); height: clamp(34px,8vw,42px); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: clamp(18px,4.5vw,22px); background: ${T.paper}; box-shadow: 0 4px 11px -5px rgba(${T.shadowBase},0.25), inset 0 0 0 2px rgba(${T.shadowBase},0.12); }
+        .zi-node-l { font-family: 'Manrope'; font-weight: 700; font-size: clamp(9px,2.2vw,11px); color: ${T.ink3}; }
+        .zi-node.focus .zi-node-ic { box-shadow: 0 6px 16px -4px rgba(255,79,40,0.4), inset 0 0 0 2px ${T.accent}, 0 0 0 5px ${T.accentSoft}; background: ${T.accentSoft}; animation: vz-pulse 1.4s ease-in-out infinite; }
+        .zi-node.focus .zi-node-l { color: ${T.accent}; }
+        .zi-lens { position: absolute; top: -7px; right: -9px; font-size: 15px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2)); animation: zi-lens 1.6s ease-in-out infinite; }
+        @keyframes zi-lens { 0%,100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.25) rotate(-8deg); } }
+        .zi-wire { position: relative; width: clamp(26px,8vw,58px); height: 2px; background: repeating-linear-gradient(90deg, rgba(${T.shadowBase},0.28) 0 5px, transparent 5px 10px); }
+        .zi-pkt { position: absolute; left: 0; top: 50%; transform: translateY(-50%); font-size: 13px; animation: zi-travel 2.4s ease-in-out infinite; }
+        @keyframes zi-travel { 0% { left: -4px; opacity: 0; } 15% { opacity: 1; } 62% { left: calc(100% - 6px); opacity: 1; } 80%,100% { left: calc(100% - 6px); opacity: 0; } }
+        .zi-label { font-family: 'Manrope'; font-weight: 600; font-size: clamp(11.5px,1.6vw,13px); color: ${T.ink2}; text-align: center; margin: 0; }
+        .zi-label b { color: ${T.accent}; }
+        @media (prefers-reduced-motion: reduce) { .zi-node.focus .zi-node-ic, .zi-lens, .zi-pkt { animation: none; } }
 
       `}</style>
       <div className="lesson-root">
