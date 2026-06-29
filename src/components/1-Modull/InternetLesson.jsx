@@ -116,27 +116,7 @@ function useAudio(segments) {
   return { ...state, triggerEvent, replay, toggleMute };
 }
 
-const AudioIndicator = ({ audioState }) => {
-  const { isPlaying, muted, replay, toggleMute } = audioState;
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <button onClick={toggleMute} title={muted ? 'Sound on' : 'Sound off'} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', color: muted ? T.ink3 : (isPlaying ? T.accent : T.ink2) }}>
-        {muted ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>
-        ) : isPlaying ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" /></svg>
-        ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>
-        )}
-      </button>
-      {!muted && (
-        <button onClick={replay} title="Replay" style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center', color: T.ink2 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
-        </button>
-      )}
-    </div>
-  );
-};
+// AUDIOSIZ: AudioIndicator (ovoz/replay tugmalari) olib tashlandi — ovoz o'chirilgan, ikonka kerak emas.
 
 const LESSON_META = { lessonId: 'internet-01-v16', lessonTitle: { uz: 'Internet qanday ishlaydi', ru: 'Как устроен интернет' } };
 const SCREEN_META = [
@@ -173,7 +153,7 @@ const Preview = ({ children, title = 'preview.html', minH }) => (
 const Split = ({ children }) => <div className="split">{children}</div>;
 const Col = ({ children, gap }) => <div className="col" style={gap ? { gap } : undefined}>{children}</div>;
 
-const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, audioState, narrow, mentorStatic, mentorCollapse }) => {
+const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navContent, narrow, mentorStatic, mentorCollapse }) => {
   const isMobile = useIsMobile();
   const isNarrow = useIsMobile(768); // mobil: Mentor yig'ilish rejimi
   const collapseOn = (isNarrow || mentorCollapse) && !mentorStatic; // mentorCollapse — desktopda ham yig'iladi
@@ -203,7 +183,7 @@ const Stage = ({ children, eyebrow, screen, totalScreens = TOTAL_SCREENS, navCon
           <div className="chrome">
             <div className="chrome-left eyebrow"><span className="dot" /><span>{eyebrow}</span></div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              {audioState && <AudioIndicator audioState={audioState} />}
+              {/* AUDIOSIZ: ovoz tugmasi (AudioIndicator) ko'rsatilmaydi — ovoz allaqachon o'chirilgan */}
               <div className="mono small" style={{ color: T.ink3 }}>{String(screen + 1).padStart(2, '0')} / {String(totalScreens).padStart(2, '0')}</div>
             </div>
           </div>
@@ -430,6 +410,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
   const [playing, setPlaying] = useState(false);
   const baseRef = useRef(0);              // har sayohat oxiridagi to'plangan burchak (orqaga aylanmaslik uchun)
   const timer = useRef(null);
+  const animScrollRef = useRef(null);     // mobil: animatsiyaga avtoskroll
   useEffect(() => () => clearTimeout(timer.current), []);
   const play = useCallback(() => {
     clearTimeout(timer.current);
@@ -457,6 +438,12 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
 
   const isNarrow = useIsMobile(768);
   const [showSteps, setShowSteps] = useState(false);
+  // Mobil: sahifa ochilib animatsiya o'zi jonlanganda — animatsiyani ko'rinishga skroll qilamiz
+  useEffect(() => {
+    if (!isNarrow) return;
+    const t = setTimeout(() => { if (animScrollRef.current) animScrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 850);
+    return () => clearTimeout(t);
+  }, [isNarrow]);
   const AnimBlock = (
     <Zoomable>
     <div className="jr fade-up delay-1">
@@ -499,7 +486,7 @@ const Screen1 = ({ screen, onNext, onPrev }) => {
         {!isNarrow ? (
           <Split>{AnimBlock}{StepsBlock}</Split>
         ) : !showSteps ? (
-          <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
+          <div ref={animScrollRef} className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(12px,2vw,16px)' }}>
             {AnimBlock}
             <button className="btn-soft" style={{ alignSelf: 'flex-start' }} onClick={() => setShowSteps(true)}>📋 Dars rejasini ko'rish</button>
           </div>
@@ -825,7 +812,7 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     <Stage eyebrow="Server" screen={screen} audioState={audio} navContent={<><NavBack onPrev={onPrev} /><NavNext disabled={!done} label={done ? "Davom etish" : "So'rov yuboring"} onClick={onNext} /></>}>
       <div className="screen" style={{ gap: 'clamp(10px,1.6vw,16px)' }}>
         <div className="head"><h2 className="title h-title fade-up">Sayt o'zi <span className="italic" style={{ color: T.accent }}>qayerda</span> yashaydi?</h2></div>
-        <Mentor>Har bir sayt <b style={{ color: T.ink }}>serverda</b> saqlanadi — doim yoniq turadigan kuchli kompyuterda. Siz so'rov yuborasiz, server <b style={{ color: T.ink }}>sahifani qaytaradi</b>. Xuddi <b style={{ color: T.ink }}>restoran</b> kabi: buyurtma berasiz — taom tayyor bo'lib keladi. Tugmani bosib sinab ko'ring.</Mentor>
+        <Mentor>Har bir sayt <b style={{ color: T.ink }}>serverda</b> — doim yoniq kuchli kompyuterda — saqlanadi. Siz so'rov yuborasiz, server <b style={{ color: T.ink }}>sahifani qaytaradi</b>. Tugmani bosing.</Mentor>
         <Zoomable>
         <div className="split">
           <div className="col">
@@ -842,7 +829,11 @@ const Screen8 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
             <button className="btn" style={{ alignSelf: 'flex-start' }} disabled={step === 1} onClick={send}>{step === 1 ? 'Yuborilmoqda…' : (done ? '↻ Yana yuborish' : '📨 Serverga so’rov yuborish')}</button>
           </div>
           <div className="col">            {done ? (
-              <div className="frame-success fade-step"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Server javob berdi</p><p className="body" style={{ margin: 0, color: T.ink }}>Siz so'rov yubordingiz, server sahifani qaytardi. Server <b>doim yoniq</b> turadi — shuning uchun sayt istalgan vaqtda ochiladi.</p></div>
+              <div className="fade-step" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="flow-label">🖥️ Server qaytargan sahifa</div>
+                <Preview title="google.com" minH={130}><SiteMock site={siteInfo('google.com')} /></Preview>
+                <div className="frame-success"><p className="small mono" style={{ margin: '0 0 4px', fontWeight: 600, color: T.success, textTransform: 'uppercase', letterSpacing: '0.08em' }}>✓ Server javob berdi</p><p className="body" style={{ margin: 0, color: T.ink }}>Server <b>google.com</b> sahifasini qaytardi. U <b>doim yoniq</b> — sayt istalgan vaqtda ochiladi.</p></div>
+              </div>
             ) : (<div className="hint"><p className="body" style={{ margin: 0, color: T.ink2 }}>Siz (brauzer) chap tomonda, server o'ngda. So'rov yuborib, javobni kuzating.</p></div>)}
             <div className="frame-soft"><p className="body" style={{ margin: 0, color: T.ink }}><b>Server</b> — saytlarni saqlovchi va so'rovga javob beruvchi kuchli kompyuter.</p></div>
           </div>
@@ -1014,10 +1005,18 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
   const [rd, setRd] = useState(storedAnswer ? HTML.length : 0); // chizilgan elementlar soni
   const timer = useRef(null);
   const animRef = useRef(null);
+  const resultRef = useRef(null); // mobil: chizilgan sahifaga (natijaga) avtoskroll
   const isMobile = useIsMobile();
   const done = phase === 'done';
   useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => { if (done && storedAnswer === undefined) onAnswer(screen, { correct: true, picked: true }); }, [done]);
+  // Mobil: brauzer kodni o'qib bo'lib, sahifa chizilganda — natijaga skroll
+  useEffect(() => {
+    if (!done || !isMobile || !resultRef.current) return;
+    const el = resultRef.current;
+    const id = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 280);
+    return () => clearTimeout(id);
+  }, [done, isMobile]);
   const start = () => {
     if (phase === 'reading') return;
     clearTimeout(timer.current);
@@ -1062,7 +1061,7 @@ const Screen11 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
                 return <div key={i} className={`htl-line ${cls}`}><span className="htl-code">{h.code}</span>{i < rd && <span className="htl-tick">✓ chizildi</span>}</div>;
               })}</pre>
             </div>
-            <div className="col">
+            <div className="col" ref={resultRef}>
               <div className="flow-label">🌐 Brauzer chizgan sahifa</div>
               <Preview title="youtube.com" minH={150}>
                 {rd === 0
@@ -2275,6 +2274,17 @@ export default function HtmlLesson({ lang: langProp, onFinished }) {
         .net-msg.warn { background: #FFF3E0; color: #B26A00; }
         .net-msg.bad { background: ${T.accentSoft}; color: ${T.accent}; }
         .net-hint { font-family: 'Georgia, serif'; font-style: italic; color: ${T.ink3}; font-size: clamp(12.5px,1.5vw,13.5px); text-align: center; margin: 0; }
+        /* Mobil: 3 server tik ustunda — xarita balandroq bo'lsin, tugunlar kichrayadi, IP yorliqlari ustma-ust tushmaydi */
+        @media (max-width: 560px) {
+          .net-hud { padding-right: 38px; } /* "Qadam" hisoblagichi ⛶ tugma ortida qolmasin */
+          .net-map { aspect-ratio: 3 / 4; max-height: 380px; }
+          .net-node { width: clamp(48px,15vw,62px); gap: 2px; }
+          .net-node-ic { width: clamp(33px,8.5vw,40px); height: clamp(33px,8.5vw,40px); font-size: clamp(15px,4vw,19px); }
+          .net-node-l { font-size: clamp(9px,2.4vw,11px); }
+          .net-node-note { font-size: clamp(8px,2vw,9px); }
+          .net-ip { font-size: clamp(8px,2.2vw,9.5px); padding: 1px 4px; }
+          .net-packet { width: clamp(24px,6.5vw,30px); height: clamp(24px,6.5vw,30px); font-size: clamp(12px,3.2vw,15px); }
+        }
         @media (prefers-reduced-motion: reduce) { .net-edge.live { animation: none; } .net-node.reachable .net-node-ic, .net-packet::after { animation: none; } }
 
         /* === SO'ROV YO'LI — OLDINGA OQADIGAN KONVEYER (Screen10) === */

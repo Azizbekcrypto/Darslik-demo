@@ -791,7 +791,7 @@ const Screen15 = ({ screen, storedAnswer, onAnswer, onNext, onPrev }) => {
     if (id === need) { setPlaced(p => [...p, id]); setHint(null); }
     else {
       const needSt = STATIONS.find(s => s.id === need);
-      setShakeId(id); setHint(`Hozir emas — avval ${needSt.ico} ${needSt.label} bo'lishi kerak.`);
+      setShakeId(id); if (needSt) setHint(`Hozir emas — avval ${needSt.ico} ${needSt.label} bo'lishi kerak.`);
       setTimeout(() => setShakeId(x => (x === id ? null : x)), 450);
     }
   };
